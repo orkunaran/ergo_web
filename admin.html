@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Excel İşlemleri İçin Gerekli Kütüphane -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
@@ -21,8 +19,7 @@
                         hu: {
                             purple: '#5e2b97',
                             dark: '#411b6b',
-                            light: '#7d45ba',
-                            gray: '#f9fafb'
+                            light: '#7d45ba'
                         }
                     }
                 }
@@ -40,7 +37,21 @@
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
 
-    <!-- Üst Menü -->
+    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-2 text-purple-300 font-bold">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                <span>WEBMASTER MODU: Hızlı Panel Değiştirici</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a href="admin.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🛡️ Admin</a>
+                <a href="academic.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Akademisyen</a>
+                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör</a>
+                <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
+            </div>
+        </div>
+    </div>
+
     <header class="bg-hu-purple text-white shadow-md z-10 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -55,7 +66,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-semibold" id="adminNameDisplay">Yönetici</p>
-                        <p class="text-xs text-purple-200">Admin</p>
+                        <p class="text-xs text-purple-200" id="adminRoleDisplay">Admin</p>
                     </div>
                     <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm border border-purple-800">
                         <i class="fa-solid fa-sign-out-alt mr-2"></i>Çıkış
@@ -64,7 +75,6 @@
             </div>
         </div>
         
-        <!-- Alt Sekmeler -->
         <div class="bg-white text-gray-600 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
@@ -89,7 +99,6 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <!-- DASHBOARD (GENEL BAKIŞ) SEKMESİ -->
         <div id="dashboard-section" class="fade-in space-y-6">
             <h2 class="text-2xl font-bold text-gray-800">Sistem İstatistikleri</h2>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -146,10 +155,8 @@
             </div>
         </div>
 
-        <!-- AKADEMİSYEN YÖNETİMİ SEKMESİ -->
         <div id="academics-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Akademisyen Ekleme Formu -->
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademisyen Ekle</h3>
@@ -172,7 +179,6 @@
                         </form>
                     </div>
                 </div>
-                <!-- Akademisyen Listesi -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -188,7 +194,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="academicsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Veriler JS ile buraya gelecek -->
                                 </tbody>
                             </table>
                         </div>
@@ -197,10 +202,8 @@
             </div>
         </div>
 
-        <!-- SÜPERVİZÖR YÖNETİMİ SEKMESİ -->
         <div id="supervisors-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Süpervizör Ekleme Formu -->
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle</h3>
@@ -223,7 +226,6 @@
                         </form>
                     </div>
 
-                    <!-- Excel ile Toplu Süpervizör Ekleme Bölümü -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Ekle</h3>
                         <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olmalıdır:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
@@ -236,13 +238,8 @@
                             </div>
                             <input id="excelUploadSup" type="file" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleSupervisorExcelUpload(event)" />
                         </label>
-                        
-                        <div class="mt-3 text-right">
-                            <button onclick="downloadSupervisorExcelTemplate()" class="text-xs text-hu-purple hover:text-hu-dark font-medium"><i class="fa-solid fa-download mr-1"></i>Süpervizör Şablonunu İndir</button>
-                        </div>
                     </div>
                 </div>
-                <!-- Süpervizör Listesi -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -258,7 +255,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="supervisorsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Veriler JS ile buraya gelecek -->
                                 </tbody>
                             </table>
                         </div>
@@ -267,10 +263,8 @@
             </div>
         </div>
 
-        <!-- ÖĞRENCİ YÖNETİMİ SEKMESİ -->
         <div id="students-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Öğrenci Ekleme Formu -->
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle</h3>
@@ -281,13 +275,12 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası (Giriş için)</label>
-                                <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 22000000">
+                                <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 220000">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Staj Yapacağı Süpervizör</label>
                                 <select id="stuSupervisor" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
                                     <option value="">Süpervizör Seçiniz...</option>
-                                    <!-- Options JS ile dolacak -->
                                 </select>
                             </div>
                             <div>
@@ -300,26 +293,17 @@
                         </form>
                     </div>
 
-                    <!-- Excel ile Toplu Ekleme Bölümü -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olmalıdır:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-gray-800">Süpervizör Email</b></p>
-                        
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
                                 <p class="mb-2 text-sm text-gray-500 font-semibold">Dosya yüklemek için tıklayın</p>
-                                <p class="text-xs text-gray-500">.xlsx, .xls veya .csv</p>
                             </div>
                             <input id="excelUpload" type="file" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)" />
                         </label>
-                        
-                        <div class="mt-3 text-right">
-                            <button onclick="downloadExcelTemplate()" class="text-xs text-hu-purple hover:text-hu-dark font-medium"><i class="fa-solid fa-download mr-1"></i>Örnek Şablonu İndir</button>
-                        </div>
                     </div>
                 </div>
-                <!-- Öğrenci Listesi -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -335,7 +319,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Veriler JS ile buraya gelecek -->
                                 </tbody>
                             </table>
                         </div>
@@ -346,143 +329,27 @@
 
     </main>
 
-    <!-- AKADEMİSYEN DÜZENLEME MODALI -->
-    <div id="editAcademicModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditAcademicModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                <div class="bg-hu-purple px-4 py-3 sm:px-6 flex justify-between items-center">
-                    <h3 class="text-lg leading-6 font-medium text-white">Akademisyen Bilgilerini Düzenle</h3>
-                    <button onclick="closeEditAcademicModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <form onsubmit="saveAcademicEdit(event)">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-                            <input type="text" id="editAcademicName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
-                            <input type="email" id="editAcademicEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-                            <input type="text" id="editAcademicPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-hu-purple text-base font-medium text-white hover:bg-hu-dark sm:ml-3 sm:w-auto sm:text-sm transition-colors">Değişiklikleri Kaydet</button>
-                        <button type="button" onclick="closeEditAcademicModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">İptal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- SÜPERVİZÖR DÜZENLEME MODALI -->
-    <div id="editSupModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditSupModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                <div class="bg-hu-purple px-4 py-3 sm:px-6 flex justify-between items-center">
-                    <h3 class="text-lg leading-6 font-medium text-white">Süpervizör Bilgilerini Düzenle</h3>
-                    <button onclick="closeEditSupModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <form onsubmit="saveSupEdit(event)">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-                            <input type="text" id="editSupName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
-                            <input type="email" id="editSupEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-                            <input type="text" id="editSupPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-hu-purple text-base font-medium text-white hover:bg-hu-dark sm:ml-3 sm:w-auto sm:text-sm transition-colors">Değişiklikleri Kaydet</button>
-                        <button type="button" onclick="closeEditSupModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">İptal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- ÖĞRENCİ DÜZENLEME MODALI -->
-    <div id="editStuModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditStuModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                <div class="bg-hu-purple px-4 py-3 sm:px-6 flex justify-between items-center">
-                    <h3 class="text-lg leading-6 font-medium text-white">Öğrenci Bilgilerini Düzenle</h3>
-                    <button onclick="closeEditStuModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <form onsubmit="saveStuEdit(event)">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-                            <input type="text" id="editStuName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası</label>
-                            <input type="text" id="editStuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Atanacak Yeni Süpervizör</label>
-                            <select id="editStuSupervisor" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                                <!-- JS ile dolacak -->
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-                            <input type="text" id="editStuPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-hu-purple text-base font-medium text-white hover:bg-hu-dark sm:ml-3 sm:w-auto sm:text-sm transition-colors">Değişiklikleri Kaydet</button>
-                        <button type="button" onclick="closeEditStuModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">İptal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
-            if (!activeUser || activeUser.role !== 'admin') {
-                try {
-                    if (window.location.protocol !== 'about:' && window.location.protocol !== 'data:') {
-                        window.location.href = 'index.html';
-                    } else {
-                        document.body.innerHTML = "<h2 class='text-center mt-10 text-red-500 font-bold'>Yetkisiz Erişim. Lütfen index.html üzerinden giriş yapın.</h2>";
-                    }
-                } catch(e) {}
+            if (!activeUser || (activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
+                try { window.location.href = 'index.html'; } catch(e) {}
                 return; 
             }
 
             document.getElementById('adminNameDisplay').innerText = activeUser.name;
+            if (activeUser.role === 'webmaster') {
+                document.getElementById('webmasterBar').classList.remove('hidden');
+                document.getElementById('adminRoleDisplay').innerText = 'Webmaster';
+            }
+
             loadData();
         });
 
         function logout() {
             localStorage.removeItem('activeUser');
-            try {
-                if (window.location.protocol !== 'about:' && window.location.protocol !== 'data:') {
-                    window.location.href = 'index.html';
-                } else {
-                    showToast("Çıkış yapıldı.", "success");
-                    setTimeout(() => location.reload(), 1500);
-                }
-            } catch(e) {}
+            try { window.location.href = 'index.html'; } catch(e) {}
         }
 
         function showToast(message, type = 'success') {
@@ -548,7 +415,6 @@
             document.getElementById('stat-supervisors').innerText = supervisors.length;
             document.getElementById('stat-students').innerText = students.length;
 
-            // Akademisyen Tablosu
             const acadTable = document.getElementById('academicsTableBody');
             if(acadTable) {
                 acadTable.innerHTML = '';
@@ -558,82 +424,40 @@
                 academics.forEach(acad => {
                     acadTable.innerHTML += `
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold">
-                                        ${acad.name.charAt(0)}
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">${acad.name}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">${acad.email}</div>
-                                <div class="text-xs text-gray-500">Şifre: ${acad.password}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onclick="openEditAcademicModal(${acad.id})" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded mr-2 transition-colors">Düzenle</button>
-                                <button onclick="deleteUser(${acad.id})" class="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded transition-colors">Sil</button>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${acad.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${acad.email}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${acad.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
                         </tr>
                     `;
                 });
             }
 
-            // Süpervizör Tablosu
             const supTable = document.getElementById('supervisorsTableBody');
             if(supTable) {
                 supTable.innerHTML = '';
                 supervisors.forEach(sup => {
                     supTable.innerHTML += `
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-hu-purple font-bold">
-                                        ${sup.name.charAt(0)}
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">${sup.name}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">${sup.email}</div>
-                                <div class="text-xs text-gray-500">Şifre: ${sup.password}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onclick="openEditSupModal(${sup.id})" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded mr-2 transition-colors">Düzenle</button>
-                                <button onclick="deleteUser(${sup.id})" class="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded transition-colors">Sil</button>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${sup.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${sup.email}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${sup.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
                         </tr>
                     `;
                 });
             }
 
-            // Öğrenci Tablosu
             const stuTable = document.getElementById('studentsTableBody');
             if(stuTable) {
                 stuTable.innerHTML = '';
                 students.forEach(stu => {
                     const assignedSup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
-                    const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Süpervizör Silinmiş</span>';
+                    const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Atanmamış</span>';
                     
                     stuTable.innerHTML += `
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${stu.name}</div>
-                                <div class="text-xs text-gray-500">No: ${stu.studentNo} | Şifre: ${stu.password}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    ${supName}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onclick="openEditStuModal(${stu.id})" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded mr-2 transition-colors">Düzenle</button>
-                                <button onclick="deleteUser(${stu.id})" class="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded transition-colors">Sil</button>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${stu.name} (${stu.studentNo})</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${stu.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
                         </tr>
                     `;
                 });
@@ -655,24 +479,11 @@
             const password = document.getElementById('acadPassword').value;
 
             const users = getUsers();
-            if (users.find(u => u.email === email)) {
-                showToast('Bu e-posta adresi ile kayıtlı kullanıcı zaten var!', 'error');
-                return;
-            }
-
-            users.push({
-                id: Date.now(),
-                role: 'academic',
-                name: name,
-                email: email,
-                password: password
-            });
-
+            users.push({ id: Date.now(), role: 'academic', name: name, email: email, password: password });
             saveUsers(users);
             document.getElementById('addAcademicForm').reset();
-            document.getElementById('acadPassword').value = '1234';
             loadData();
-            showToast('Akademisyen başarıyla eklendi.', 'success');
+            showToast('Akademisyen eklendi.', 'success');
         }
 
         function handleAddSupervisor(e) {
@@ -682,24 +493,11 @@
             const password = document.getElementById('supPassword').value;
 
             const users = getUsers();
-            if (users.find(u => u.email === email)) {
-                showToast('Bu e-posta adresi ile kayıtlı bir kullanıcı zaten var!', 'error');
-                return;
-            }
-
-            users.push({
-                id: Date.now(),
-                role: 'supervisor',
-                name: name,
-                email: email,
-                password: password
-            });
-
+            users.push({ id: Date.now(), role: 'supervisor', name: name, email: email, password: password });
             saveUsers(users);
             document.getElementById('addSupervisorForm').reset();
-            document.getElementById('supPassword').value = '1234';
             loadData();
-            showToast('Süpervizör eklendi ve giriş bilgileri e-posta ile gönderildi.', 'success');
+            showToast('Süpervizör eklendi.', 'success');
         }
 
         function handleAddStudent(e) {
@@ -710,285 +508,20 @@
             const password = document.getElementById('stuPassword').value;
 
             const users = getUsers();
-            if (users.find(u => u.studentNo === studentNo)) {
-                showToast('Bu öğrenci numarası sistemde zaten var!', 'error');
-                return;
-            }
-
-            users.push({
-                id: Date.now(),
-                role: 'student',
-                name: name,
-                studentNo: studentNo,
-                supervisorId: parseInt(supervisorId),
-                password: password,
-                attendance: [],
-                grade: null
-            });
-
+            users.push({ id: Date.now(), role: 'student', name: name, studentNo: studentNo, supervisorId: parseInt(supervisorId), password: password, attendance: [], grade: null });
             saveUsers(users);
             document.getElementById('addStudentForm').reset();
-            document.getElementById('stuPassword').value = '1234';
             loadData();
-            showToast('Öğrenci eklendi ve şifresi e-postasına gönderildi.', 'success');
-        }
-
-        function handleExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
-
-                    let addedCount = 0;
-                    let users = getUsers();
-                    const supervisors = users.filter(u => u.role === 'supervisor');
-
-                    json.forEach((row) => {
-                        const name = row['Ad Soyad'] || row['Adı Soyadı'];
-                        const studentNo = row['Öğrenci No'] ? String(row['Öğrenci No']) : null;
-                        const password = row['Şifre'] ? String(row['Şifre']) : '1234';
-                        const supEmail = row['Süpervizör Email'] || row['Supervizor E-posta'];
-
-                        if (!name || !studentNo || users.find(u => u.studentNo === studentNo)) return;
-
-                        let supervisorId = null;
-                        if (supEmail) {
-                            const sup = supervisors.find(s => s.email.toLowerCase() === supEmail.toLowerCase());
-                            if (sup) supervisorId = sup.id;
-                        }
-
-                        users.push({
-                            id: Date.now() + Math.random(),
-                            role: 'student',
-                            name: name,
-                            studentNo: studentNo,
-                            supervisorId: supervisorId,
-                            password: password,
-                            attendance: [],
-                            grade: null
-                        });
-                        addedCount++;
-                    });
-
-                    saveUsers(users);
-                    loadData();
-                    showToast(`${addedCount} öğrenci Excel'den başarıyla içeri aktarıldı.`, 'success');
-                } catch (error) {
-                    showToast('Excel dosyası okunamadı.', 'error');
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadExcelTemplate() {
-            const templateData = [{ "Ad Soyad": "Ahmet Yılmaz", "Öğrenci No": "22000000", "Şifre": "1234", "Süpervizör Email": "super@test.com" }];
-            const ws = XLSX.utils.json_to_sheet(templateData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Öğrenciler");
-            XLSX.writeFile(wb, "Hacettepe_Ergo_Ogrenci_Sablonu.xlsx");
-        }
-
-        function handleSupervisorExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
-
-                    let addedCount = 0;
-                    let users = getUsers();
-
-                    json.forEach((row) => {
-                        const name = row['Ad Soyad'] || row['Adı Soyadı'];
-                        const email = row['E-posta'] ? String(row['E-posta']).trim() : null;
-                        const password = row['Şifre'] ? String(row['Şifre']) : '1234';
-
-                        if (!name || !email || users.find(u => u.email === email)) return;
-
-                        users.push({
-                            id: Date.now() + Math.random(),
-                            role: 'supervisor',
-                            name: name,
-                            email: email,
-                            password: password
-                        });
-                        addedCount++;
-                    });
-
-                    saveUsers(users);
-                    loadData();
-                    showToast(`${addedCount} süpervizör Excel'den başarıyla eklendi.`, 'success');
-                } catch (error) {
-                    showToast('Excel dosyası okunamadı.', 'error');
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadSupervisorExcelTemplate() {
-            const templateData = [{ "Ad Soyad": "Uzm. Erg. Ahmet Yılmaz", "E-posta": "ahmet@hastane.com", "Şifre": "1234" }];
-            const ws = XLSX.utils.json_to_sheet(templateData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Süpervizörler");
-            XLSX.writeFile(wb, "Hacettepe_Ergo_Supervizor_Sablonu.xlsx");
+            showToast('Öğrenci eklendi.', 'success');
         }
 
         function deleteUser(userId) {
-            if(confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
+            if(confirm('Kullanıcıyı silmek istediğinize emin misiniz?')) {
                 let users = getUsers();
                 users = users.filter(u => u.id !== userId);
                 saveUsers(users);
                 loadData();
-                showToast('Kullanıcı sistemden silindi.', 'success');
-            }
-        }
-
-        let editingUserId = null;
-
-        function openEditAcademicModal(id) {
-            const users = getUsers();
-            const acad = users.find(u => u.id === id);
-            if(!acad) return;
-
-            editingUserId = id;
-            document.getElementById('editAcademicName').value = acad.name;
-            document.getElementById('editAcademicEmail').value = acad.email;
-            document.getElementById('editAcademicPassword').value = acad.password;
-            
-            document.getElementById('editAcademicModal').classList.remove('hidden');
-        }
-
-        function closeEditAcademicModal() {
-            document.getElementById('editAcademicModal').classList.add('hidden');
-            editingUserId = null;
-        }
-
-        function saveAcademicEdit(e) {
-            e.preventDefault();
-            const users = getUsers();
-            const index = users.findIndex(u => u.id === editingUserId);
-            
-            if(index !== -1) {
-                const newEmail = document.getElementById('editAcademicEmail').value;
-                if(users.find(u => u.email === newEmail && u.id !== editingUserId)) {
-                    showToast('Bu e-posta adresi başka kullanıcıya ait!', 'error');
-                    return;
-                }
-
-                users[index].name = document.getElementById('editAcademicName').value;
-                users[index].email = newEmail;
-                users[index].password = document.getElementById('editAcademicPassword').value;
-                
-                saveUsers(users);
-                loadData();
-                closeEditAcademicModal();
-                showToast('Akademisyen bilgileri güncellendi.', 'success');
-            }
-        }
-
-        function openEditSupModal(id) {
-            const users = getUsers();
-            const sup = users.find(u => u.id === id);
-            if(!sup) return;
-
-            editingUserId = id;
-            document.getElementById('editSupName').value = sup.name;
-            document.getElementById('editSupEmail').value = sup.email;
-            document.getElementById('editSupPassword').value = sup.password;
-            
-            document.getElementById('editSupModal').classList.remove('hidden');
-        }
-
-        function closeEditSupModal() {
-            document.getElementById('editSupModal').classList.add('hidden');
-            editingUserId = null;
-        }
-
-        function saveSupEdit(e) {
-            e.preventDefault();
-            const users = getUsers();
-            const index = users.findIndex(u => u.id === editingUserId);
-            
-            if(index !== -1) {
-                const newEmail = document.getElementById('editSupEmail').value;
-                if(users.find(u => u.email === newEmail && u.id !== editingUserId)) {
-                    showToast('Bu e-posta adresi başka kullanıcıya ait!', 'error');
-                    return;
-                }
-
-                users[index].name = document.getElementById('editSupName').value;
-                users[index].email = newEmail;
-                users[index].password = document.getElementById('editSupPassword').value;
-                
-                saveUsers(users);
-                loadData();
-                closeEditSupModal();
-                showToast('Süpervizör bilgileri güncellendi.', 'success');
-            }
-        }
-
-        function openEditStuModal(id) {
-            const users = getUsers();
-            const stu = users.find(u => u.id === id);
-            if(!stu) return;
-
-            editingUserId = id;
-            document.getElementById('editStuName').value = stu.name;
-            document.getElementById('editStuNo').value = stu.studentNo;
-            document.getElementById('editStuPassword').value = stu.password;
-
-            const supervisors = users.filter(u => u.role === 'supervisor');
-            const selectBox = document.getElementById('editStuSupervisor');
-            selectBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
-            supervisors.forEach(sup => {
-                const selected = sup.id === parseInt(stu.supervisorId) ? 'selected' : '';
-                selectBox.innerHTML += `<option value="${sup.id}" ${selected}>${sup.name}</option>`;
-            });
-
-            document.getElementById('editStuModal').classList.remove('hidden');
-        }
-
-        function closeEditStuModal() {
-            document.getElementById('editStuModal').classList.add('hidden');
-            editingUserId = null;
-        }
-
-        function saveStuEdit(e) {
-            e.preventDefault();
-            const users = getUsers();
-            const index = users.findIndex(u => u.id === editingUserId);
-            
-            if(index !== -1) {
-                const newNo = document.getElementById('editStuNo').value;
-                if(users.find(u => u.studentNo === newNo && u.id !== editingUserId)) {
-                    showToast('Bu öğrenci numarası başka birine ait!', 'error');
-                    return;
-                }
-
-                users[index].name = document.getElementById('editStuName').value;
-                users[index].studentNo = newNo;
-                users[index].password = document.getElementById('editStuPassword').value;
-                users[index].supervisorId = parseInt(document.getElementById('editStuSupervisor').value);
-                
-                saveUsers(users);
-                loadData();
-                closeEditStuModal();
-                showToast('Öğrenci bilgileri güncellendi.', 'success');
+                showToast('Kullanıcı silindi.', 'success');
             }
         }
     </script>

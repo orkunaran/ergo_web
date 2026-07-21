@@ -16,7 +16,7 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         hu: {
-                            purple: '#5e2b97', // Ergoterapi Moru
+                            purple: '#5e2b97',
                             dark: '#411b6b',
                             light: '#7d45ba'
                         }
@@ -50,7 +50,6 @@
         </div>
     </header>
 
-    <!-- Bildirim Konteyneri -->
     <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <main class="flex-grow flex items-center justify-center p-4">
@@ -64,7 +63,6 @@
                     <p class="text-sm text-gray-500 mt-2">Lütfen giriş yönteminizi seçiniz</p>
                 </div>
 
-                <!-- Tab Butonları -->
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchLoginTab('staff')" id="tabStaff" class="w-1/2 py-2 text-sm font-semibold border-b-2 border-hu-purple text-hu-purple transition-colors">
                         Personel / Akademisyen
@@ -74,7 +72,6 @@
                     </button>
                 </div>
 
-                <!-- Personel / Akademisyen / Süpervizör Giriş Formu -->
                 <form id="staffLoginForm" onsubmit="handleLogin(event, 'staff')" class="space-y-5">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
@@ -99,7 +96,6 @@
                     </button>
                 </form>
 
-                <!-- Öğrenci Giriş Formu -->
                 <form id="studentLoginForm" onsubmit="handleLogin(event, 'student')" class="space-y-5 hidden">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası</label>
@@ -107,7 +103,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-id-card text-gray-400"></i>
                             </div>
-                            <input type="text" id="studentId" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Örn: 22000000">
+                            <input type="text" id="studentId" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Örn: 220000">
                         </div>
                     </div>
                     <div>
@@ -124,13 +120,13 @@
                     </button>
                 </form>
                 
-                <!-- Test Hesap Bilgileri -->
                 <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-400 space-y-1">
-                    <p class="font-semibold text-gray-500 mb-1">Test Hesapları (Şifre: 1234):</p>
+                    <p class="font-semibold text-gray-500 mb-1">Test Hesapları (Şifreler: 1234):</p>
+                    <p class="text-purple-700 font-bold bg-purple-50 p-1 rounded"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Webmaster (Tüm Roller): webmaster@test.com</p>
                     <p>Admin: admin@test.com</p>
                     <p>Öğretim Üyesi: akademik@test.com</p>
                     <p>Süpervizör: super@test.com</p>
-                    <p>Öğrenci: 220000</p>
+                    <p>Öğrenci No: 220000</p>
                 </div>
             </div>
         </div>
@@ -144,7 +140,6 @@
     </footer>
 
     <script>
-        // Veritabanını sıfırlama fonksiyonu
         function resetSystem() {
             if(confirm("Tüm test verileri sıfırlanacak ve başlangıç durumuna dönecektir. Emin misiniz?")) {
                 localStorage.clear();
@@ -153,10 +148,10 @@
             }
         }
 
-        // Başlangıç sahte veritabanı kurulumu
         function initializeMockDatabase() {
             if (!localStorage.getItem('ergoUsers')) {
                 const defaultUsers = [
+                    { id: 99, role: 'webmaster', email: 'webmaster@test.com', password: '1234', name: 'Webmaster / Sistem Yöneticisi' },
                     { id: 1, role: 'admin', email: 'admin@test.com', password: '1234', name: 'Sistem Yöneticisi' },
                     { id: 10, role: 'academic', email: 'akademik@test.com', password: '1234', name: 'Prof. Dr. Bölüm Başkanı' },
                     { id: 2, role: 'supervisor', email: 'super@test.com', password: '1234', name: 'Uzm. Erg. Ayşe Yılmaz' },
@@ -166,7 +161,6 @@
             }
         }
 
-        // Toast Bildirim Sistemi
         function showToast(message, type = 'error') {
             const container = document.getElementById('toastContainer');
             if(!container) return;
@@ -187,7 +181,6 @@
             }, 3000);
         }
 
-        // Giriş Sekmelerini Değiştirme
         function switchLoginTab(tab) {
             const staffForm = document.getElementById('staffLoginForm');
             const studentForm = document.getElementById('studentLoginForm');
@@ -211,7 +204,6 @@
             }
         }
 
-        // Giriş Doğrulama ve Yönlendirme Mantığı
         function handleLogin(event, type) {
             event.preventDefault();
             
@@ -221,7 +213,7 @@
             if (type === 'staff') {
                 const email = document.getElementById('staffEmail').value.trim();
                 const password = document.getElementById('staffPassword').value.trim();
-                authenticatedUser = users.find(u => (u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+                authenticatedUser = users.find(u => (u.role === 'webmaster' || u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
             } else {
                 const studentNo = document.getElementById('studentId').value.trim();
                 const password = document.getElementById('studentPassword').value.trim();
@@ -233,7 +225,7 @@
                 showToast(`Giriş başarılı! ${authenticatedUser.name} olarak yönlendiriliyorsunuz...`, 'success');
                 
                 setTimeout(() => {
-                    if (authenticatedUser.role === 'admin') {
+                    if (authenticatedUser.role === 'webmaster' || authenticatedUser.role === 'admin') {
                         window.location.href = 'admin.html';
                     } else if (authenticatedUser.role === 'academic') {
                         window.location.href = 'academic.html';
@@ -248,7 +240,6 @@
             }
         }
 
-        // Sayfa yüklendiğinde çalışacaklar
         window.onload = function() {
             initializeMockDatabase();
         };

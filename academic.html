@@ -36,6 +36,21 @@
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
 
+    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-2 text-purple-300 font-bold">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                <span>WEBMASTER MODU: Hızlı Panel Değiştirici</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
+                <a href="academic.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🎓 Akademisyen</a>
+                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör</a>
+                <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
+            </div>
+        </div>
+    </div>
+
     <header class="bg-hu-purple text-white shadow-md z-10 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -103,7 +118,6 @@
                             </tr>
                         </thead>
                         <tbody id="departmentStudentsTable" class="bg-white divide-y divide-gray-200">
-                            <!-- JS ile dolacak -->
                         </tbody>
                     </table>
                 </div>
@@ -113,17 +127,13 @@
         <div id="my-supervision-section" class="fade-in hidden space-y-6">
             <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">Doğrudan Benim Süpervizörlüğümdeki Öğrenciler</h2>
-                <p class="text-sm text-gray-500 mb-6">Akademisyen olarak bizzat sahada / kurumda takip ettiğiniz öğrencileriniz.</p>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="mySupervisedList">
-                    <!-- JS ile dolacak -->
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- YOKLAMA AUDIT LOG DETAY MODALI (AKADEMİSYEN İÇİN) -->
     <div id="attendanceAuditModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeAuditModal()"></div>
@@ -149,7 +159,6 @@
                             </tr>
                         </thead>
                         <tbody id="auditTableBody" class="divide-y divide-gray-100">
-                            <!-- JS ile dolacak -->
                         </tbody>
                     </table>
                 </div>
@@ -161,7 +170,6 @@
         </div>
     </div>
 
-    <!-- STAJ NOTU VE RUBRİK DETAY MODALI (AKADEMİSYEN İÇİN) -->
     <div id="gradeDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 py-6">
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeGradeDetailModal()"></div>
@@ -177,7 +185,6 @@
                 </div>
 
                 <div class="overflow-y-auto pr-2 space-y-4 text-xs flex-grow" id="gradeDetailBody">
-                    <!-- JS ile dolacak -->
                 </div>
 
                 <div class="mt-4 pt-3 border-t text-right flex-shrink-0">
@@ -193,12 +200,16 @@
         document.addEventListener("DOMContentLoaded", () => {
             activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
-            if (!activeUser || (activeUser.role !== 'academic' && activeUser.role !== 'admin')) {
+            if (!activeUser || (activeUser.role !== 'academic' && activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
                 try { window.location.href = 'index.html'; } catch(e) {}
                 return;
             }
 
             document.getElementById('academicNameDisplay').innerText = activeUser.name;
+            if (activeUser.role === 'webmaster') {
+                document.getElementById('webmasterBar').classList.remove('hidden');
+            }
+
             loadDepartmentData();
         });
 
@@ -323,7 +334,6 @@
             }
         }
 
-        // AKADEMİSYEN RUBRİK & NOT DETAY MODALI
         function openGradeDetailModal(studentId) {
             const users = getUsers();
             const stu = users.find(u => u.id === studentId);
@@ -340,7 +350,6 @@
             const d = g.details || {};
             const noteText = g.note ? g.note : 'Süpervizör tarafından ekstra bir not veya açıklama eklenmedi.';
 
-            // Alt Kırılım Toplam Hesaplamaları
             const behTotal = (d.beh1||0) + (d.beh2||0) + (d.beh3||0);
             const evalTotal = (d.eval1||0) + (d.eval2||0) + (d.eval3||0) + (d.eval4||0) + (d.eval5||0);
             const intTotal = (d.int1||0) + (d.int2||0) + (d.int3||0) + (d.int4||0) + (d.int5||0) + (d.int6||0);
@@ -363,63 +372,14 @@
 
                 <div class="space-y-3">
                     <h4 class="font-bold text-gray-900 border-b pb-1 text-xs uppercase tracking-wide text-gray-500">Rubrik Alt Kırılım Puanları</h4>
-                    
                     <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
-                            <span>1. Davranış ve Mesleki Tutum</span>
-                            <span class="text-hu-purple font-black">${behTotal} / 20</span>
-                        </div>
-                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
-                            <li class="flex justify-between"><span>• Kılık-kıyafet yönetmeliğine uyum ve devamlılık</span> <b>${d.beh1||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Etik kurallara uyum ve sorumluluk bilinci</span> <b>${d.beh2||0} / 10</b></li>
-                            <li class="flex justify-between"><span>• Hasta ve ekip arkadaşlarıyla iletişim becerisi</span> <b>${d.beh3||0} / 5</b></li>
-                        </ul>
+                        <div class="flex justify-between font-bold text-gray-800 mb-1"><span>1. Davranış ve Mesleki Tutum</span><span class="text-hu-purple font-black">${behTotal} / 20</span></div>
                     </div>
-
                     <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
-                            <span>2. Değerlendirme & Klinik Mantık Yürütme</span>
-                            <span class="text-hu-purple font-black">${evalTotal} / 30</span>
-                        </div>
-                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
-                            <li class="flex justify-between"><span>• Anamnez alma ve uygun değerlendirme test seçimi</span> <b>${d.eval1||0} / 6</b></li>
-                            <li class="flex justify-between"><span>• Değerlendirme testlerini uygulama becerisi</span> <b>${d.eval2||0} / 6</b></li>
-                            <li class="flex justify-between"><span>• Bulguları yorumlama ve problem listesi</span> <b>${d.eval3||0} / 6</b></li>
-                            <li class="flex justify-between"><span>• Kullanıcı merkezli hedef belirleme (MOHO vb.)</span> <b>${d.eval4||0} / 6</b></li>
-                            <li class="flex justify-between"><span>• Müdahale planı hazırlama ve önceliklendirme</span> <b>${d.eval5||0} / 6</b></li>
-                        </ul>
+                        <div class="flex justify-between font-bold text-gray-800 mb-1"><span>2. Değerlendirme & Klinik Mantık</span><span class="text-hu-purple font-black">${evalTotal} / 30</span></div>
                     </div>
-
                     <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
-                            <span>3. Müdahale & Uygulama Becerisi</span>
-                            <span class="text-hu-purple font-black">${intTotal} / 30</span>
-                        </div>
-                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
-                            <li class="flex justify-between"><span>• Aktivite analizi yapma ve adapte etme</span> <b>${d.int1||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Terapötik yaklaşım ve materyal seçimi</span> <b>${d.int2||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Kullanıcının katılımını sağlama ve motivasyon</span> <b>${d.int3||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Çevre düzenlemeleri ve yardımcı cihazlar</span> <b>${d.int4||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Hasta güvenliği ve ergonomik önlemler</span> <b>${d.int5||0} / 5</b></li>
-                            <li class="flex justify-between"><span>• Müdahale sonucunu değerlendirme ve revizyon</span> <b>${d.int6||0} / 6</b></li>
-                        </ul>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                            <div class="flex justify-between font-bold text-gray-800 mb-1">
-                                <span>4. Araştırma & Kanıt</span>
-                                <span class="text-hu-purple font-black">${resTotal} / 10</span>
-                            </div>
-                            <p class="text-[10px] text-gray-500">Literatür tarama ve klinik kararda kullanma</p>
-                        </div>
-                        <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                            <div class="flex justify-between font-bold text-gray-800 mb-1">
-                                <span>5. Olgu Sunumu</span>
-                                <span class="text-hu-purple font-black">${repTotal} / 10</span>
-                            </div>
-                            <p class="text-[10px] text-gray-500">Vaka raporu hazırlama ve sunum kalitesi</p>
-                        </div>
+                        <div class="flex justify-between font-bold text-gray-800 mb-1"><span>3. Müdahale & Uygulama Becerisi</span><span class="text-hu-purple font-black">${intTotal} / 30</span></div>
                     </div>
                 </div>
             `;
@@ -432,7 +392,6 @@
             document.getElementById('gradeDetailModal').classList.add('hidden');
         }
 
-        // AKADEMİSYEN AUDIT LOG MODALI
         function openAuditModal(studentId) {
             const users = getUsers();
             const stu = users.find(u => u.id === studentId);
