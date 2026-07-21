@@ -52,7 +52,6 @@
                         <p class="text-xs text-purple-200">Staj Sorumlusu</p>
                     </div>
                     
-                    <!-- Rol Değiştirme Butonu (Akademisyen <-> Süpervizör) -->
                     <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-md text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
                         <i class="fa-solid fa-right-left mr-1.5"></i> Süpervizör Paneline Geç
                     </button>
@@ -64,7 +63,6 @@
             </div>
         </div>
         
-        <!-- Sekmeler -->
         <div class="bg-white text-gray-600 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
@@ -83,13 +81,12 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <!-- BÖLÜM STAJYERLERİ ONAY SEKMESİ -->
         <div id="department-students-section" class="fade-in space-y-6">
             <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Bölüm Dış Staj Takip ve Final Onayı</h2>
-                        <p class="text-sm text-gray-500">Süpervizörleri tarafından notu girilen ve raporu onaylanan öğrencilerin son bölüm onayını buradan verin.</p>
+                        <h2 class="text-lg font-bold text-gray-900">Bölüm Dış Staj Takip, Yoklama Audit & Final Onayı</h2>
+                        <p class="text-sm text-gray-500">Süpervizör notları, yoklama giriş zamanı zaman damgaları (Audit Log) ve rapor onayları.</p>
                     </div>
                     <span class="bg-purple-100 text-hu-purple text-xs font-bold px-3 py-1 rounded-full">Akademik Onay Mercii</span>
                 </div>
@@ -100,8 +97,8 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Öğrenci Adı / No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atanan Süpervizör</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yoklama Şeffaflık & Audit Log</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Notu</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapor Durumu</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bölüm Onayı / İşlem</th>
                             </tr>
                         </thead>
@@ -113,7 +110,6 @@
             </div>
         </div>
 
-        <!-- KENDİ SÜPERVİZÖRLÜKLERİM SEKMESİ -->
         <div id="my-supervision-section" class="fade-in hidden space-y-6">
             <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">Doğrudan Benim Süpervizörlüğümdeki Öğrenciler</h2>
@@ -127,6 +123,70 @@
 
     </main>
 
+    <!-- YOKLAMA AUDIT LOG DETAY MODALI (AKADEMİSYEN İÇİN) -->
+    <div id="attendanceAuditModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeAuditModal()"></div>
+            <div class="bg-white rounded-2xl max-w-3xl w-full p-6 z-10 relative shadow-2xl overflow-hidden">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg text-gray-900" id="auditStudentName">Öğrenci Yoklama Şeffaflık Raporu</h3>
+                        <p class="text-xs text-purple-700 font-medium" id="auditStudentDetails">-</p>
+                    </div>
+                    <button onclick="closeAuditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto max-h-96">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs">
+                        <thead class="bg-gray-50 text-gray-500 uppercase font-bold">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left">Staj Tarihi</th>
+                                <th class="px-4 py-2.5 text-left">Sisteme Giriş Anı (Audit Timestamp)</th>
+                                <th class="px-4 py-2.5 text-left">Bildirim Türü / Mazeret</th>
+                                <th class="px-4 py-2.5 text-right">Süpervizör Onayı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody" class="divide-y divide-gray-100">
+                            <!-- JS ile dolacak -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 pt-3 border-t text-right">
+                    <button onclick="closeAuditModal()" class="px-4 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAJ NOTU VE RUBRİK DETAY MODALI (AKADEMİSYEN İÇİN) -->
+    <div id="gradeDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeGradeDetailModal()"></div>
+            <div class="bg-white rounded-2xl max-w-3xl w-full p-6 z-10 relative shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center border-b pb-3 mb-4 flex-shrink-0">
+                    <div>
+                        <h3 class="font-bold text-lg text-gray-900" id="gradeDetailStudentName">Öğrenci Staj Değerlendirme Detayları</h3>
+                        <p class="text-xs text-purple-700 font-medium" id="gradeDetailSubTitle">-</p>
+                    </div>
+                    <button onclick="closeGradeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto pr-2 space-y-4 text-xs flex-grow" id="gradeDetailBody">
+                    <!-- JS ile dolacak -->
+                </div>
+
+                <div class="mt-4 pt-3 border-t text-right flex-shrink-0">
+                    <button onclick="closeGradeDetailModal()" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let activeUser = null;
 
@@ -135,7 +195,6 @@
             
             if (!activeUser || (activeUser.role !== 'academic' && activeUser.role !== 'admin')) {
                 try { window.location.href = 'index.html'; } catch(e) {}
-                document.body.innerHTML = "<h2 class='text-center mt-10 text-red-500 font-bold'>Yetkisiz Erişim.</h2>";
                 return;
             }
 
@@ -206,25 +265,37 @@
                 const sup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
                 const supName = sup ? sup.name : '<span class="text-red-500">Atanmamış</span>';
                 
-                const gradeText = (stu.grade !== null && stu.grade !== undefined) 
-                    ? `<span class="font-bold text-gray-900">${stu.grade} / 100</span>` 
-                    : `<span class="text-orange-500 text-xs font-semibold">Not Bekleniyor</span>`;
+                const scoreVal = stu.grade ? (stu.grade.totalScore ?? stu.grade) : null;
+                const gradeText = (scoreVal !== null) 
+                    ? `<div class="flex items-center space-x-2">
+                        <span class="font-black text-hu-purple text-base">${scoreVal} / 100</span>
+                        <button onclick="openGradeDetailModal(${stu.id})" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-1 rounded-lg font-bold transition flex items-center">
+                            <i class="fa-solid fa-eye mr-1"></i>Rubrik & Not
+                        </button>
+                       </div>` 
+                    : `<span class="text-amber-600 text-xs font-semibold">Not Bekleniyor</span>`;
                 
-                const reportText = stu.reportUploaded 
-                    ? `<span class="text-green-600 text-xs font-bold"><i class="fa-solid fa-check mr-1"></i>Yüklendi</span>` 
-                    : `<span class="text-gray-400 text-xs">Yüklenmedi</span>`;
+                const attList = stu.attendance || [];
+                const approvedCount = attList.filter(a => a.status === 'approved').length;
+                const retroCount = attList.filter(a => a.isRetroactive).length;
+
+                const auditButton = `
+                    <button onclick="openAuditModal(${stu.id})" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1 rounded-lg text-xs font-bold transition flex items-center">
+                        <i class="fa-solid fa-clock-history mr-1"></i> ${approvedCount} Gün Onaylı (${retroCount} Geriye Dönük)
+                    </button>
+                `;
 
                 const isDepartmentApproved = stu.departmentApproved;
                 const approveBtn = isDepartmentApproved
-                    ? `<span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-bold">Bölüm Onayladı</span>`
-                    : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark text-white text-xs px-3 py-1.5 rounded font-medium transition shadow-sm"><i class="fa-solid fa-check-double mr-1"></i>Final Onayı Ver</button>`;
+                    ? `<span class="bg-green-100 text-green-800 text-xs px-3 py-1.5 rounded-full font-extrabold"><i class="fa-solid fa-check-double mr-1"></i>Bölüm Onayladı</span>`
+                    : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark text-white text-xs px-3 py-1.5 rounded-lg font-bold transition shadow-sm"><i class="fa-solid fa-check mr-1"></i>Final Onayı Ver</button>`;
 
                 tbody.innerHTML += `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${stu.name} <span class="text-xs text-gray-400">(${stu.studentNo})</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${supName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${stu.name} <span class="text-xs font-normal text-gray-400">(${stu.studentNo})</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">${auditButton}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">${gradeText}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${reportText}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}</td>
                     </tr>
                 `;
@@ -239,17 +310,171 @@
             } else {
                 myStudents.forEach(stu => {
                     mySupervisedGrid.innerHTML += `
-                        <div class="border border-gray-200 rounded-lg p-5 bg-gray-50 flex flex-col justify-between">
+                        <div class="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm flex flex-col justify-between">
                             <div>
-                                <h3 class="font-bold text-gray-900 text-lg mb-1">${stu.name}</h3>
-                                <p class="text-sm text-gray-500 mb-2">No: ${stu.studentNo}</p>
-                                <p class="text-sm text-gray-500">Not Durumu: <b class="text-hu-purple">${stu.grade ?? 'Girilmedi'}</b></p>
+                                <h3 class="font-bold text-gray-900 text-base mb-1">${stu.name}</h3>
+                                <p class="text-xs text-gray-500 mb-2">No: ${stu.studentNo}</p>
+                                <p class="text-xs text-gray-600">Not Durumu: <b class="text-hu-purple font-bold">${stu.grade ? (stu.grade.totalScore ?? stu.grade) : 'Girilmedi'}</b></p>
                             </div>
-                            <span class="mt-4 text-xs bg-purple-100 text-hu-purple py-1 px-2 rounded text-center font-semibold">Aktif Süpervizörlük</span>
+                            <span class="mt-4 text-[11px] bg-purple-100 text-hu-purple py-1 px-2 rounded-lg text-center font-bold">Aktif Süpervizörlük</span>
                         </div>
                     `;
                 });
             }
+        }
+
+        // AKADEMİSYEN RUBRİK & NOT DETAY MODALI
+        function openGradeDetailModal(studentId) {
+            const users = getUsers();
+            const stu = users.find(u => u.id === studentId);
+            if (!stu || !stu.grade) return;
+
+            const supervisors = users.filter(u => u.role === 'supervisor' || u.role === 'academic');
+            const sup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
+            const supName = sup ? sup.name : 'Atanmış Süpervizör';
+
+            document.getElementById('gradeDetailStudentName').innerText = `${stu.name} - Detaylı Staj Rubrik Raporu`;
+            document.getElementById('gradeDetailSubTitle').innerText = `Öğrenci No: ${stu.studentNo} | Süpervizör: ${supName}`;
+
+            const g = stu.grade;
+            const d = g.details || {};
+            const noteText = g.note ? g.note : 'Süpervizör tarafından ekstra bir not veya açıklama eklenmedi.';
+
+            // Alt Kırılım Toplam Hesaplamaları
+            const behTotal = (d.beh1||0) + (d.beh2||0) + (d.beh3||0);
+            const evalTotal = (d.eval1||0) + (d.eval2||0) + (d.eval3||0) + (d.eval4||0) + (d.eval5||0);
+            const intTotal = (d.int1||0) + (d.int2||0) + (d.int3||0) + (d.int4||0) + (d.int5||0) + (d.int6||0);
+            const resTotal = d.res1||0;
+            const repTotal = d.rep1||0;
+
+            const bodyHtml = `
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 flex justify-between items-center mb-3">
+                    <div>
+                        <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Toplam Staj Notu</span>
+                        <p class="text-xs text-purple-800 mt-0.5">Değerlendirme Tarihi: <b>${g.date || '-'}</b></p>
+                    </div>
+                    <div class="text-3xl font-black text-hu-purple">${g.totalScore || 0} <span class="text-xs font-normal text-gray-500">/ 100</span></div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 mb-4">
+                    <p class="font-bold text-amber-900 mb-1 flex items-center"><i class="fa-solid fa-comment-dots mr-1.5 text-amber-600"></i>Süpervizör Klinik Görüşü & Notu:</p>
+                    <p class="text-gray-800 italic leading-relaxed text-xs">${noteText}</p>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-bold text-gray-900 border-b pb-1 text-xs uppercase tracking-wide text-gray-500">Rubrik Alt Kırılım Puanları</h4>
+                    
+                    <div class="border border-gray-200 rounded-xl p-3 bg-white">
+                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
+                            <span>1. Davranış ve Mesleki Tutum</span>
+                            <span class="text-hu-purple font-black">${behTotal} / 20</span>
+                        </div>
+                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
+                            <li class="flex justify-between"><span>• Kılık-kıyafet yönetmeliğine uyum ve devamlılık</span> <b>${d.beh1||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Etik kurallara uyum ve sorumluluk bilinci</span> <b>${d.beh2||0} / 10</b></li>
+                            <li class="flex justify-between"><span>• Hasta ve ekip arkadaşlarıyla iletişim becerisi</span> <b>${d.beh3||0} / 5</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-3 bg-white">
+                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
+                            <span>2. Değerlendirme & Klinik Mantık Yürütme</span>
+                            <span class="text-hu-purple font-black">${evalTotal} / 30</span>
+                        </div>
+                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
+                            <li class="flex justify-between"><span>• Anamnez alma ve uygun değerlendirme test seçimi</span> <b>${d.eval1||0} / 6</b></li>
+                            <li class="flex justify-between"><span>• Değerlendirme testlerini uygulama becerisi</span> <b>${d.eval2||0} / 6</b></li>
+                            <li class="flex justify-between"><span>• Bulguları yorumlama ve problem listesi</span> <b>${d.eval3||0} / 6</b></li>
+                            <li class="flex justify-between"><span>• Kullanıcı merkezli hedef belirleme (MOHO vb.)</span> <b>${d.eval4||0} / 6</b></li>
+                            <li class="flex justify-between"><span>• Müdahale planı hazırlama ve önceliklendirme</span> <b>${d.eval5||0} / 6</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-3 bg-white">
+                        <div class="flex justify-between font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">
+                            <span>3. Müdahale & Uygulama Becerisi</span>
+                            <span class="text-hu-purple font-black">${intTotal} / 30</span>
+                        </div>
+                        <ul class="space-y-1 text-gray-600 pl-2 text-[11px]">
+                            <li class="flex justify-between"><span>• Aktivite analizi yapma ve adapte etme</span> <b>${d.int1||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Terapötik yaklaşım ve materyal seçimi</span> <b>${d.int2||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Kullanıcının katılımını sağlama ve motivasyon</span> <b>${d.int3||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Çevre düzenlemeleri ve yardımcı cihazlar</span> <b>${d.int4||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Hasta güvenliği ve ergonomik önlemler</span> <b>${d.int5||0} / 5</b></li>
+                            <li class="flex justify-between"><span>• Müdahale sonucunu değerlendirme ve revizyon</span> <b>${d.int6||0} / 6</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="border border-gray-200 rounded-xl p-3 bg-white">
+                            <div class="flex justify-between font-bold text-gray-800 mb-1">
+                                <span>4. Araştırma & Kanıt</span>
+                                <span class="text-hu-purple font-black">${resTotal} / 10</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500">Literatür tarama ve klinik kararda kullanma</p>
+                        </div>
+                        <div class="border border-gray-200 rounded-xl p-3 bg-white">
+                            <div class="flex justify-between font-bold text-gray-800 mb-1">
+                                <span>5. Olgu Sunumu</span>
+                                <span class="text-hu-purple font-black">${repTotal} / 10</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500">Vaka raporu hazırlama ve sunum kalitesi</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('gradeDetailBody').innerHTML = bodyHtml;
+            document.getElementById('gradeDetailModal').classList.remove('hidden');
+        }
+
+        function closeGradeDetailModal() {
+            document.getElementById('gradeDetailModal').classList.add('hidden');
+        }
+
+        // AKADEMİSYEN AUDIT LOG MODALI
+        function openAuditModal(studentId) {
+            const users = getUsers();
+            const stu = users.find(u => u.id === studentId);
+            if (!stu) return;
+
+            document.getElementById('auditStudentName').innerText = `${stu.name} - Yoklama Zaman Damgası Raporu`;
+            document.getElementById('auditStudentDetails').innerText = `Öğrenci No: ${stu.studentNo}`;
+
+            const tbody = document.getElementById('auditTableBody');
+            tbody.innerHTML = '';
+
+            const att = stu.attendance || [];
+            if (att.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-xs text-gray-400 italic">Yoklama kaydı yok.</td></tr>`;
+            } else {
+                att.forEach(item => {
+                    const subTime = item.submittedAt || (item.date + ' ' + item.time);
+                    const isRetro = item.isRetroactive;
+                    const typeText = isRetro 
+                        ? `<span class="text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-200">⚠️ Geriye Dönük (Mazeret: ${item.excuse || '-'})</span>` 
+                        : `<span class="text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold">Gününde GPS Bildirimi</span>`;
+
+                    const statusBadge = item.status === 'approved' 
+                        ? `<span class="text-emerald-600 font-bold">✓ Onaylandı</span>` 
+                        : (item.status === 'rejected' ? `<span class="text-rose-600 font-bold">✕ Reddedildi</span>` : `<span class="text-amber-600 font-bold">⏱ Bekliyor</span>`);
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2.5 font-bold text-gray-800">${item.date}</td>
+                            <td class="px-4 py-2.5 font-mono text-gray-600">${subTime}</td>
+                            <td class="px-4 py-2.5">${typeText}</td>
+                            <td class="px-4 py-2.5 text-right">${statusBadge}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('attendanceAuditModal').classList.remove('hidden');
+        }
+
+        function closeAuditModal() {
+            document.getElementById('attendanceAuditModal').classList.add('hidden');
         }
 
         function approveStudent(studentId) {

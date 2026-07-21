@@ -32,51 +32,48 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Check-in butonu için özel dalga efekti */
         .pulse-btn {
             animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
         @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(94, 43, 151, 0.7); }
+            0% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(94, 43, 151, 0.6); }
             70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(94, 43, 151, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(94, 43, 151, 0); }
+            100% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(94, 43, 151, 0); }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
 
     <header class="bg-hu-purple text-white shadow-md z-10 sticky top-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-user-graduate text-2xl"></i>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight hidden sm:block">H.Ü. Ergoterapi Öğrenci Paneli</h1>
-                        <h1 class="font-bold text-lg leading-tight sm:hidden">Öğrenci Paneli</h1>
-                        <p class="text-xs text-purple-200">Dış Staj Takip</p>
+                        <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi</h1>
+                        <p class="text-xs text-purple-200">Öğrenci Staj Portalı</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-semibold" id="studentNameDisplay">Öğrenci</p>
                         <p class="text-xs text-purple-200" id="studentNoDisplay">No: -</p>
                     </div>
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-md text-sm font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
-                        <i class="fa-solid fa-sign-out-alt sm:mr-2"></i><span class="hidden sm:inline">Çıkış</span>
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-purple-800 flex items-center">
+                        <i class="fa-solid fa-sign-out-alt sm:mr-1.5"></i><span class="hidden sm:inline">Çıkış</span>
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Sekmeler (Mobil uyumlu, yana kaydırılabilir) -->
-        <div class="bg-white text-gray-600 shadow-sm overflow-x-auto">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <nav class="flex space-x-6 sm:space-x-8 -mb-px min-w-max" aria-label="Tabs">
-                    <button onclick="switchTab('checkin')" id="tab-checkin" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple">
-                        <i class="fa-solid fa-location-dot mr-2"></i>Günlük Yoklama
+        <div class="bg-white text-gray-600 shadow-sm border-b border-gray-100">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="flex space-x-8 -mb-px" aria-label="Tabs">
+                    <button onclick="switchTab('checkin')" id="tab-checkin" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center">
+                        <i class="fa-solid fa-location-crosshairs mr-2"></i>Günlük Yoklama
                     </button>
-                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors">
-                        <i class="fa-solid fa-folder-open mr-2"></i>Staj Belgeleri & Not
+                    <button onclick="switchTab('academic')" id="tab-academic" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center">
+                        <i class="fa-solid fa-file-contract mr-2"></i>Rapor & Değerlendirme
                     </button>
                 </nav>
             </div>
@@ -85,42 +82,84 @@
 
     <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        <!-- YOKLAMA (CHECK-IN) SEKMESİ -->
+    <main class="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple">
+                    <i class="fa-solid fa-user-doctor text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 font-medium">Atanan Süpervizör</p>
+                    <p class="text-sm font-bold text-gray-800" id="supNameDisplay">Yükleniyor...</p>
+                </div>
+            </div>
+            <span class="text-xs bg-purple-100 text-hu-purple px-2.5 py-1 rounded-full font-semibold" id="supEmailDisplay">-</span>
+        </div>
+
+        <!-- 1. SEKMELER: YOKLAMA BÖLÜMÜ -->
         <div id="checkin-section" class="fade-in space-y-6">
             
-            <div class="bg-white shadow rounded-2xl p-6 border border-gray-100 text-center relative overflow-hidden">
-                <!-- Arka plan deseni -->
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-purple-50 rounded-full opacity-50"></div>
-                <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-16 h-16 bg-blue-50 rounded-full opacity-50"></div>
-                
-                <h2 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Günlük Staj Bildirimi</h2>
-                <p class="text-sm text-gray-500 mb-8 relative z-10">Staj yerine ulaştığınızda aşağıdaki butona tıklayarak süpervizörünüze bildirim gönderin.</p>
-                
-                <!-- Günün Tarihi -->
-                <div class="mb-6">
-                    <p class="text-4xl font-black text-hu-dark" id="currentDateDisplay">00/00</p>
-                    <p class="text-sm font-medium text-gray-400" id="currentDayDisplay">Pazartesi</p>
+            <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 text-center relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-900">Günlük Staj Bildirimi</h2>
+                    <button onclick="openRetroactiveModal()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg font-semibold transition flex items-center">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Geriye Dönük / Mazeretli Bildirim Yap
+                    </button>
                 </div>
 
-                <!-- Check-in Butonu -->
-                <button id="checkInBtn" onclick="handleCheckIn()" class="pulse-btn relative z-10 inline-flex flex-col items-center justify-center w-40 h-40 rounded-full bg-gradient-to-br from-hu-light to-hu-purple text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                    <i class="fa-solid fa-fingerprint text-5xl mb-2"></i>
-                    <span class="font-bold text-lg">Stajdayım</span>
-                </button>
+                <p class="text-xs text-gray-500 mb-6">Staj yerine ulaştığınızda aşağıdaki butona tıklayarak GPS konumunuzla anlık bildirim yapın.</p>
                 
-                <p id="checkInStatus" class="mt-6 text-sm font-medium hidden"></p>
+                <div class="mb-6 bg-purple-50/60 inline-block px-6 py-2.5 rounded-2xl border border-purple-100">
+                    <p class="text-3xl font-black text-hu-dark tracking-tight" id="liveClockDisplay">--:--:--</p>
+                    <p class="text-xs font-semibold text-hu-purple mt-0.5" id="liveDateDisplay">--.--.----</p>
+                </div>
+
+                <div>
+                    <button id="checkInBtn" onclick="handleCheckIn()" class="pulse-btn relative z-10 inline-flex flex-col items-center justify-center w-44 h-44 rounded-full bg-gradient-to-br from-hu-light to-hu-purple text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 mx-auto">
+                        <i class="fa-solid fa-fingerprint text-5xl mb-2"></i>
+                        <span class="font-bold text-base" id="checkInBtnText">Stajdayım</span>
+                    </button>
+                </div>
+                
+                <p id="checkInStatus" class="mt-4 text-xs font-medium text-gray-500"></p>
             </div>
 
-            <!-- Geçmiş Yoklama Kayıtları -->
-            <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100 mt-6">
-                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-md font-bold text-gray-900"><i class="fa-solid fa-clock-rotate-left mr-2 text-hu-purple"></i>Son 5 Yoklama Kaydım</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-2xl font-bold text-hu-purple" id="statTotalCount">0</p>
+                    <p class="text-xs text-gray-500 font-medium">Toplam Bildirim</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-2xl font-bold text-emerald-600" id="statApprovedCount">0</p>
+                    <p class="text-xs text-gray-500 font-medium">Onaylanan</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <p class="text-2xl font-bold text-amber-500" id="statPendingCount">0</p>
+                    <p class="text-xs text-gray-500 font-medium">Bekleyen</p>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
+                <div class="px-5 py-3.5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 flex items-center">
+                        <i class="fa-solid fa-clock-rotate-left mr-2 text-hu-purple"></i>Yoklama Kayıtlarım
+                    </h3>
+                    <button onclick="loadStudentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                        <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <tbody id="attendanceHistory" class="bg-white divide-y divide-gray-100">
+                        <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-semibold">
+                            <tr>
+                                <th class="px-5 py-3 text-left">Staj Tarihi</th>
+                                <th class="px-5 py-3 text-left">Giriş / Bildirim Anı</th>
+                                <th class="px-5 py-3 text-left">Konum / Mazeret</th>
+                                <th class="px-5 py-3 text-right">Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceHistoryTable" class="bg-white divide-y divide-gray-100 text-sm">
                             <!-- JS ile dolacak -->
                         </tbody>
                     </table>
@@ -128,105 +167,112 @@
             </div>
         </div>
 
-        <!-- DASHBOARD (BELGELER & NOT) SEKMESİ -->
-        <div id="dashboard-section" class="fade-in hidden space-y-6">
-            
+        <!-- 2. SEKMELER: RAPOR & DEĞERLENDİRME NOTU BÖLÜMÜ -->
+        <div id="academic-section" class="fade-in hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Süpervizör Bilgisi -->
-                <div class="bg-white shadow rounded-xl p-5 border border-gray-100 flex flex-col h-full">
-                    <div class="flex items-center mb-4 pb-3 border-b border-gray-100">
-                        <div class="bg-purple-100 p-2 rounded-lg text-hu-purple">
-                            <i class="fa-solid fa-user-doctor text-xl"></i>
-                        </div>
-                        <h3 class="ml-3 font-bold text-gray-800 text-lg">Süpervizörüm</h3>
+                <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-base mb-1 flex items-center">
+                            <i class="fa-solid fa-award text-amber-500 mr-2"></i>Staj Sonu Notum
+                        </h3>
+                        <p class="text-xs text-gray-500 mb-4">Süpervizörünüzün 100 tam puan üzerinden verdiği değerlendirme sonucu.</p>
                     </div>
-                    <div class="flex-grow flex flex-col justify-center">
-                        <p id="supNameDisplay" class="text-lg font-semibold text-gray-900">Atanmadı</p>
-                        <p id="supEmailDisplay" class="text-sm text-gray-500 mt-1">E-posta: -</p>
+
+                    <div class="text-center py-6 bg-gray-50 rounded-xl border border-gray-100" id="gradeBox">
+                        <i class="fa-solid fa-hourglass-half text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-500">Değerlendirme henüz tamamlanmadı.</p>
                     </div>
                 </div>
 
-                <!-- Not Durumu -->
-                <div class="bg-white shadow rounded-xl p-5 border border-gray-100 flex flex-col h-full text-center relative overflow-hidden">
-                    <h3 class="font-bold text-gray-800 text-lg mb-2">Staj Değerlendirme Notu</h3>
-                    <div class="flex-grow flex flex-col items-center justify-center">
-                        <!-- Not Girilmediyse -->
-                        <div id="gradeWaiting" class="text-gray-400">
-                            <i class="fa-solid fa-hourglass-half text-3xl mb-2"></i>
-                            <p class="text-sm font-medium">Süpervizör değerlendirmesi bekleniyor.</p>
+                <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-gray-900 text-base flex items-center">
+                                <i class="fa-solid fa-file-pdf text-red-500 mr-2"></i>Vaka Raporu
+                            </h3>
+                            <span id="reportBadge" class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">Bekleniyor</span>
                         </div>
-                        <!-- Not Girildiyse -->
-                        <div id="gradeResult" class="hidden">
-                            <div class="text-5xl font-black mb-2" id="finalGradeScore">0</div>
-                            <span id="finalGradeBadge" class="px-3 py-1 text-sm rounded-full font-bold">Durum</span>
-                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Hazırladığınız staj sonu vaka raporunu (PDF) süpervizörünüze iletin.</p>
                     </div>
+
+                    <form id="uploadReportForm" onsubmit="handleReportUpload(event)" class="space-y-3">
+                        <label for="reportFile" class="flex flex-col items-center justify-center w-full h-28 border-2 border-gray-200 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-purple-50/50 transition-colors">
+                            <div class="flex flex-col items-center justify-center pt-3 pb-4">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-hu-purple mb-1"></i>
+                                <p class="text-xs text-gray-600 font-medium" id="fileNameDisplay">PDF Dosyası Seçin</p>
+                                <p class="text-[10px] text-gray-400">Maksimum 10MB</p>
+                            </div>
+                            <input id="reportFile" type="file" class="hidden" accept=".pdf" onchange="updateFileName(this)" required />
+                        </label>
+                        <button type="submit" id="uploadBtn" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            Raporu Yükle ve Gönder
+                        </button>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Vaka Raporu Yükleme Alanı -->
-            <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-                    <h3 class="text-lg font-bold text-gray-900"><i class="fa-solid fa-file-pdf text-red-500 mr-2"></i>Vaka Raporu Yükleme</h3>
-                    <span id="reportStatusBadge" class="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-md font-bold">Yüklenmedi</span>
-                </div>
-                
-                <p class="text-sm text-gray-500 mb-4">Staj sonunda hazırladığınız vaka raporunu (PEO, KAPÖ, MOHO vb. analizleri içeren) PDF formatında buradan yükleyiniz. Yüklediğiniz rapor doğrudan süpervizörünüze iletilecektir.</p>
-                
-                <form id="uploadReportForm" onsubmit="handleReportUpload(event)" class="mt-4">
-                    <label for="reportFile" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
-                            <p class="mb-1 text-sm text-gray-500 font-semibold" id="fileNameDisplay">Dosya seçmek için tıklayın (PDF)</p>
-                            <p class="text-xs text-gray-400">Max: 10MB</p>
-                        </div>
-                        <input id="reportFile" type="file" class="hidden" accept=".pdf" onchange="updateFileName(this)" required />
-                    </label>
-                    
-                    <button type="submit" id="uploadBtn" class="mt-4 w-full bg-hu-purple text-white py-2.5 rounded-md hover:bg-hu-dark font-medium transition-colors shadow-sm disabled:opacity-50">
-                        Raporu Süpervizöre Gönder
-                    </button>
+    </main>
+
+    <!-- GERİYE DÖNÜK / MAZERETLİ YOKLAMA MODALI -->
+    <div id="retroactiveModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeRetroactiveModal()"></div>
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 z-10 relative shadow-2xl">
+                <h3 class="font-bold text-lg text-gray-900 mb-1">Geriye Dönük / Mazeretli Yoklama Bildir</h3>
+                <p class="text-xs text-gray-500 mb-4">Giremediğiniz geçmiş bir staj günü için mazeretinizle birlikte süpervizör onayına gönderin.</p>
+
+                <form onsubmit="handleRetroactiveSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Yapılan Geçmiş Tarih</label>
+                        <input type="date" id="retroDate" required class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mazeret / Açıklama</label>
+                        <textarea id="retroExcuse" rows="3" required placeholder="Gününde bildirim yapamama nedeniniz..." class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple"></textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl">İptal</button>
+                        <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Talebi Gönder</button>
+                    </div>
                 </form>
             </div>
-            
         </div>
-    </main>
+    </div>
 
     <script>
         let activeUser = null;
-        let assignedSupervisor = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
-            // Güvenlik: Giriş yapan öğrenci değilse index'e kovala
             if (!activeUser || activeUser.role !== 'student') {
-                try {
-                    if (window.location.protocol !== 'about:' && window.location.protocol !== 'data:') {
-                        window.location.href = 'index.html';
-                    }
-                } catch(e) {}
-                document.body.innerHTML = "<h2 class='text-center mt-10 text-red-500 font-bold'>Yetkisiz Erişim. Yönlendiriliyorsunuz...</h2>";
+                logout();
                 return;
             }
 
-            // Arayüzü Kullanıcıya Göre Doldur
             document.getElementById('studentNameDisplay').innerText = activeUser.name;
             document.getElementById('studentNoDisplay').innerText = 'No: ' + activeUser.studentNo;
-            
-            setDateDisplay();
+
+            startClock();
             loadStudentData();
         });
 
-        // Toast Bildirim Sistemi
+        function logout() {
+            localStorage.removeItem('activeUser');
+            try { window.location.href = 'index.html'; } catch(e) {}
+        }
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
 
-            toast.className = `flex items-center text-white px-4 py-3 rounded shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="fa-solid ${icon} mr-2"></i><span>${message}</span>`;
+            toast.className = `flex items-center text-white text-xs font-medium px-4 py-3 rounded-lg shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-sm"></i><span>${message}</span>`;
             
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
@@ -237,28 +283,14 @@
             }, 3000);
         }
 
-        // Çıkış
-        function logout() {
-            localStorage.removeItem('activeUser');
-            try {
-                if (window.location.protocol !== 'about:' && window.location.protocol !== 'data:') {
-                    window.location.href = 'index.html';
-                } else {
-                    showToast("Çıkış yapıldı.", "success");
-                    setTimeout(() => location.reload(), 1000);
-                }
-            } catch(e) {}
-        }
-
-        // Sekme Değiştirme
         function switchTab(tabId) {
             document.getElementById('checkin-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('academic-section').classList.add('hidden');
             
             document.getElementById('tab-checkin').classList.remove('border-hu-purple', 'text-hu-purple');
-            document.getElementById('tab-dashboard').classList.remove('border-hu-purple', 'text-hu-purple');
+            document.getElementById('tab-academic').classList.remove('border-hu-purple', 'text-hu-purple');
             document.getElementById('tab-checkin').classList.add('border-transparent', 'text-gray-600');
-            document.getElementById('tab-dashboard').classList.add('border-transparent', 'text-gray-600');
+            document.getElementById('tab-academic').classList.add('border-transparent', 'text-gray-600');
 
             document.getElementById(`${tabId}-section`).classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-${tabId}`);
@@ -266,170 +298,192 @@
             activeBtn.classList.add('border-hu-purple', 'text-hu-purple');
         }
 
-        // Tarih Gösterimi
-        function setDateDisplay() {
-            const today = new Date();
-            const options = { weekday: 'long' };
-            document.getElementById('currentDayDisplay').innerText = new Intl.DateTimeFormat('tr-TR', options).format(today);
-            
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('currentDateDisplay').innerText = `${dd}/${mm}`;
+        function startClock() {
+            const updateTime = () => {
+                const now = new Date();
+                document.getElementById('liveClockDisplay').innerText = now.toLocaleTimeString('tr-TR');
+                document.getElementById('liveDateDisplay').innerText = now.toLocaleDateString('tr-TR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+            };
+            updateTime();
+            setInterval(updateTime, 1000);
         }
 
-        // Veritabanından (LocalStorage) Öğrenci ve Süpervizör Bilgilerini Çekme
         function loadStudentData() {
             const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-            
-            // En güncel halini bul
-            const currentStudent = users.find(u => u.id === activeUser.id);
-            if (!currentStudent) return;
-            
-            activeUser = currentStudent; // Local variable güncelle
+            const currentStu = users.find(u => u.id === activeUser.id);
+            if (!currentStu) return;
 
-            // 1. Süpervizör Bilgisini Getir
+            activeUser = currentStu;
+
             if (activeUser.supervisorId) {
-                assignedSupervisor = users.find(u => u.id === activeUser.supervisorId);
-                if (assignedSupervisor) {
-                    document.getElementById('supNameDisplay').innerText = assignedSupervisor.name;
-                    document.getElementById('supEmailDisplay').innerText = 'E-posta: ' + assignedSupervisor.email;
-                }
+                const sup = users.find(u => u.id === parseInt(activeUser.supervisorId));
+                document.getElementById('supNameDisplay').innerText = sup ? sup.name : 'Atanmamış';
+                document.getElementById('supEmailDisplay').innerText = sup ? sup.email : '-';
             }
 
-            // 2. Yoklama Geçmişini Listele
-            updateAttendanceHistory();
-            checkTodayAttendance();
+            const attendance = activeUser.attendance || [];
+            
+            document.getElementById('statTotalCount').innerText = attendance.length;
+            document.getElementById('statApprovedCount').innerText = attendance.filter(a => a.status === 'approved').length;
+            document.getElementById('statPendingCount').innerText = attendance.filter(a => a.status === 'pending').length;
 
-            // 3. Not Durumunu Getir
+            const tbody = document.getElementById('attendanceHistoryTable');
+            tbody.innerHTML = '';
+
+            if (attendance.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-4 text-center text-xs text-gray-400 italic">Henüz yoklama kaydınız bulunmuyor.</td></tr>`;
+            } else {
+                [...attendance].reverse().forEach(rec => {
+                    let statusBadge = '';
+                    if (rec.status === 'approved') {
+                        statusBadge = `<span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i>Onaylandı</span>`;
+                    } else if (rec.status === 'rejected') {
+                        statusBadge = `<span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-xmark mr-1"></i>Reddedildi</span>`;
+                    } else {
+                        statusBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>`;
+                    }
+
+                    const subTime = rec.submittedAt || (rec.date + ' ' + rec.time);
+                    const isRetroBadge = rec.isRetroactive ? '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="px-5 py-3 font-bold text-gray-800">${rec.date} ${isRetroBadge}</td>
+                            <td class="px-5 py-3 text-xs text-gray-500">${subTime}</td>
+                            <td class="px-5 py-3 text-xs text-gray-500">${rec.excuse ? 'Mazeret: '+rec.excuse : (rec.location || 'GPS Alındı')}</td>
+                            <td class="px-5 py-3 text-right">${statusBadge}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            checkTodayCheckIn();
+
             if (activeUser.grade !== null && activeUser.grade !== undefined) {
-                document.getElementById('gradeWaiting').classList.add('hidden');
-                document.getElementById('gradeResult').classList.remove('hidden');
+                const score = activeUser.grade.totalScore ?? activeUser.grade;
+                const box = document.getElementById('gradeBox');
+                const badgeColor = score >= 60 ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200';
                 
-                const score = activeUser.grade;
-                const scoreEl = document.getElementById('finalGradeScore');
-                const badgeEl = document.getElementById('finalGradeBadge');
-                
-                scoreEl.innerText = score;
-                
-                if (score >= 60) {
-                    scoreEl.classList.add('text-green-600');
-                    badgeEl.className = "px-3 py-1 text-sm rounded-full font-bold bg-green-100 text-green-800 border border-green-200";
-                    badgeEl.innerText = "Stajı Başarıyla Tamamladı";
-                } else {
-                    scoreEl.classList.add('text-red-600');
-                    badgeEl.className = "px-3 py-1 text-sm rounded-full font-bold bg-red-100 text-red-800 border border-red-200";
-                    badgeEl.innerText = "Başarısız / Telafi Gerekli";
-                }
+                box.className = `text-center py-6 rounded-xl border ${badgeColor}`;
+                box.innerHTML = `
+                    <p class="text-xs text-gray-500 font-medium mb-1">Staj Başarı Notu</p>
+                    <p class="text-4xl font-black mb-1">${score} <span class="text-sm font-normal text-gray-500">/ 100</span></p>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full ${score >= 60 ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+                        ${score >= 60 ? 'BAŞARILI' : 'BAŞARISIZ'}
+                    </span>
+                `;
             }
 
-            // 4. Rapor Yükleme Durumu
             if (activeUser.reportUploaded) {
-                document.getElementById('reportStatusBadge').className = "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-md font-bold";
-                document.getElementById('reportStatusBadge').innerText = "Rapor Gönderildi";
-                document.getElementById('fileNameDisplay').innerText = "Raporunuz sistemde mevcut.";
-                // İsterseniz burada butonu deaktif (disabled) yapabilirsiniz.
+                document.getElementById('reportBadge').className = "bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-bold";
+                document.getElementById('reportBadge').innerText = "Yüklendi";
+                document.getElementById('fileNameDisplay').innerText = "Raporunuz başarıyla teslim edildi.";
             }
         }
 
-        function checkTodayAttendance() {
-            const today = new Date().toISOString().split('T')[0];
-            const hasCheckedInToday = (activeUser.attendance || []).some(record => record.date === today);
-            
+        function checkTodayCheckIn() {
+            const todayStr = new Date().toLocaleDateString('tr-TR');
+            const attendance = activeUser.attendance || [];
+            const hasCheckedInToday = attendance.some(a => a.date === todayStr && !a.isRetroactive);
+
             const btn = document.getElementById('checkInBtn');
+            const btnText = document.getElementById('checkInBtnText');
             const statusTxt = document.getElementById('checkInStatus');
 
             if (hasCheckedInToday) {
-                btn.classList.remove('pulse-btn', 'from-hu-light', 'to-hu-purple', 'hover:scale-105');
-                btn.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
-                btn.innerHTML = '<i class="fa-solid fa-check-circle text-5xl mb-2"></i><span class="font-bold text-lg">Bildirildi</span>';
                 btn.disabled = true;
-
-                statusTxt.classList.remove('hidden');
-                statusTxt.classList.add('text-green-600');
-                statusTxt.innerText = "Bugün için staj giriş bildiriminizi başarıyla yaptınız.";
+                btn.classList.remove('pulse-btn', 'from-hu-light', 'to-hu-purple', 'hover:scale-105');
+                btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                btnText.innerText = "Yoklama Alındı";
+                
+                statusTxt.className = "mt-4 text-xs font-semibold text-green-600";
+                statusTxt.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i>Bugün için anlık yoklama bildiriminiz yapıldı. Süpervizör onayına düşmüştür.`;
             }
         }
 
         function handleCheckIn() {
-            if (!assignedSupervisor) {
-                showToast("Size atanmış bir süpervizör bulunamadığı için yoklama veremezsiniz. Lütfen bölümle iletişime geçin.", "error");
+            if (!activeUser.supervisorId) {
+                showToast("Size atanmış bir süpervizör bulunmuyor!", "error");
                 return;
             }
 
+            const statusTxt = document.getElementById('checkInStatus');
+            statusTxt.className = "mt-4 text-xs font-semibold text-hu-purple";
+            statusTxt.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>GPS konumunuz doğrulanıyor...`;
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(4);
+                        const lng = position.coords.longitude.toFixed(4);
+                        saveCheckIn(`GPS: ${lat}, ${lng}`, false, null);
+                    },
+                    (error) => {
+                        saveCheckIn("GPS Alınamadı (Cihaz Saati)", false, null);
+                    },
+                    { timeout: 5000 }
+                );
+            } else {
+                saveCheckIn("GPS Desteklenmiyor", false, null);
+            }
+        }
+
+        function openRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.remove('hidden');
+        }
+
+        function closeRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.add('hidden');
+        }
+
+        function handleRetroactiveSubmit(e) {
+            e.preventDefault();
+            const rawDate = document.getElementById('retroDate').value;
+            const excuse = document.getElementById('retroExcuse').value;
+
+            if(!rawDate || !excuse) return;
+
+            const parts = rawDate.split('-');
+            const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+
+            saveCheckIn("Geriye Dönük Bildirim", true, excuse, formattedDate);
+            closeRetroactiveModal();
+        }
+
+        function saveCheckIn(locationStr, isRetroactive = false, excuseText = null, customDate = null) {
             const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
+            const dateStr = customDate || now.toLocaleDateString('tr-TR');
             const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            const auditTimestamp = `${now.toLocaleDateString('tr-TR')} ${timeStr}`;
 
             const newRecord = {
                 id: Date.now(),
-                date: dateStr,
+                date: dateStr, // Staj tarihi
                 time: timeStr,
-                status: 'pending' // pending: Onay bekliyor, approved: Onaylandı, rejected: Reddedildi
+                submittedAt: auditTimestamp, // Gerçek sisteme girilme anı (Audit)
+                location: locationStr,
+                isRetroactive: isRetroactive,
+                excuse: excuseText,
+                status: 'pending'
             };
 
-            // Veritabanını güncelle
-            let users = JSON.parse(localStorage.getItem('ergoUsers'));
-            const userIndex = users.findIndex(u => u.id === activeUser.id);
-            
-            if (!users[userIndex].attendance) {
-                users[userIndex].attendance = [];
+            let users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
+            const idx = users.findIndex(u => u.id === activeUser.id);
+
+            if (idx !== -1) {
+                if (!users[idx].attendance) users[idx].attendance = [];
+                users[idx].attendance.push(newRecord);
+                
+                localStorage.setItem('ergoUsers', JSON.stringify(users));
+                
+                showToast(isRetroactive ? "Mazeretli yoklama talebiniz süpervizörünüze iletildi." : "Yoklama kaydınız alındı!", "success");
+                loadStudentData();
             }
-            
-            users[userIndex].attendance.push(newRecord);
-            localStorage.setItem('ergoUsers', JSON.stringify(users));
-            
-            // Lokali güncelle ve arayüzü yenile
-            activeUser.attendance = users[userIndex].attendance;
-            checkTodayAttendance();
-            updateAttendanceHistory();
-            
-            // Java Geliştiricisi İçin API Önerisi:
-            // fetch('/api/attendance/checkin', { method: 'POST', body: JSON.stringify({studentId: activeUser.id, time: timeStr}) })
-            
-            showToast("Yoklama kaydınız alındı. Süpervizör onayına gönderildi.", "success");
-        }
-
-        function updateAttendanceHistory() {
-            const tbody = document.getElementById('attendanceHistory');
-            tbody.innerHTML = '';
-            
-            const records = activeUser.attendance || [];
-            
-            if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="px-5 py-4 text-center text-sm text-gray-500 italic">Henüz yoklama kaydınız bulunmuyor.</td></tr>`;
-                return;
-            }
-
-            // Son 5 kaydı göster (sondan başa doğru sırala)
-            const recentRecords = [...records].reverse().slice(0, 5);
-
-            recentRecords.forEach(rec => {
-                let statusBadge = '';
-                if (rec.status === 'pending') {
-                    statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">Onay Bekliyor</span>';
-                } else if (rec.status === 'approved') {
-                    statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Onaylandı</span>';
-                } else {
-                    statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Reddedildi</span>';
-                }
-
-                // Tarih formatını güzelleştir
-                const dateParts = rec.date.split('-');
-                const formattedDate = `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${formattedDate}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> ${rec.time}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm">${statusBadge}</td>
-                    </tr>
-                `;
-            });
         }
 
         function updateFileName(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('fileNameDisplay').innerHTML = `<span class="text-hu-purple font-bold">${input.files[0].name}</span>`;
+                document.getElementById('fileNameDisplay').innerText = input.files[0].name;
             }
         }
 
@@ -438,33 +492,29 @@
             const fileInput = document.getElementById('reportFile');
             
             if (!fileInput.files || fileInput.files.length === 0) {
-                showToast("Lütfen yüklemek için bir PDF dosyası seçin.", "error");
+                showToast("Lütfen bir PDF dosyası seçin.", "error");
                 return;
             }
 
             const btn = document.getElementById('uploadBtn');
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Yükleniyor...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Yükleniyor...';
             btn.disabled = true;
 
-            // Yükleme Simülasyonu (Gerçekte burası FormData ile Java API'ye gidecek)
             setTimeout(() => {
-                let users = JSON.parse(localStorage.getItem('ergoUsers'));
-                const userIndex = users.findIndex(u => u.id === activeUser.id);
+                let users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
+                const idx = users.findIndex(u => u.id === activeUser.id);
                 
-                users[userIndex].reportUploaded = true;
-                localStorage.setItem('ergoUsers', JSON.stringify(users));
-                
-                activeUser.reportUploaded = true;
-                
-                btn.innerHTML = 'Rapor Başarıyla Gönderildi';
-                btn.classList.replace('bg-hu-purple', 'bg-green-600');
-                btn.classList.replace('hover:bg-hu-dark', 'hover:bg-green-700');
-                
-                document.getElementById('reportStatusBadge').className = "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-md font-bold";
-                document.getElementById('reportStatusBadge').innerText = "Rapor Gönderildi";
-                
-                showToast("Vaka Raporunuz süpervizörünüze başarıyla iletildi.", "success");
-            }, 1500);
+                if (idx !== -1) {
+                    users[idx].reportUploaded = true;
+                    localStorage.setItem('ergoUsers', JSON.stringify(users));
+                    
+                    showToast("Vaka Raporunuz süpervizörünüze iletildi.", "success");
+                    
+                    btn.innerHTML = 'Rapor Gönderildi ✓';
+                    btn.className = 'w-full bg-green-600 text-white text-xs font-semibold py-2.5 rounded-lg';
+                    loadStudentData();
+                }
+            }, 1000);
         }
     </script>
 </body>
