@@ -123,7 +123,6 @@
                 <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-400 space-y-1">
                     <p class="font-semibold text-gray-500 mb-1">Test Hesapları (Şifreler: 1234):</p>
                     <p class="text-purple-700 font-bold bg-purple-50 p-1 rounded"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Webmaster (Tüm Roller): webmaster@test.com</p>
-                    <p>Webmaster: webmaster@test.com</p>
                     <p>Admin: admin@test.com</p>
                     <p>Öğretim Üyesi: akademik@test.com</p>
                     <p>Süpervizör: super@test.com</p>
@@ -150,15 +149,25 @@
         }
 
         function initializeMockDatabase() {
-            if (!localStorage.getItem('ergoUsers')) {
-                const defaultUsers = [
-                    { id: 99, role: 'webmaster', email: 'webmaster@test.com', password: '1234', name: 'Webmaster / Sistem Yöneticisi' },
-                    { id: 1, role: 'admin', email: 'admin@test.com', password: '1234', name: 'Sistem Yöneticisi' },
-                    { id: 10, role: 'academic', email: 'akademik@test.com', password: '1234', name: 'Prof. Dr. Bölüm Başkanı' },
-                    { id: 2, role: 'supervisor', email: 'super@test.com', password: '1234', name: 'Uzm. Erg. Ayşe Yılmaz' },
-                    { id: 3, role: 'student', studentNo: '220000', password: '1234', name: 'Ali Can', supervisorId: 2, attendance: [] }
-                ];
+            const defaultUsers = [
+                { id: 99, role: 'webmaster', email: 'webmaster@test.com', password: '1234', name: 'Webmaster / Sistem Yöneticisi' },
+                { id: 1, role: 'admin', email: 'admin@test.com', password: '1234', name: 'Sistem Yöneticisi' },
+                { id: 10, role: 'academic', email: 'akademik@test.com', password: '1234', name: 'Prof. Dr. Bölüm Başkanı' },
+                { id: 2, role: 'supervisor', email: 'super@test.com', password: '1234', name: 'Uzm. Erg. Ayşe Yılmaz' },
+                { id: 3, role: 'student', studentNo: '220000', password: '1234', name: 'Ali Can', supervisorId: 2, attendance: [] }
+            ];
+
+            let currentUsers = JSON.parse(localStorage.getItem('ergoUsers')) || [];
+
+            if (currentUsers.length === 0) {
                 localStorage.setItem('ergoUsers', JSON.stringify(defaultUsers));
+            } else {
+                // Önceden oluşturan veritabanlarında Webmaster yoksa otomatik en başa ekle
+                const hasWebmaster = currentUsers.some(u => u.role === 'webmaster' || u.email === 'webmaster@test.com');
+                if (!hasWebmaster) {
+                    currentUsers.unshift(defaultUsers[0]);
+                    localStorage.setItem('ergoUsers', JSON.stringify(currentUsers));
+                }
             }
         }
 
@@ -214,7 +223,7 @@
             if (type === 'staff') {
                 const email = document.getElementById('staffEmail').value.trim();
                 const password = document.getElementById('staffPassword').value.trim();
-                authenticatedUser = users.find(u => (u.role === 'webmaster' || u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+                authenticatedUser = users.find(u => (u.role === 'webmaster' || u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
             } else {
                 const studentNo = document.getElementById('studentId').value.trim();
                 const password = document.getElementById('studentPassword').value.trim();

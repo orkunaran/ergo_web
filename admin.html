@@ -159,8 +159,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademisyen Ekle</h3>
+                        <h3 id="acadFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademisyen Ekle</h3>
                         <form id="addAcademicForm" onsubmit="handleAddAcademic(event)" class="space-y-4">
+                            <input type="hidden" id="editAcadId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Unvan ve Ad Soyad</label>
                                 <input type="text" id="acadName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Prof. Dr. Bölüm Başkanı">
@@ -173,9 +174,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="acadPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                Kaydet ve Ekle
-                            </button>
+                            <div class="flex gap-2">
+                                <button id="acadSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                    Kaydet ve Ekle
+                                </button>
+                                <button type="button" id="cancelAcadBtn" onclick="cancelAcadEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
+                                    İptal
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -206,8 +212,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle</h3>
+                        <h3 id="supFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle</h3>
                         <form id="addSupervisorForm" onsubmit="handleAddSupervisor(event)" class="space-y-4">
+                            <input type="hidden" id="editSupId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad (Unvan ile)</label>
                                 <input type="text" id="supName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Uzm. Erg. Ayşe Yılmaz">
@@ -220,9 +227,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="supPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                Kaydet ve Ekle
-                            </button>
+                            <div class="flex gap-2">
+                                <button id="supSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                    Kaydet ve Ekle
+                                </button>
+                                <button type="button" id="cancelSupBtn" onclick="cancelSupEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
+                                    İptal
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -267,8 +279,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle</h3>
+                        <h3 id="stuFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle</h3>
                         <form id="addStudentForm" onsubmit="handleAddStudent(event)" class="space-y-4">
+                            <input type="hidden" id="editStuId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Adı Soyadı</label>
                                 <input type="text" id="stuName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Ali Can">
@@ -287,14 +300,20 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="stuPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                Öğrenciyi Ekle ve Ata
-                            </button>
+                            <div class="flex gap-2">
+                                <button id="stuSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                    Öğrenciyi Ekle ve Ata
+                                </button>
+                                <button type="button" id="cancelStuBtn" onclick="cancelStuEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
+                                    İptal
+                                </button>
+                            </div>
                         </form>
                     </div>
 
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Ekle</h3>
+                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olmalıdır:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b></p>
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
@@ -415,6 +434,7 @@
             document.getElementById('stat-supervisors').innerText = supervisors.length;
             document.getElementById('stat-students').innerText = students.length;
 
+            // Render Academics Table
             const acadTable = document.getElementById('academicsTableBody');
             if(acadTable) {
                 acadTable.innerHTML = '';
@@ -426,29 +446,43 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${acad.name}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${acad.email}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${acad.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <button onclick="editAcademic(${acad.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
+                                <button onclick="deleteUser(${acad.id})" class="text-red-600 font-bold hover:underline">Sil</button>
+                            </td>
                         </tr>
                     `;
                 });
             }
 
+            // Render Supervisors Table
             const supTable = document.getElementById('supervisorsTableBody');
             if(supTable) {
                 supTable.innerHTML = '';
+                if(supervisors.length === 0) {
+                    supTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı süpervizör bulunmuyor.</td></tr>`;
+                }
                 supervisors.forEach(sup => {
                     supTable.innerHTML += `
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${sup.name}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${sup.email}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${sup.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <button onclick="editSupervisor(${sup.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
+                                <button onclick="deleteUser(${sup.id})" class="text-red-600 font-bold hover:underline">Sil</button>
+                            </td>
                         </tr>
                     `;
                 });
             }
 
+            // Render Students Table
             const stuTable = document.getElementById('studentsTableBody');
             if(stuTable) {
                 stuTable.innerHTML = '';
+                if(students.length === 0) {
+                    stuTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+                }
                 students.forEach(stu => {
                     const assignedSup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
                     const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Atanmamış</span>';
@@ -457,62 +491,177 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${stu.name} (${stu.studentNo})</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right"><button onclick="deleteUser(${stu.id})" class="text-red-600 font-bold hover:underline">Sil</button></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <button onclick="editStudent(${stu.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
+                                <button onclick="deleteUser(${stu.id})" class="text-red-600 font-bold hover:underline">Sil</button>
+                            </td>
                         </tr>
                     `;
                 });
             }
 
+            // Populate Supervisor Select Box for Student Assignment
             const selectBox = document.getElementById('stuSupervisor');
             if(selectBox) {
+                const currentVal = selectBox.value;
                 selectBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
                 supervisors.forEach(sup => {
                     selectBox.innerHTML += `<option value="${sup.id}">${sup.name}</option>`;
                 });
+                if(currentVal) selectBox.value = currentVal;
             }
+        }
+
+        function editAcademic(id) {
+            const users = getUsers();
+            const acad = users.find(u => u.id === id);
+            if (!acad) return;
+
+            document.getElementById('editAcadId').value = acad.id;
+            document.getElementById('acadName').value = acad.name;
+            document.getElementById('acadEmail').value = acad.email;
+            document.getElementById('acadPassword').value = acad.password;
+
+            document.getElementById('acadFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Akademisyen Düzenle';
+            document.getElementById('acadSubmitBtn').innerText = 'Güncelle ve Kaydet';
+            document.getElementById('cancelAcadBtn').classList.remove('hidden');
+        }
+
+        function cancelAcadEdit() {
+            document.getElementById('editAcadId').value = '';
+            document.getElementById('addAcademicForm').reset();
+            document.getElementById('acadFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademisyen Ekle';
+            document.getElementById('acadSubmitBtn').innerText = 'Kaydet ve Ekle';
+            document.getElementById('cancelAcadBtn').classList.add('hidden');
         }
 
         function handleAddAcademic(e) {
             e.preventDefault();
+            const editId = document.getElementById('editAcadId').value;
             const name = document.getElementById('acadName').value;
             const email = document.getElementById('acadEmail').value;
             const password = document.getElementById('acadPassword').value;
 
-            const users = getUsers();
-            users.push({ id: Date.now(), role: 'academic', name: name, email: email, password: password });
+            let users = getUsers();
+
+            if (editId) {
+                users = users.map(u => u.id == editId ? { ...u, name, email, password } : u);
+                showToast('Akademisyen güncellendi.', 'success');
+            } else {
+                users.push({ id: Date.now(), role: 'academic', name, email, password });
+                showToast('Akademisyen eklendi.', 'success');
+            }
+
             saveUsers(users);
-            document.getElementById('addAcademicForm').reset();
+            cancelAcadEdit();
             loadData();
-            showToast('Akademisyen eklendi.', 'success');
+        }
+
+        function editSupervisor(id) {
+            const users = getUsers();
+            const sup = users.find(u => u.id === id);
+            if (!sup) return;
+
+            document.getElementById('editSupId').value = sup.id;
+            document.getElementById('supName').value = sup.name;
+            document.getElementById('supEmail').value = sup.email;
+            document.getElementById('supPassword').value = sup.password;
+
+            document.getElementById('supFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Süpervizör Düzenle';
+            document.getElementById('supSubmitBtn').innerText = 'Güncelle ve Kaydet';
+            document.getElementById('cancelSupBtn').classList.remove('hidden');
+        }
+
+        function cancelSupEdit() {
+            document.getElementById('editSupId').value = '';
+            document.getElementById('addSupervisorForm').reset();
+            document.getElementById('supFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle';
+            document.getElementById('supSubmitBtn').innerText = 'Kaydet ve Ekle';
+            document.getElementById('cancelSupBtn').classList.add('hidden');
         }
 
         function handleAddSupervisor(e) {
             e.preventDefault();
+            const editId = document.getElementById('editSupId').value;
             const name = document.getElementById('supName').value;
             const email = document.getElementById('supEmail').value;
             const password = document.getElementById('supPassword').value;
 
-            const users = getUsers();
-            users.push({ id: Date.now(), role: 'supervisor', name: name, email: email, password: password });
+            let users = getUsers();
+
+            if (editId) {
+                users = users.map(u => u.id == editId ? { ...u, name, email, password } : u);
+                showToast('Süpervizör güncellendi.', 'success');
+            } else {
+                users.push({ id: Date.now(), role: 'supervisor', name, email, password });
+                showToast('Süpervizör eklendi.', 'success');
+            }
+
             saveUsers(users);
-            document.getElementById('addSupervisorForm').reset();
+            cancelSupEdit();
             loadData();
-            showToast('Süpervizör eklendi.', 'success');
+        }
+
+        function editStudent(id) {
+            const users = getUsers();
+            const stu = users.find(u => u.id === id);
+            if (!stu) return;
+
+            document.getElementById('editStuId').value = stu.id;
+            document.getElementById('stuName').value = stu.name;
+            document.getElementById('stuNo').value = stu.studentNo;
+            document.getElementById('stuSupervisor').value = stu.supervisorId || '';
+            document.getElementById('stuPassword').value = stu.password;
+
+            document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Öğrenci Düzenle';
+            document.getElementById('stuSubmitBtn').innerText = 'Güncelle ve Kaydet';
+            document.getElementById('cancelStuBtn').classList.remove('hidden');
+        }
+
+        function cancelStuEdit() {
+            document.getElementById('editStuId').value = '';
+            document.getElementById('addStudentForm').reset();
+            document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle';
+            document.getElementById('stuSubmitBtn').innerText = 'Öğrenciyi Ekle ve Ata';
+            document.getElementById('cancelStuBtn').classList.add('hidden');
         }
 
         function handleAddStudent(e) {
             e.preventDefault();
+            const editId = document.getElementById('editStuId').value;
             const name = document.getElementById('stuName').value;
             const studentNo = document.getElementById('stuNo').value;
             const supervisorId = document.getElementById('stuSupervisor').value;
             const password = document.getElementById('stuPassword').value;
 
-            const users = getUsers();
-            users.push({ id: Date.now(), role: 'student', name: name, studentNo: studentNo, supervisorId: parseInt(supervisorId), password: password, attendance: [], grade: null });
+            let users = getUsers();
+
+            if (editId) {
+                users = users.map(u => u.id == editId ? { 
+                    ...u, 
+                    name, 
+                    studentNo, 
+                    supervisorId: parseInt(supervisorId), 
+                    password 
+                } : u);
+                showToast('Öğrenci güncellendi.', 'success');
+            } else {
+                users.push({ 
+                    id: Date.now(), 
+                    role: 'student', 
+                    name, 
+                    studentNo, 
+                    supervisorId: parseInt(supervisorId), 
+                    password, 
+                    attendance: [], 
+                    grade: null 
+                });
+                showToast('Öğrenci eklendi.', 'success');
+            }
+
             saveUsers(users);
-            document.getElementById('addStudentForm').reset();
+            cancelStuEdit();
             loadData();
-            showToast('Öğrenci eklendi.', 'success');
         }
 
         function deleteUser(userId) {
@@ -523,6 +672,85 @@
                 loadData();
                 showToast('Kullanıcı silindi.', 'success');
             }
+        }
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    
+                    let users = getUsers();
+                    let addedCount = 0;
+                    rows.forEach(row => {
+                        const name = row['Ad Soyad'] || row['Ad'] || row['Name'];
+                        const studentNo = row['Öğrenci No'] || row['No'] || row['StudentNo'];
+                        const password = row['Şifre'] || row['Password'] || '1234';
+                        if (name && studentNo) {
+                            users.push({
+                                id: Date.now() + Math.random(),
+                                role: 'student',
+                                name: String(name).trim(),
+                                studentNo: String(studentNo).trim(),
+                                supervisorId: null,
+                                password: String(password).trim(),
+                                attendance: [],
+                                grade: null
+                            });
+                            addedCount++;
+                        }
+                    });
+                    saveUsers(users);
+                    loadData();
+                    showToast(`${addedCount} öğrenci Excel'den başarıyla eklendi.`, 'success');
+                } catch (err) {
+                    showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleSupervisorExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    
+                    let users = getUsers();
+                    let addedCount = 0;
+                    rows.forEach(row => {
+                        const name = row['Ad Soyad'] || row['Ad'] || row['Name'];
+                        const email = row['E-posta'] || row['Email'];
+                        const password = row['Şifre'] || row['Password'] || '1234';
+                        if (name && email) {
+                            users.push({
+                                id: Date.now() + Math.random(),
+                                role: 'supervisor',
+                                name: String(name).trim(),
+                                email: String(email).trim(),
+                                password: String(password).trim()
+                            });
+                            addedCount++;
+                        }
+                    });
+                    saveUsers(users);
+                    loadData();
+                    showToast(`${addedCount} süpervizör Excel'den başarıyla eklendi.`, 'success');
+                } catch (err) {
+                    showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
     </script>
 </body>
