@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğretim Üyesi Paneli | Hacettepe Ergoterapi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        hu: {
+                            purple: '#5e2b97',
+                            dark: '#411b6b',
+                            light: '#7d45ba'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+
+    <header class="bg-hu-purple text-white shadow-md z-10 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-chalkboard-user text-2xl"></i>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi Bölümü</h1>
+                        <p class="text-xs text-purple-200">Öğretim Üyesi / Staj Koordinatör Paneli</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold" id="academicNameDisplay">Öğretim Üyesi</p>
+                        <p class="text-xs text-purple-200">Staj Sorumlusu</p>
+                    </div>
+                    
+                    <!-- Rol Değiştirme Butonu (Akademisyen <-> Süpervizör) -->
+                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-md text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
+                        <i class="fa-solid fa-right-left mr-1.5"></i> Süpervizör Paneline Geç
+                    </button>
+
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-md text-xs font-medium transition-colors shadow-sm border border-purple-800">
+                        <i class="fa-solid fa-sign-out-alt sm:mr-1"></i><span class="hidden sm:inline">Çıkış</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sekmeler -->
+        <div class="bg-white text-gray-600 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
+                    <button onclick="switchTab('department-students')" id="tab-department-students" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple">
+                        <i class="fa-solid fa-users-rectangle mr-2"></i>Tüm Bölüm Stajyerleri
+                    </button>
+                    <button onclick="switchTab('my-supervision')" id="tab-my-supervision" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors">
+                        <i class="fa-solid fa-user-doctor mr-2"></i>Kendi Süpervizörlüklerim
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- BÖLÜM STAJYERLERİ ONAY SEKMESİ -->
+        <div id="department-students-section" class="fade-in space-y-6">
+            <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">Bölüm Dış Staj Takip ve Final Onayı</h2>
+                        <p class="text-sm text-gray-500">Süpervizörleri tarafından notu girilen ve raporu onaylanan öğrencilerin son bölüm onayını buradan verin.</p>
+                    </div>
+                    <span class="bg-purple-100 text-hu-purple text-xs font-bold px-3 py-1 rounded-full">Akademik Onay Mercii</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Öğrenci Adı / No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atanan Süpervizör</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Notu</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapor Durumu</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bölüm Onayı / İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentStudentsTable" class="bg-white divide-y divide-gray-200">
+                            <!-- JS ile dolacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- KENDİ SÜPERVİZÖRLÜKLERİM SEKMESİ -->
+        <div id="my-supervision-section" class="fade-in hidden space-y-6">
+            <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">Doğrudan Benim Süpervizörlüğümdeki Öğrenciler</h2>
+                <p class="text-sm text-gray-500 mb-6">Akademisyen olarak bizzat sahada / kurumda takip ettiğiniz öğrencileriniz.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="mySupervisedList">
+                    <!-- JS ile dolacak -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let activeUser = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            activeUser = JSON.parse(localStorage.getItem('activeUser'));
+            
+            if (!activeUser || (activeUser.role !== 'academic' && activeUser.role !== 'admin')) {
+                try { window.location.href = 'index.html'; } catch(e) {}
+                document.body.innerHTML = "<h2 class='text-center mt-10 text-red-500 font-bold'>Yetkisiz Erişim.</h2>";
+                return;
+            }
+
+            document.getElementById('academicNameDisplay').innerText = activeUser.name;
+            loadDepartmentData();
+        });
+
+        function logout() {
+            localStorage.removeItem('activeUser');
+            try { window.location.href = 'index.html'; } catch(e) {}
+        }
+
+        function toggleRole() {
+            window.location.href = 'supervisor.html';
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
+
+            toast.className = `flex items-center text-white px-4 py-3 rounded shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function switchTab(tabId) {
+            document.getElementById('department-students-section').classList.add('hidden');
+            document.getElementById('my-supervision-section').classList.add('hidden');
+            document.getElementById('tab-department-students').classList.remove('border-hu-purple', 'text-hu-purple');
+            document.getElementById('tab-my-supervision').classList.remove('border-hu-purple', 'text-hu-purple');
+            document.getElementById('tab-department-students').classList.add('border-transparent', 'text-gray-600');
+            document.getElementById('tab-my-supervision').classList.add('border-transparent', 'text-gray-600');
+
+            document.getElementById(`${tabId}-section`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('border-transparent', 'text-gray-600');
+            activeBtn.classList.add('border-hu-purple', 'text-hu-purple');
+        }
+
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('ergoUsers')) || [];
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('ergoUsers', JSON.stringify(users));
+        }
+
+        function loadDepartmentData() {
+            const users = getUsers();
+            const students = users.filter(u => u.role === 'student');
+            const supervisors = users.filter(u => u.role === 'supervisor' || u.role === 'academic');
+
+            const tbody = document.getElementById('departmentStudentsTable');
+            tbody.innerHTML = '';
+
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+            }
+
+            students.forEach(stu => {
+                const sup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
+                const supName = sup ? sup.name : '<span class="text-red-500">Atanmamış</span>';
+                
+                const gradeText = (stu.grade !== null && stu.grade !== undefined) 
+                    ? `<span class="font-bold text-gray-900">${stu.grade} / 100</span>` 
+                    : `<span class="text-orange-500 text-xs font-semibold">Not Bekleniyor</span>`;
+                
+                const reportText = stu.reportUploaded 
+                    ? `<span class="text-green-600 text-xs font-bold"><i class="fa-solid fa-check mr-1"></i>Yüklendi</span>` 
+                    : `<span class="text-gray-400 text-xs">Yüklenmedi</span>`;
+
+                const isDepartmentApproved = stu.departmentApproved;
+                const approveBtn = isDepartmentApproved
+                    ? `<span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-bold">Bölüm Onayladı</span>`
+                    : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark text-white text-xs px-3 py-1.5 rounded font-medium transition shadow-sm"><i class="fa-solid fa-check-double mr-1"></i>Final Onayı Ver</button>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${stu.name} <span class="text-xs text-gray-400">(${stu.studentNo})</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${supName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">${gradeText}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">${reportText}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}</td>
+                    </tr>
+                `;
+            });
+
+            const mySupervisedGrid = document.getElementById('mySupervisedList');
+            mySupervisedGrid.innerHTML = '';
+            
+            const myStudents = students.filter(u => u.supervisorId === activeUser.id);
+            if (myStudents.length === 0) {
+                mySupervisedGrid.innerHTML = `<p class="text-gray-500 italic col-span-full">Bu kategoride doğrudan size atanmış öğrenciniz bulunmuyor.</p>`;
+            } else {
+                myStudents.forEach(stu => {
+                    mySupervisedGrid.innerHTML += `
+                        <div class="border border-gray-200 rounded-lg p-5 bg-gray-50 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-lg mb-1">${stu.name}</h3>
+                                <p class="text-sm text-gray-500 mb-2">No: ${stu.studentNo}</p>
+                                <p class="text-sm text-gray-500">Not Durumu: <b class="text-hu-purple">${stu.grade ?? 'Girilmedi'}</b></p>
+                            </div>
+                            <span class="mt-4 text-xs bg-purple-100 text-hu-purple py-1 px-2 rounded text-center font-semibold">Aktif Süpervizörlük</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function approveStudent(studentId) {
+            let users = getUsers();
+            const idx = users.findIndex(u => u.id === studentId);
+            if (idx !== -1) {
+                users[idx].departmentApproved = true;
+                saveUsers(users);
+                loadDepartmentData();
+                showToast("Öğrencinin stajı Bölüm Sorumlusu tarafından resmi olarak onaylandı.", "success");
+            }
+        }
+    </script>
+</body>
+</html>

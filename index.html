@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş | Hacettepe Üniversitesi Ergoterapi Staj Sistemi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        hu: {
+                            purple: '#5e2b97', // Ergoterapi Moru
+                            dark: '#411b6b',
+                            light: '#7d45ba'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+
+    <header class="bg-hu-purple text-white shadow-md z-10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Hacettepe Üniversitesi</h1>
+                        <p class="text-xs text-purple-200">Ergoterapi Dış Staj Takip Sistemi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Bildirim Konteyneri -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden fade-in border border-gray-100">
+            <div class="p-6 sm:p-8">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 text-hu-purple mb-4 shadow-sm border border-purple-100">
+                        <i class="fa-solid fa-user-lock text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Sisteme Giriş</h2>
+                    <p class="text-sm text-gray-500 mt-2">Lütfen giriş yönteminizi seçiniz</p>
+                </div>
+
+                <!-- Tab Butonları -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button onclick="switchLoginTab('staff')" id="tabStaff" class="w-1/2 py-2 text-sm font-semibold border-b-2 border-hu-purple text-hu-purple transition-colors">
+                        Personel / Akademisyen
+                    </button>
+                    <button onclick="switchLoginTab('student')" id="tabStudent" class="w-1/2 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">
+                        Öğrenci
+                    </button>
+                </div>
+
+                <!-- Personel / Akademisyen / Süpervizör Giriş Formu -->
+                <form id="staffLoginForm" onsubmit="handleLogin(event, 'staff')" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="staffEmail" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="ornek@hacettepe.edu.tr">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="staffPassword" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-colors">
+                        Giriş Yap
+                    </button>
+                </form>
+
+                <!-- Öğrenci Giriş Formu -->
+                <form id="studentLoginForm" onsubmit="handleLogin(event, 'student')" class="space-y-5 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-id-card text-gray-400"></i>
+                            </div>
+                            <input type="text" id="studentId" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Örn: 22000000">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="studentPassword" required class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-colors">
+                        Öğrenci Girişi Yap
+                    </button>
+                </form>
+                
+                <!-- Test Hesap Bilgileri -->
+                <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-400 space-y-1">
+                    <p class="font-semibold text-gray-500 mb-1">Test Hesapları (Şifre: 1234):</p>
+                    <p>Admin: admin@test.com</p>
+                    <p>Öğretim Üyesi: akademik@test.com</p>
+                    <p>Süpervizör: super@test.com</p>
+                    <p>Öğrenci: 220000</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-4 text-center text-sm text-gray-500 flex flex-col items-center justify-center">
+        <p>&copy; 2026 Hacettepe Üniversitesi Ergoterapi Bölümü. Tüm hakları saklıdır.</p>
+        <button onclick="resetSystem()" class="mt-2 text-xs text-red-400 hover:text-red-600 underline font-medium cursor-pointer">
+            <i class="fa-solid fa-rotate-right mr-1"></i>Geliştirici: Sistemi/Veritabanını Sıfırla
+        </button>
+    </footer>
+
+    <script>
+        // Veritabanını sıfırlama fonksiyonu
+        function resetSystem() {
+            if(confirm("Tüm test verileri sıfırlanacak ve başlangıç durumuna dönecektir. Emin misiniz?")) {
+                localStorage.clear();
+                showToast("Veritabanı sıfırlandı. Sayfa yenileniyor...", "success");
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+
+        // Başlangıç sahte veritabanı kurulumu
+        function initializeMockDatabase() {
+            if (!localStorage.getItem('ergoUsers')) {
+                const defaultUsers = [
+                    { id: 1, role: 'admin', email: 'admin@test.com', password: '1234', name: 'Sistem Yöneticisi' },
+                    { id: 10, role: 'academic', email: 'akademik@test.com', password: '1234', name: 'Prof. Dr. Bölüm Başkanı' },
+                    { id: 2, role: 'supervisor', email: 'super@test.com', password: '1234', name: 'Uzm. Erg. Ayşe Yılmaz' },
+                    { id: 3, role: 'student', studentNo: '220000', password: '1234', name: 'Ali Can', supervisorId: 2, attendance: [] }
+                ];
+                localStorage.setItem('ergoUsers', JSON.stringify(defaultUsers));
+            }
+        }
+
+        // Toast Bildirim Sistemi
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
+
+            toast.className = `flex items-center text-white px-4 py-3 rounded shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Giriş Sekmelerini Değiştirme
+        function switchLoginTab(tab) {
+            const staffForm = document.getElementById('staffLoginForm');
+            const studentForm = document.getElementById('studentLoginForm');
+            const tabStaff = document.getElementById('tabStaff');
+            const tabStudent = document.getElementById('tabStudent');
+
+            if (tab === 'staff') {
+                staffForm.classList.remove('hidden');
+                studentForm.classList.add('hidden');
+                tabStaff.classList.add('border-hu-purple', 'text-hu-purple');
+                tabStaff.classList.remove('border-transparent', 'text-gray-500');
+                tabStudent.classList.add('border-transparent', 'text-gray-500');
+                tabStudent.classList.remove('border-hu-purple', 'text-hu-purple');
+            } else {
+                studentForm.classList.remove('hidden');
+                staffForm.classList.add('hidden');
+                tabStudent.classList.add('border-hu-purple', 'text-hu-purple');
+                tabStudent.classList.remove('border-transparent', 'text-gray-500');
+                tabStaff.classList.add('border-transparent', 'text-gray-500');
+                tabStaff.classList.remove('border-hu-purple', 'text-hu-purple');
+            }
+        }
+
+        // Giriş Doğrulama ve Yönlendirme Mantığı
+        function handleLogin(event, type) {
+            event.preventDefault();
+            
+            const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
+            let authenticatedUser = null;
+
+            if (type === 'staff') {
+                const email = document.getElementById('staffEmail').value.trim();
+                const password = document.getElementById('staffPassword').value.trim();
+                authenticatedUser = users.find(u => (u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+            } else {
+                const studentNo = document.getElementById('studentId').value.trim();
+                const password = document.getElementById('studentPassword').value.trim();
+                authenticatedUser = users.find(u => u.role === 'student' && u.studentNo === studentNo && u.password === password);
+            }
+
+            if (authenticatedUser) {
+                localStorage.setItem('activeUser', JSON.stringify(authenticatedUser));
+                showToast(`Giriş başarılı! ${authenticatedUser.name} olarak yönlendiriliyorsunuz...`, 'success');
+                
+                setTimeout(() => {
+                    if (authenticatedUser.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (authenticatedUser.role === 'academic') {
+                        window.location.href = 'academic.html';
+                    } else if (authenticatedUser.role === 'supervisor') {
+                        window.location.href = 'supervisor.html';
+                    } else if (authenticatedUser.role === 'student') {
+                        window.location.href = 'student.html';
+                    }
+                }, 800);
+            } else {
+                showToast('Hatalı e-posta, öğrenci numarası veya şifre. Lütfen kontrol ediniz.');
+            }
+        }
+
+        // Sayfa yüklendiğinde çalışacaklar
+        window.onload = function() {
+            initializeMockDatabase();
+        };
+    </script>
+</body>
+</html>
