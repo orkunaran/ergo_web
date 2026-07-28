@@ -36,6 +36,7 @@
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
 
+    <!-- WEBMASTER MODU / HIZLI PANEL GEÇİŞ BARI -->
     <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
@@ -44,7 +45,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
                 <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
-                <a href="academic.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Akademisyen</a>
+                <a href="coordinator.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Staj Koordinatörü</a>
                 <a href="supervisor.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🏥 Süpervizör</a>
                 <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
             </div>
@@ -60,7 +61,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi</h1>
-                        <p class="text-xs text-purple-200">Süpervizör Staj Değerlendirme & Takip</p>
+                        <p class="text-xs text-purple-200">Saha Süpervizörü Staj Değerlendirme & Takip</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -70,7 +71,7 @@
                     </div>
 
                     <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
-                        <i class="fa-solid fa-right-left mr-1.5"></i> Akademisyen Paneline Geç
+                        <i class="fa-solid fa-right-left mr-1.5"></i> Koordinatör Paneline Geç
                     </button>
 
                     <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800">
@@ -99,6 +100,7 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
         
+        <!-- 1. SEKMELER: ÖĞRENCİLERİM & DEĞERLENDİRME -->
         <div id="evaluation-section" class="fade-in space-y-6">
             <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
@@ -106,13 +108,18 @@
                         <h2 class="text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
                         <p class="text-xs text-gray-500 mt-1">Sorumluluğunuzdaki öğrencilerin staj sonu değerlendirme formlarını doldurabilirsiniz.</p>
                     </div>
+                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                        <i class="fa-solid fa-rotate-right mr-1"></i>Listeyi Yenile
+                    </button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="myStudentsList">
+                    <!-- JS ile dolacak -->
                 </div>
             </div>
         </div>
 
+        <!-- 2. SEKMELER: YOKLAMA ONAYLARI -->
         <div id="attendance-section" class="fade-in hidden space-y-6">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div class="flex items-center space-x-2">
@@ -120,6 +127,9 @@
                         <i class="fa-solid fa-check-double mr-1.5"></i> Tüm Bekleyenleri Onayla
                     </button>
                 </div>
+                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                </button>
             </div>
 
             <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
@@ -136,6 +146,7 @@
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-100 text-sm">
+                            <!-- JS ile dolacak -->
                         </tbody>
                     </table>
                 </div>
@@ -144,37 +155,107 @@
 
     </main>
 
+    <!-- NOT GİRİŞİ / RUBRİK MODALI -->
+    <div id="evaluationModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+                <div class="bg-hu-purple px-6 py-4 flex justify-between items-center text-white">
+                    <div>
+                        <h3 class="text-lg font-bold">Staj Değerlendirme Formu</h3>
+                        <p class="text-xs text-purple-200">100 Tam Puan Üzerinden Rubrik Notlandırması</p>
+                    </div>
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="bg-white px-6 pt-5 pb-6 max-h-[75vh] overflow-y-auto space-y-6">
+                    <div class="flex justify-between items-center bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Öğrenci:</p>
+                            <p class="font-black text-gray-900 text-lg" id="evalStudentName">Öğrenci Adı</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] uppercase font-bold text-gray-400">Toplam Puan</p>
+                            <p class="text-3xl font-black text-hu-purple" id="liveTotalScore">0 <span class="text-xs font-normal text-gray-400">/ 100</span></p>
+                        </div>
+                    </div>
+
+                    <form id="evaluationForm" onsubmit="submitEvaluation(event)" class="space-y-4">
+                        <input type="hidden" id="evalStudentId">
+
+                        <div class="border rounded-xl p-4 space-y-3">
+                            <h4 class="font-bold text-xs text-hu-purple uppercase">1. Mesleki Tutum (Max 20 Puan)</h4>
+                            <input type="number" min="0" max="20" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_beh" placeholder="Puan veriniz (0-20)">
+                        </div>
+
+                        <div class="border rounded-xl p-4 space-y-3">
+                            <h4 class="font-bold text-xs text-hu-purple uppercase">2. Klinik Mantık ve Değerlendirme (Max 40 Puan)</h4>
+                            <input type="number" min="0" max="40" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_eval" placeholder="Puan veriniz (0-40)">
+                        </div>
+
+                        <div class="border rounded-xl p-4 space-y-3">
+                            <h4 class="font-bold text-xs text-hu-purple uppercase">3. Müdahale Becerisi (Max 40 Puan)</h4>
+                            <input type="number" min="0" max="40" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_int" placeholder="Puan veriniz (0-40)">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-800 mb-1">Süpervizör Notu & Görüşü</label>
+                            <textarea id="evalNote" rows="3" placeholder="Görüşlerinizi buraya yazabilirsiniz..." class="w-full text-xs p-2.5 border rounded-xl"></textarea>
+                        </div>
+
+                        <div class="pt-3 border-t flex justify-end space-x-2">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-xl">İptal</button>
+                            <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Kaydet ve Onayla</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const API_URL = 'http://localhost:5000/api';
         let currentUser = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
-            if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'academic' && activeUser.role !== 'webmaster')) {
+            if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'webmaster')) {
                 logout();
                 return;
             }
 
             currentUser = activeUser;
             document.getElementById('supervisorNameDisplay').innerText = currentUser.name;
-            if (activeUser.role === 'webmaster') {
+            if (currentUser.email) {
+                document.getElementById('supervisorEmailDisplay').innerText = currentUser.email;
+            }
+
+            if (currentUser.role === 'webmaster') {
                 document.getElementById('webmasterBar').classList.remove('hidden');
             }
 
             loadSupervisorData();
+            loadAttendanceApprovals();
         });
 
         function logout() {
             localStorage.removeItem('activeUser');
+            localStorage.removeItem('authToken');
             try { window.location.href = 'index.html'; } catch(e) {}
         }
 
         function toggleRole() {
-            window.location.href = 'academic.html';
+            window.location.href = 'coordinator.html';
         }
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
+            if(!container) return;
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
 
@@ -193,38 +274,205 @@
 
             document.getElementById(`${tabId}-section`).classList.remove('hidden');
             document.getElementById(`tab-${tabId}`).classList.add('border-hu-purple', 'text-hu-purple');
+
+            if (tabId === 'attendance') {
+                loadAttendanceApprovals();
+            }
         }
 
-        function loadSupervisorData() {
-            const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-            let myStudents = [];
+        // CANLI MYSQL: SÜPERVİZÖRE ATANAN ÖĞRENCİLERİ ÇEKME
+        async function loadSupervisorData() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/students`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            if (currentUser.role === 'webmaster') {
-                myStudents = users.filter(u => u.role === 'student');
-            } else {
-                myStudents = users.filter(u => u.role === 'student' && parseInt(u.supervisorId) === currentUser.id);
+                const grid = document.getElementById('myStudentsList');
+                grid.innerHTML = '';
+
+                if (response.ok) {
+                    const myStudents = await response.json();
+
+                    if (myStudents.length === 0) {
+                        grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Size atanmış öğrenci bulunmuyor.</p>`;
+                        return;
+                    }
+
+                    myStudents.forEach(stu => {
+                        const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
+                        const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
+
+                        grid.innerHTML += `
+                            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-base">${stu.name}</h3>
+                                    <p class="text-xs text-gray-500">No: ${stu.student_no}</p>
+                                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100 mt-3 text-xs">
+                                        <p class="text-gray-500">Staj Sonu Notu: <b class="text-hu-purple font-black">${scoreText}</b></p>
+                                    </div>
+                                </div>
+                                <button onclick="openEvaluationModal(${stu.id}, '${stu.name}')" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition">
+                                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Güncelle' : 'Öğrenciyi Değerlendir'}
+                                </button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
+                }
+            } catch (err) {
+                console.error(err);
             }
+        }
 
-            const grid = document.getElementById('myStudentsList');
-            grid.innerHTML = '';
+        // CANLI MYSQL: ONAY BEKLEYEN YOKLAMALARI ÇEKME
+        async function loadAttendanceApprovals() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/attendances`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            if (myStudents.length === 0) {
-                grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Atanmış öğrenci bulunmuyor.</p>`;
-                return;
+                const tbody = document.getElementById('attendanceTableBody');
+                tbody.innerHTML = '';
+
+                if (response.ok) {
+                    const attendances = await response.json();
+                    let pendingCount = 0;
+
+                    attendances.forEach(rec => {
+                        if (rec.status === 'pending') {
+                            pendingCount++;
+                            const isRetro = rec.is_retroactive;
+                            const badge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td class="px-6 py-4 font-bold text-gray-900">${rec.student_name} (${rec.student_no})</td>
+                                    <td class="px-6 py-4 text-xs font-bold">${rec.date} ${badge}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500">${rec.created_at || rec.time}</td>
+                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + rec.excuse : (rec.location_info || 'GPS')}</td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Onayla</button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Reddet</button>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    });
+
+                    const badgeElem = document.getElementById('pendingBadge');
+                    if (pendingCount > 0) {
+                        badgeElem.innerText = pendingCount;
+                        badgeElem.classList.remove('hidden');
+                    } else {
+                        badgeElem.classList.add('hidden');
+                    }
+
+                    if (pendingCount === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-xs text-gray-400 italic">Onay bekleyen günlük yoklama bulunmuyor.</td></tr>`;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
             }
+        }
 
-            myStudents.forEach(stu => {
-                const hasGrade = stu.grade && stu.grade.totalScore !== undefined;
-                grid.innerHTML += `
-                    <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="font-bold text-gray-900 text-base">${stu.name}</h3>
-                            <p class="text-xs text-gray-500">No: ${stu.studentNo}</p>
-                        </div>
-                        <span class="text-xs font-bold text-hu-purple">${hasGrade ? 'Değerlendirildi: ' + stu.grade.totalScore + '/100' : 'Not Bekliyor'}</span>
-                    </div>
-                `;
+        async function updateAttendanceStatus(attendanceId, status) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/attendances/${attendanceId}/status`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    showToast(status === 'approved' ? "Yoklama onaylandı." : "Yoklama reddedildi.");
+                    loadAttendanceApprovals();
+                } else {
+                    showToast("İşlem gerçekleştirilemedi.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası oluştu.", "error");
+            }
+        }
+
+        async function approveAllPending() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/approve-all`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    showToast("Tüm bekleyen yoklamalar onaylandı.", "success");
+                    loadAttendanceApprovals();
+                } else {
+                    showToast("İşlem sırasında hata oluştu.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası.", "error");
+            }
+        }
+
+        function openEvaluationModal(studentId, studentName) {
+            document.getElementById('evalStudentId').value = studentId;
+            document.getElementById('evalStudentName').innerText = studentName;
+            document.getElementById('evaluationModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('evaluationModal').classList.add('hidden');
+        }
+
+        function calculateTotalScore() {
+            let total = 0;
+            document.querySelectorAll('.score-input').forEach(input => {
+                total += parseInt(input.value) || 0;
             });
+            document.getElementById('liveTotalScore').innerText = total;
+        }
+
+        async function submitEvaluation(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('evalStudentId').value;
+            const beh = parseInt(document.getElementById('score_beh').value) || 0;
+            const evalScore = parseInt(document.getElementById('score_eval').value) || 0;
+            const intScore = parseInt(document.getElementById('score_int').value) || 0;
+            const total = beh + evalScore + intScore;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/grades/assign`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({
+                        studentId: parseInt(studentId),
+                        totalScore: total,
+                        rubricDetails: { beh, eval: evalScore, int: intScore },
+                        note: document.getElementById('evalNote').value
+                    })
+                });
+
+                if (response.ok) {
+                    showToast("Staj notu ve değerlendirme başarıyla kaydedildi.", "success");
+                    closeModal();
+                    loadSupervisorData();
+                } else {
+                    showToast("Not kaydedilemedi.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası oluştu.", "error");
+            }
         }
     </script>
 </body>

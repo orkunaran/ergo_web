@@ -57,7 +57,7 @@ const authenticateToken = (req, res, next) => {
 // 2. Rol Bazlı Yetkilendirme (Authorization)
 const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.role)) {
+        if (!allowedRoles.includes(req.user.role) && req.user.role !== 'webmaster') {
             return res.status(403).json({ message: 'Bu işlem için yetkiniz bulunmamaktadır.' });
         }
         next();
@@ -75,7 +75,7 @@ app.post('/api/auth/login', async (req, res) => {
         let queryParam = identifier;
 
         if (loginType === 'staff') {
-            query = 'SELECT * FROM users WHERE email = ? AND role IN ("admin", "academic", "supervisor")';
+            query = 'SELECT * FROM users WHERE email = ? AND role IN ("admin", "coordinator", "academic", "supervisor")';
         } else {
             query = 'SELECT * FROM users WHERE student_no = ? AND role = "student"';
         }
@@ -121,17 +121,27 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-
-// 2. SÜPERVİZÖRE ATANAN ÖĞRENCİLERİ GETİRME
-app.get('/api/supervisors/:id/students', async (req, res) => {
+// 2. SÜPERVİZÖRE ATANAN ÖĞRENCİLERİ VE STAJ DERS KODLARINI GETİRME
+app.get('/api/supervisors/:id/students', authenticateToken, async (req, res) => {
     try {
+        const supervisorId = req.params.id;
         const [students] = await db.execute(`
-            SELECT u.id, u.name, u.student_no, g.total_score,
-            (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id) as attendance_count
+            SELECT 
+                u.id, 
+                u.name, 
+                u.student_no, 
+                g.total_score,
+                i.course_code,
+                i.course_name,
+                i.start_date,
+                i.end_date,
+                (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id) as attendance_count
             FROM users u
             LEFT JOIN grades g ON u.id = g.student_id
-            WHERE u.supervisor_id = ? AND u.role = 'student'
-        `, [req.params.id]);
+            LEFT JOIN internships i ON u.id = i.student_id
+            WHERE (u.supervisor_id = ? OR i.supervisor_id = ?) AND u.role = 'student'
+            ORDER BY u.name ASC
+        `, [supervisorId, supervisorId]);
 
         res.json(students);
     } catch (error) {
@@ -141,15 +151,15 @@ app.get('/api/supervisors/:id/students', async (req, res) => {
 });
 
 // 3. SÜPERVİZÖRÜN ÖĞRENCİLERİNE AİT YOKLAMALARI GETİRME
-app.get('/api/supervisors/:id/attendances', async (req, res) => {
+app.get('/api/supervisors/:id/attendances', authenticateToken, async (req, res) => {
     try {
         const [attendances] = await db.execute(`
             SELECT a.*, u.name as student_name, u.student_no 
             FROM attendances a
             JOIN users u ON a.student_id = u.id
-            WHERE u.supervisor_id = ?
+            WHERE u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?)
             ORDER BY a.id DESC
-        `, [req.params.id]);
+        `, [req.params.id, req.params.id]);
 
         res.json(attendances);
     } catch (error) {
@@ -158,14 +168,46 @@ app.get('/api/supervisors/:id/attendances', async (req, res) => {
     }
 });
 
-// 4. YOKLAMA VERME (Öğrenci)
+// 4. YOKLAMA ONAY / RED GÜNCELLEME (Süpervizör)
+app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
+    const { status } = req.body; // 'approved' veya 'rejected'
+    const attendanceId = req.params.id;
+
+    try {
+        await db.execute('UPDATE attendances SET status = ? WHERE id = ?', [status, attendanceId]);
+        res.json({ message: 'Yoklama durumu güncellendi.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Yoklama durumu güncellenemedi.' });
+    }
+});
+
+// 5. TÜM BEKLEYEN YOKLAMALARI TOPLU ONAYLAMA
+app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), async (req, res) => {
+    try {
+        await db.execute(`
+            UPDATE attendances a
+            JOIN users u ON a.student_id = u.id
+            SET a.status = 'approved'
+            WHERE (u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?)) 
+            AND a.status = 'pending'
+        `, [req.params.id, req.params.id]);
+
+        res.json({ message: 'Tüm bekleyen yoklamalar onaylandı.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Toplu onay işlemi başarısız.' });
+    }
+});
+
+// 6. GÜNLÜK YOKLAMA BİLDİRİMİ (Öğrenci GPS Check-in)
 app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { locationInfo } = req.body;
     
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toTimeString().split(' ')[0];
+    const dateStr = now.toLocaleDateString('tr-TR');
+    const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
     try {
         const [existing] = await db.execute(
@@ -178,7 +220,7 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
         }
 
         await db.execute(
-            'INSERT INTO attendances (student_id, date, time, location_info, status) VALUES (?, ?, ?, ?, "pending")',
+            'INSERT INTO attendances (student_id, date, time, location_info, status, is_retroactive) VALUES (?, ?, ?, ?, "pending", 0)',
             [studentId, dateStr, timeStr, locationInfo || 'GPS Konumu Alındı']
         );
 
@@ -191,8 +233,173 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
     }
 });
 
-// 5. NOT GİRİŞİ / DÜZENLEME (IDOR Korumalı)
-app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'academic', 'admin'), async (req, res) => {
+// 7. MAZERETLİ / GERİYE DÖNÜK YOKLAMA TALEBİ (Öğrenci)
+app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
+    const studentId = req.user.id;
+    const { date, excuse } = req.body;
+
+    try {
+        await db.execute(
+            'INSERT INTO attendances (student_id, date, time, excuse, status, is_retroactive) VALUES (?, ?, "Mazeretli", ?, "pending", 1)',
+            [studentId, date, excuse]
+        );
+
+        await createAuditLog(studentId, 'RETROACTIVE_ATTENDANCE_REQUEST', studentId, null, { date, excuse }, req.ip);
+
+        res.json({ message: 'Mazeretli yoklama talebiniz başarıyla iletildi.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Mazeretli yoklama talebi kaydedilemedi.' });
+    }
+});
+
+// 8. ÖĞRENCİ KENDİ VERİLERİNİ ÇEKME
+app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        // Öğrencinin Süpervizör ve Ders Bilgisi
+        const [studentRows] = await db.execute(`
+            SELECT u.id, u.name, u.student_no, 
+                   s.name as supervisor_name,
+                   i.course_code, i.course_name, i.start_date, i.end_date
+            FROM users u
+            LEFT JOIN users s ON u.supervisor_id = s.id
+            LEFT JOIN internships i ON u.id = i.student_id
+            WHERE u.id = ?
+        `, [studentId]);
+
+        // Öğrencinin Yoklama Geçmişi
+        const [attendances] = await db.execute(`
+            SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
+        `, [studentId]);
+
+        const studentData = studentRows[0] || {};
+        studentData.attendances = attendances;
+
+        res.json(studentData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Öğrenci verileri çekilemedi.' });
+    }
+});
+
+// 9. STAJ KOORDİNATÖRÜ: TÜM BÖLÜM STAJYERLERİNİ ÇEKME
+app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT 
+                u.id, 
+                u.name, 
+                u.student_no, 
+                u.supervisor_id,
+                u.department_approved,
+                sup.name as supervisor_name,
+                g.total_score,
+                (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.status = 'approved') as approved_attendance_count,
+                (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.is_retroactive = 1) as retroactive_count
+            FROM users u
+            LEFT JOIN users sup ON u.supervisor_id = sup.id
+            LEFT JOIN grades g ON u.id = g.student_id
+            WHERE u.role = 'student'
+            ORDER BY u.name ASC
+        `);
+
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Bölüm verileri çekilemedi.' });
+    }
+});
+
+// 10. STAJ KOORDİNATÖRÜ: ÖĞRENCİ YOKLAMA AUDIT LOGLARI
+app.get('/api/coordinator/attendances/:studentId', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
+        `, [req.params.studentId]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Yoklama kayıtları çekilemedi.' });
+    }
+});
+
+// 11. STAJ KOORDİNATÖRÜ: FİNAL BÖLÜM ONAYI VERME
+app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
+    const { studentId } = req.body;
+
+    try {
+        await db.execute('UPDATE users SET department_approved = 1 WHERE id = ?', [studentId]);
+        await createAuditLog(req.user.id, 'DEPARTMENT_FINAL_APPROVAL', studentId, null, { approved: true }, req.ip);
+        res.json({ message: 'Öğrencinin stajı resmi olarak onaylandı.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Onay işlemi kaydedilemedi.' });
+    }
+});
+
+// 12. ADMIN: TOPLU ÖĞRENCİ VE STAJ TANIMI EKLEME/GÜNCELLEME (MySQL Live Kayıt)
+app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
+    const { students } = req.body;
+
+    if (!Array.isArray(students) || students.length === 0) {
+        return res.status(400).json({ message: 'Geçerli öğrenci verisi bulunamadı.' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        for (const stu of students) {
+            let [existing] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
+            let studentId;
+
+            if (existing.length > 0) {
+                studentId = existing[0].id;
+                await connection.execute(
+                    'UPDATE users SET name = ?, supervisor_id = ? WHERE id = ?',
+                    [stu.name, stu.supervisorId || null, studentId]
+                );
+            } else {
+                const defaultHash = await bcrypt.hash(stu.password || '1234', 10);
+                const [insertRes] = await connection.execute(
+                    'INSERT INTO users (name, student_no, password_hash, role, supervisor_id) VALUES (?, ?, ?, "student", ?)',
+                    [stu.name, stu.studentNo, defaultHash, stu.supervisorId || null]
+                );
+                studentId = insertRes.insertId;
+            }
+
+            if (stu.courseCode) {
+                await connection.execute(
+                    `INSERT INTO internships (student_id, course_code, course_name, start_date, end_date, supervisor_id) 
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        studentId, 
+                        stu.courseCode, 
+                        stu.courseName || 'Mesleki Uygulama', 
+                        stu.startDate || '2026-09-01', 
+                        stu.endDate || '2026-10-01', 
+                        stu.supervisorId || null
+                    ]
+                );
+            }
+        }
+
+        await connection.commit();
+        res.json({ message: 'Öğrenciler ve staj tanımları başarıyla eklendi.' });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Kayıt Hatası:', err);
+        res.status(500).json({ message: 'Kayıt sırasında hata oluştu.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// 13. NOT GİRİŞİ / DÜZENLEME (IDOR Korumalı)
+app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'academic', 'admin'), async (req, res) => {
     const evaluatorId = req.user.id;
     const { studentId, totalScore, rubricDetails, note } = req.body;
 
@@ -240,6 +447,28 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Not kaydı sırasında sunucu hatası oluştu.' });
+    }
+});
+
+// 14. ÖĞRENCİ DETAYLI NOTUNU GETİRME
+app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT g.*, u.name as student_name, u.student_no, ev.name as evaluator_name
+            FROM grades g
+            JOIN users u ON g.student_id = u.id
+            LEFT JOIN users ev ON g.evaluator_id = ev.id
+            WHERE g.student_id = ?
+        `, [req.params.studentId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Henüz not girilmemiş.' });
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Not bilgisi çekilemedi.' });
     }
 });
 

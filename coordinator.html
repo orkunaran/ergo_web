@@ -113,13 +113,12 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Öğrenci Adı / No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atanan Süpervizör</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yoklama Şeffaflık & Audit Log</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yoklama Audit Log</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Notu</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Bölüm Onayı / İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="departmentStudentsTable" class="bg-white divide-y divide-gray-200">
-                            <!-- JS ile dolacak -->
                         </tbody>
                     </table>
                 </div>
@@ -130,7 +129,6 @@
             <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">Doğrudan Benim Danışmanlığımdaki Öğrenciler</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="mySupervisedList">
-                    <!-- JS ile dolacak -->
                 </div>
             </div>
         </div>
@@ -363,9 +361,9 @@
                 const d = typeof data.rubric_details === 'string' ? JSON.parse(data.rubric_details) : (data.rubric_details || {});
                 const noteText = data.note ? data.note : 'Süpervizör tarafından ekstra not eklenmedi.';
 
-                const behTotal = (parseInt(d.beh1)||0) + (parseInt(d.beh2)||0) + (parseInt(d.beh3)||0);
-                const evalTotal = (parseInt(d.eval1)||0) + (parseInt(d.eval2)||0) + (parseInt(d.eval3)||0) + (parseInt(d.eval4)||0) + (parseInt(d.eval5)||0);
-                const intTotal = (parseInt(d.int1)||0) + (parseInt(d.int2)||0) + (parseInt(d.int3)||0) + (parseInt(d.int4)||0) + (parseInt(d.int5)||0) + (parseInt(d.int6)||0);
+                const behTotal = (parseInt(d.beh)||0);
+                const evalTotal = (parseInt(d.eval)||0);
+                const intTotal = (parseInt(d.int)||0);
 
                 const bodyHtml = `
                     <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 flex justify-between items-center mb-3">
@@ -386,10 +384,10 @@
                             <div class="flex justify-between font-bold text-gray-800 mb-1"><span>1. Davranış ve Mesleki Tutum</span><span class="text-hu-purple font-black">${behTotal} / 20</span></div>
                         </div>
                         <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                            <div class="flex justify-between font-bold text-gray-800 mb-1"><span>2. Değerlendirme & Klinik Mantık</span><span class="text-hu-purple font-black">${evalTotal} / 30</span></div>
+                            <div class="flex justify-between font-bold text-gray-800 mb-1"><span>2. Değerlendirme & Klinik Mantık</span><span class="text-hu-purple font-black">${evalTotal} / 40</span></div>
                         </div>
                         <div class="border border-gray-200 rounded-xl p-3 bg-white">
-                            <div class="flex justify-between font-bold text-gray-800 mb-1"><span>3. Müdahale & Uygulama Becerisi</span><span class="text-hu-purple font-black">${intTotal} / 30</span></div>
+                            <div class="flex justify-between font-bold text-gray-800 mb-1"><span>3. Müdahale & Uygulama Becerisi</span><span class="text-hu-purple font-black">${intTotal} / 40</span></div>
                         </div>
                     </div>
                 `;

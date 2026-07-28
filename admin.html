@@ -312,6 +312,30 @@
                                 <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 220000">
                             </div>
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Staj Ders Kodu</label>
+                                <select id="stuCourseCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
+                                    <option value="">Staj Dersi Seçiniz...</option>
+                                    <option value="ERG 228">ERG 228 - Mesleki Uygulama I</option>
+                                    <option value="ERG 328">ERG 328 - Mesleki Uygulama II</option>
+                                    <option value="ERG 423">ERG 423 - Mesleki Uygulama III</option>
+                                    <option value="ERG 424">ERG 424 - Mesleki Uygulama IV</option>
+                                    <option value="ERG 427">ERG 427 - Mesleki Uygulama V</option>
+                                    <option value="ERG 428">ERG 428 - Mesleki Uygulama VI</option>
+                                    <option value="ERG 431">ERG 431 - Mesleki Uygulama VII</option>
+                                    <option value="ERG 432">ERG 432 - Mesleki Uygulama VIII</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Staj Başlangıç</label>
+                                    <input type="date" id="stuStartDate" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs focus:ring-hu-purple focus:border-hu-purple">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Staj Bitiş</label>
+                                    <input type="date" id="stuEndDate" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs focus:ring-hu-purple focus:border-hu-purple">
+                                </div>
+                            </div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Staj Yapacağı Süpervizör / Danışman</label>
                                 <select id="stuSupervisor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
                                     <option value="">Süpervizör Seçiniz...</option>
@@ -332,10 +356,12 @@
                         </form>
                     </div>
 
-                    <!-- Öğrenci Excel Import (Danışman / Süpervizör Destekli) -->
+                    <!-- Öğrenci Excel Import (Staj Kodu / Tarih / Süpervizör Destekli) -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Öğrenci Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olabilir:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Süpervizör E-posta / Danışman Adı</b></p>
+                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olabilir:<br>
+                            <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Staj Başlangıç</b> | <b class="text-purple-700">Staj Bitiş</b> | <b class="text-purple-700">Süpervizör E-posta</b>
+                        </p>
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
@@ -349,7 +375,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler ve Staj Dersi</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -357,6 +383,7 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad / No</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atandığı Süpervizör</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Dersi</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
                                     </tr>
                                 </thead>
@@ -372,6 +399,20 @@
     </main>
 
     <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // Ders Kodu - Ders Adı Eşleşme Haritası
+        const COURSE_MAP = {
+            'ERG 228': 'Mesleki Uygulama I',
+            'ERG 328': 'Mesleki Uygulama II',
+            'ERG 423': 'Mesleki Uygulama III',
+            'ERG 424': 'Mesleki Uygulama IV',
+            'ERG 427': 'Mesleki Uygulama V',
+            'ERG 428': 'Mesleki Uygulama VI',
+            'ERG 431': 'Mesleki Uygulama VII',
+            'ERG 432': 'Mesleki Uygulama VIII'
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
@@ -505,16 +546,20 @@
             if(stuTable) {
                 stuTable.innerHTML = '';
                 if(students.length === 0) {
-                    stuTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+                    stuTable.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
                 }
                 students.forEach(stu => {
                     const assignedSup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
                     const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Atanmamış</span>';
-                    
+                    const codeBadge = stu.courseCode 
+                        ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${stu.courseCode}</span>` 
+                        : '<span class="text-gray-400 text-xs italic">Tanımlanmadı</span>';
+
                     stuTable.innerHTML += `
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${stu.name} (${stu.studentNo})</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${codeBadge}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <button onclick="editStudent(${stu.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
                                 <button onclick="deleteUser(${stu.id})" class="text-red-600 font-bold hover:underline">Sil</button>
@@ -636,6 +681,9 @@
             document.getElementById('stuNo').value = stu.studentNo;
             document.getElementById('stuSupervisor').value = stu.supervisorId || '';
             document.getElementById('stuPassword').value = stu.password;
+            document.getElementById('stuCourseCode').value = stu.courseCode || '';
+            document.getElementById('stuStartDate').value = stu.startDate || '';
+            document.getElementById('stuEndDate').value = stu.endDate || '';
 
             document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Öğrenci Düzenle';
             document.getElementById('stuSubmitBtn').innerText = 'Güncelle ve Kaydet';
@@ -650,40 +698,53 @@
             document.getElementById('cancelStuBtn').classList.add('hidden');
         }
 
-        function handleAddStudent(e) {
+        async function handleAddStudent(e) {
             e.preventDefault();
             const editId = document.getElementById('editStuId').value;
             const name = document.getElementById('stuName').value;
             const studentNo = document.getElementById('stuNo').value;
             const supervisorId = document.getElementById('stuSupervisor').value;
             const password = document.getElementById('stuPassword').value;
+            const courseCode = document.getElementById('stuCourseCode').value;
+            const startDate = document.getElementById('stuStartDate').value;
+            const endDate = document.getElementById('stuEndDate').value;
 
             let users = getUsers();
+            const payloadStudent = {
+                name,
+                studentNo,
+                password,
+                supervisorId: supervisorId ? parseInt(supervisorId) : null,
+                courseCode: courseCode || null,
+                courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
+                startDate: startDate || null,
+                endDate: endDate || null
+            };
 
+            // LocalStorage Güncellemesi
             if (editId) {
-                users = users.map(u => u.id == editId ? { 
-                    ...u, 
-                    name, 
-                    studentNo, 
-                    supervisorId: supervisorId ? parseInt(supervisorId) : null, 
-                    password 
-                } : u);
-                showToast('Öğrenci güncellendi.', 'success');
+                users = users.map(u => u.id == editId ? { ...u, ...payloadStudent } : u);
             } else {
-                users.push({ 
-                    id: Date.now(), 
-                    role: 'student', 
-                    name, 
-                    studentNo, 
-                    supervisorId: supervisorId ? parseInt(supervisorId) : null, 
-                    password, 
-                    attendance: [], 
-                    grade: null 
+                users.push({ id: Date.now(), role: 'student', ...payloadStudent, attendance: [], grade: null });
+            }
+            saveUsers(users);
+
+            // Live Backend MySQL Kaydı
+            try {
+                const token = localStorage.getItem('authToken');
+                await fetch(`${API_URL}/admin/students/save`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ students: [payloadStudent] })
                 });
-                showToast('Öğrenci eklendi.', 'success');
+            } catch(err) {
+                console.error('Backend kayıt uyarısı:', err);
             }
 
-            saveUsers(users);
+            showToast(editId ? 'Öğrenci güncellendi.' : 'Öğrenci ve staj dersi kaydedildi.', 'success');
             cancelStuEdit();
             loadData();
         }
@@ -781,12 +842,13 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ÖĞRENCİ EXCEL IMPORT (DANIŞMAN / SÜPERVİZÖR ATAMA DESTEKLİ)
-        function handleExcelUpload(e) {
+        // GELİŞTİRİLMİŞ ÖĞRENCİ EXCEL IMPORT (CANLI MYSQL API)
+        async function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 try {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
@@ -795,14 +857,18 @@
                     
                     let users = getUsers();
                     const supervisors = users.filter(u => u.role === 'supervisor');
-                    let addedCount = 0;
+                    let payloadStudents = [];
 
                     rows.forEach(row => {
                         const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'] || row['Name'];
                         const studentNo = row['Öğrenci No'] || row['Ogrenci No'] || row['No'] || row['StudentNo'];
                         const password = row['Şifre'] || row['Password'] || '1234';
                         
-                        const supRef = row['Süpervizör E-posta'] || row['Supervizor Email'] || row['Süpervizör'] || row['Danışman E-posta'] || row['Danışman'] || row['Danisman'];
+                        const courseCode = (row['Staj Ders Kodu'] || row['Ders Kodu'] || row['CourseCode'] || '').toString().trim().toUpperCase();
+                        const startDate = row['Staj Başlangıç'] || row['Başlangıç Tarihi'] || row['StartDate'];
+                        const endDate = row['Staj Bitiş'] || row['Bitiş Tarihi'] || row['EndDate'];
+
+                        const supRef = row['Süpervizör E-posta'] || row['Supervizor Email'] || row['Süpervizör'] || row['Danışman E-posta'] || row['Danışman'];
 
                         if (name && studentNo) {
                             let matchedSupervisorId = null;
@@ -818,23 +884,57 @@
                                 }
                             }
 
-                            users.push({
+                            function formatDate(dateVal) {
+                                if (!dateVal) return null;
+                                if (typeof dateVal === 'string' && dateVal.includes('.')) {
+                                    const p = dateVal.split('.');
+                                    return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                                }
+                                return dateVal;
+                            }
+
+                            const studentObj = {
                                 id: Date.now() + Math.random(),
                                 role: 'student',
                                 name: String(name).trim(),
                                 studentNo: String(studentNo).trim(),
                                 supervisorId: matchedSupervisorId,
                                 password: String(password).trim(),
+                                courseCode: courseCode || null,
+                                courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
+                                startDate: formatDate(startDate),
+                                endDate: formatDate(endDate),
                                 attendance: [],
                                 grade: null
-                            });
-                            addedCount++;
+                            };
+
+                            users.push(studentObj);
+                            payloadStudents.push(studentObj);
                         }
                     });
+
+                    // LocalStorage Kaydı
                     saveUsers(users);
+
+                    // Canlı Backend MySQL Kaydı
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        await fetch(`${API_URL}/admin/students/save`, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}` 
+                            },
+                            body: JSON.stringify({ students: payloadStudents })
+                        });
+                    } catch(err) {
+                        console.error('Backend kayıt uyarısı:', err);
+                    }
+
                     loadData();
-                    showToast(`${addedCount} öğrenci Excel'den eklendi ve danışman eşleştirmeleri yapıldı.`, 'success');
+                    showToast(`${payloadStudents.length} öğrenci ve staj ders tanımı başarıyla aktarıldı.`, 'success');
                 } catch (err) {
+                    console.error(err);
                     showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
                 } finally {
                     e.target.value = '';

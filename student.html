@@ -36,6 +36,7 @@
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
 
+    <!-- WEBMASTER HIZLI GEÇİŞ BARI -->
     <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
@@ -44,7 +45,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
                 <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
-                <a href="academic.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Akademisyen</a>
+                <a href="coordinator.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Staj Koordinatörü</a>
                 <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör</a>
                 <a href="student.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">👨‍🎓 Öğrenci</a>
             </div>
@@ -72,21 +73,44 @@
 
     <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full space-y-6">
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple">
-                    <i class="fa-solid fa-user-doctor text-lg"></i>
+        <!-- AKTİF STAJ DERSİ VE SÜPERVİZÖR KARTLARI -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Staj Ders Kodu & Tarihi -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple font-black text-xs">
+                        <i class="fa-solid fa-book-bookmark text-base"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Staj Dersi</p>
+                        <p class="text-sm font-extrabold text-hu-purple" id="courseCodeDisplay">ERG ---</p>
+                        <p class="text-[11px] text-gray-500 font-semibold" id="courseNameDisplay">Mesleki Uygulama</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium">Staj Süpervizörünüz</p>
-                    <p class="text-sm font-bold text-gray-800" id="supervisorNameDisplay">Atanmadı</p>
+                <div class="text-right border-l pl-3 border-gray-100">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Staj Tarih Aralığı</p>
+                    <p class="text-xs font-bold text-gray-700 mt-0.5" id="internshipDatesDisplay">--.--.---- - --.--.----</p>
                 </div>
             </div>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-hu-purple">
-                <i class="fa-solid fa-circle-check mr-1 text-[10px]"></i> Aktif Dönem
-            </span>
+
+            <!-- Süpervizör Bilgisi -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple">
+                        <i class="fa-solid fa-user-doctor text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Staj Süpervizörünüz</p>
+                        <p class="text-sm font-bold text-gray-800" id="supervisorNameDisplay">Atanmadı</p>
+                    </div>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <i class="fa-solid fa-circle-check mr-1 text-[10px]"></i> Aktif
+                </span>
+            </div>
         </div>
 
+        <!-- YOKLAMA VERME ALANI -->
         <div class="bg-gradient-to-br from-hu-purple to-hu-dark text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
             <div class="relative z-10 text-center space-y-4">
                 <div class="inline-block bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-medium text-purple-100 border border-white/10">
@@ -95,29 +119,70 @@
 
                 <div>
                     <h2 class="text-2xl font-extrabold tracking-tight">GÜNLÜK YOKLAMA BİLDİRİMİ</h2>
-                    <p class="text-xs text-purple-200 mt-1 max-w-md mx-auto">
+                    <p class="text-xs text-purple-200 mt-1 max-w-md mx-auto" id="checkInSubText">
                         Staj yerine vardığınızda aşağıdaki butona basarak GPS konumunuzla katılımınızı bildirebilirsiniz.
                     </p>
                 </div>
 
-                <div class="pt-2">
-                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center mx-auto space-x-3">
+                <div class="pt-2 flex flex-col sm:flex-row justify-center items-center gap-3">
+                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3">
                         <i class="fa-solid fa-location-crosshairs text-xl animate-pulse"></i>
                         <span id="checkInBtnText">STAJDAYIM / YOKLAMA VER</span>
+                    </button>
+
+                    <button onclick="openRetroactiveModal()" class="w-full sm:w-auto px-5 py-4 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/40 text-amber-100 font-bold text-xs rounded-2xl transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                        <span>Mazeretli / Geriye Dönük Bildir</span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- YOKLAMA GEÇMİŞİ -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h3 class="font-bold text-gray-800 text-sm mb-3">Yoklama Geçmişi</h3>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-800 text-sm">Yoklama Geçmişi</h3>
+                <button onclick="loadAttendanceData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                </button>
+            </div>
             <div id="attendanceList" class="divide-y divide-gray-100">
+                <!-- JS ile dolacak -->
             </div>
         </div>
 
     </main>
 
+    <!-- GERİYE DÖNÜK / MAZERETLİ YOKLAMA MODALI -->
+    <div id="retroactiveModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeRetroactiveModal()"></div>
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 z-10 relative shadow-2xl">
+                <h3 class="font-bold text-lg text-gray-900 mb-1">Geriye Dönük / Mazeretli Yoklama Bildir</h3>
+                <p class="text-xs text-gray-500 mb-4">Giremediğiniz geçmiş bir staj günü için mazeretinizle birlikte süpervizör onayına gönderin.</p>
+
+                <form onsubmit="handleRetroactiveSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Yapılan Tarih</label>
+                        <input type="date" id="retroDate" required class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mazeret / Açıklama</label>
+                        <textarea id="retroExcuse" rows="3" required placeholder="Gününde bildirim yapamama nedeniniz..." class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple"></textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl">İptal</button>
+                        <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Talebi Gönder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const API_URL = 'http://localhost:5000/api';
         let currentUser = null;
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -128,22 +193,14 @@
                 return;
             }
 
+            currentUser = activeUser;
+
             if (activeUser.role === 'webmaster') {
                 document.getElementById('webmasterBar').classList.remove('hidden');
-                // Webmaster için ilk öğrenci verisini temsilî aç
-                const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-                const firstStudent = users.find(u => u.role === 'student');
-                if (firstStudent) {
-                    currentUser = firstStudent;
-                } else {
-                    currentUser = activeUser;
-                }
-            } else {
-                currentUser = activeUser;
             }
 
             document.getElementById('studentNameDisplay').innerText = currentUser.name;
-            document.getElementById('studentNoDisplay').innerText = `No: ${currentUser.studentNo || '-'}`;
+            document.getElementById('studentNoDisplay').innerText = `No: ${currentUser.studentNo || currentUser.student_no || '-'}`;
 
             startClock();
             loadAttendanceData();
@@ -151,7 +208,28 @@
 
         function logout() {
             localStorage.removeItem('activeUser');
+            localStorage.removeItem('authToken');
             try { window.location.href = 'index.html'; } catch(e) {}
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-xl ${bgColor} text-xs font-medium transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-base"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         function startClock() {
@@ -164,48 +242,166 @@
             setInterval(update, 1000);
         }
 
-        function loadAttendanceData() {
-            const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-            const freshStudent = users.find(u => u.id === currentUser.id);
-            const attendance = (freshStudent && freshStudent.attendance) ? freshStudent.attendance : [];
+        // CANLI MYSQL'DEN ÖĞRENCİ, STAJ DERSİ VE YOKLAMA VERİLERİNİ ÇEKME
+        async function loadAttendanceData() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/student/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            const listContainer = document.getElementById('attendanceList');
-            if (attendance.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Henüz yoklama kaydı bulunmuyor.</p>`;
-                return;
+                const listContainer = document.getElementById('attendanceList');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.supervisor_name) {
+                        document.getElementById('supervisorNameDisplay').innerText = data.supervisor_name;
+                    }
+
+                    // Staj Ders Kodu ve Tarihleri Güncelle
+                    if (data.course_code) {
+                        document.getElementById('courseCodeDisplay').innerText = data.course_code;
+                        document.getElementById('courseNameDisplay').innerText = data.course_name || 'Mesleki Uygulama';
+                    } else if (currentUser.courseCode) {
+                        document.getElementById('courseCodeDisplay').innerText = currentUser.courseCode;
+                        document.getElementById('courseNameDisplay').innerText = currentUser.courseName || 'Mesleki Uygulama';
+                    }
+
+                    const startDate = data.start_date || currentUser.startDate || '--.--.----';
+                    const endDate = data.end_date || currentUser.endDate || '--.--.----';
+                    document.getElementById('internshipDatesDisplay').innerText = `${startDate} - ${endDate}`;
+
+                    const attendance = data.attendances || [];
+
+                    if (attendance.length === 0) {
+                        listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
+                        return;
+                    }
+
+                    listContainer.innerHTML = '';
+                    attendance.forEach(item => {
+                        const isRetro = item.is_retroactive;
+                        const statusBadge = item.status === 'approved' 
+                            ? '<span class="font-bold text-emerald-600"><i class="fa-solid fa-check mr-1"></i>Onaylandı</span>' 
+                            : (item.status === 'rejected' ? '<span class="font-bold text-rose-600"><i class="fa-solid fa-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
+
+                        const retroBadge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+
+                        listContainer.innerHTML += `
+                            <div class="p-3 flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="font-bold text-gray-800">${item.date}</span> ${retroBadge}
+                                    <p class="text-[11px] text-gray-400 mt-0.5">${item.created_at || item.time} - ${item.excuse ? 'Mazeret: ' + item.excuse : (item.location_info || 'GPS')}</p>
+                                </div>
+                                <div>${statusBadge}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Veriler yüklenirken sunucu hatası oluştu.</p>`;
+                }
+            } catch (err) {
+                console.error('Veri Çekme Hatası:', err);
             }
-
-            listContainer.innerHTML = '';
-            [...attendance].reverse().forEach(item => {
-                listContainer.innerHTML += `
-                    <div class="p-3 flex justify-between items-center text-xs">
-                        <span><b>${item.date}</b> - ${item.time}</span>
-                        <span class="font-bold text-purple-700">${item.status === 'approved' ? '✓ Onaylandı' : '⏱ Bekliyor'}</span>
-                    </div>
-                `;
-            });
         }
 
-        function handleCheckIn() {
-            const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-            const idx = users.findIndex(u => u.id === currentUser.id);
-            if (idx === -1) return;
+        // CANLI MYSQL'E GPS YOKLAMA GÖNDERME
+        async function handleCheckIn() {
+            const btnText = document.getElementById('checkInBtnText');
+            btnText.innerText = "GPS Alınıyor...";
 
-            const now = new Date();
-            const rec = {
-                id: Date.now(),
-                date: now.toLocaleDateString('tr-TR'),
-                time: now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-                location: 'GPS Konumu Alındı',
-                status: 'pending'
-            };
+            let locationInfo = 'GPS Konumu Alındı';
 
-            if (!users[idx].attendance) users[idx].attendance = [];
-            users[idx].attendance.push(rec);
-            localStorage.setItem('ergoUsers', JSON.stringify(users));
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(4);
+                        const lng = position.coords.longitude.toFixed(4);
+                        locationInfo = `GPS: ${lat}, ${lng}`;
+                        sendCheckInRequest(locationInfo);
+                    },
+                    (error) => {
+                        sendCheckInRequest("GPS Alınamadı (Cihaz Saati)");
+                    },
+                    { timeout: 5000 }
+                );
+            } else {
+                sendCheckInRequest("GPS Desteklenmiyor");
+            }
+        }
 
-            loadAttendanceData();
-            alert("Yoklama kaydınız alındı!");
+        async function sendCheckInRequest(locationInfo) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/attendance/check-in`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ locationInfo })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast("Yoklama kaydınız alındı!", "success");
+                    loadAttendanceData();
+                } else {
+                    showToast(data.message || "Yoklama gönderilemedi.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu bağlantı hatası.", "error");
+            } finally {
+                document.getElementById('checkInBtnText').innerText = "STAJDAYIM / YOKLAMA VER";
+            }
+        }
+
+        function openRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.remove('hidden');
+        }
+
+        function closeRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.add('hidden');
+        }
+
+        async function handleRetroactiveSubmit(e) {
+            e.preventDefault();
+            const rawDate = document.getElementById('retroDate').value;
+            const excuse = document.getElementById('retroExcuse').value;
+
+            if(!rawDate || !excuse) return;
+
+            const parts = rawDate.split('-');
+            const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/attendance/retroactive`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        date: formattedDate,
+                        excuse: excuse
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast("Mazeretli yoklama talebiniz gönderildi.", "success");
+                    closeRetroactiveModal();
+                    loadAttendanceData();
+                } else {
+                    showToast(data.message || "Talep gönderilemedi.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası oluştu.", "error");
+            }
         }
     </script>
 </body>
