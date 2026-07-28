@@ -110,6 +110,27 @@
             </div>
         </div>
 
+        <!-- STAJ İLERLEME VE TELAFİ SAYACI KARTI -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-line text-hu-purple"></i>
+                    <h3 class="font-bold text-sm text-gray-800">Staj Yoklama İlerlemesi & Hedef</h3>
+                </div>
+                <span class="text-xs font-black text-hu-purple" id="progressTextDisplay">0 / 20 Gün</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+                <div id="progressBar" class="bg-hu-purple h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Otomatik Telafi Uyarı Metni -->
+            <div id="attendanceAlertCard" class="p-3 rounded-xl text-xs font-medium flex items-center bg-purple-50 text-purple-900 border border-purple-100">
+                <i class="fa-solid fa-spinner fa-spin mr-2"></i> İlerleme verileri yükleniyor...
+            </div>
+        </div>
+
         <!-- YOKLAMA VERME ALANI -->
         <div class="bg-gradient-to-br from-hu-purple to-hu-dark text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
             <div class="relative z-10 text-center space-y-4">
@@ -242,7 +263,7 @@
             setInterval(update, 1000);
         }
 
-        // CANLI MYSQL'DEN ÖĞRENCİ, STAJ DERSİ VE YOKLAMA VERİLERİNİ ÇEKME
+        // CANLI MYSQL'DEN ÖĞRENCİ, STAJ DERSİ VE HEDEF/ONAYLI GÜN SAYISINI ÇEKME
         async function loadAttendanceData() {
             try {
                 const token = localStorage.getItem('authToken');
@@ -272,6 +293,25 @@
                     const endDate = data.end_date || currentUser.endDate || '--.--.----';
                     document.getElementById('internshipDatesDisplay').innerText = `${startDate} - ${endDate}`;
 
+                    // --- İLERLEME VE TELAFİ SAYAÇ MANTIĞI ---
+                    const requiredDays = data.required_days || currentUser.requiredDays || 20;
+                    const approvedDays = data.approved_days || 0;
+                    const missingDays = requiredDays - approvedDays;
+                    const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
+
+                    document.getElementById('progressTextDisplay').innerText = `${approvedDays} / ${requiredDays} Gün (%${percent})`;
+                    document.getElementById('progressBar').style.width = `${percent}%`;
+
+                    const alertCard = document.getElementById('attendanceAlertCard');
+                    if (approvedDays >= requiredDays) {
+                        alertCard.className = "p-3 rounded-xl text-xs font-bold flex items-center bg-emerald-50 text-emerald-800 border border-emerald-200";
+                        alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2"></i>Tebrikler! Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.`;
+                    } else {
+                        alertCard.className = "p-3 rounded-xl text-xs font-medium flex items-center bg-amber-50 text-amber-900 border border-amber-200";
+                        alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır. Lütfen günlerinizi tamamlayınız.</span>`;
+                    }
+
+                    // Yoklama Geçmişini Render Et
                     const attendance = data.attendances || [];
 
                     if (attendance.length === 0) {

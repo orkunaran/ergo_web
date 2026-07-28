@@ -325,6 +325,13 @@
                                     <option value="ERG 432">ERG 432 - Mesleki Uygulama VIII</option>
                                 </select>
                             </div>
+                            
+                            <!-- HEDEF STAJ GÜN SAYISI -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hedef Staj Gün Sayısı</label>
+                                <input type="number" id="stuRequiredDays" min="1" max="100" value="20" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 20">
+                            </div>
+
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Staj Başlangıç</label>
@@ -356,11 +363,11 @@
                         </form>
                     </div>
 
-                    <!-- Öğrenci Excel Import (Staj Kodu / Tarih / Süpervizör Destekli) -->
+                    <!-- Öğrenci Excel Import (Hedef Gün / Staj Kodu / Tarih / Süpervizör Destekli) -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Öğrenci Ekle</h3>
                         <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olabilir:<br>
-                            <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Staj Başlangıç</b> | <b class="text-purple-700">Staj Bitiş</b> | <b class="text-purple-700">Süpervizör E-posta</b>
+                            <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Hedef Staj Gün Sayısı</b> | <b class="text-purple-700">Staj Başlangıç</b> | <b class="text-purple-700">Staj Bitiş</b> | <b class="text-purple-700">Süpervizör E-posta</b>
                         </p>
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -375,7 +382,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler ve Staj Dersi</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler ve Staj Tanımları</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -383,7 +390,7 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad / No</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atandığı Süpervizör</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Dersi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Dersi / Hedef Gün</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
                                     </tr>
                                 </thead>
@@ -552,7 +559,7 @@
                     const assignedSup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
                     const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Atanmamış</span>';
                     const codeBadge = stu.courseCode 
-                        ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${stu.courseCode}</span>` 
+                        ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${stu.courseCode} (${stu.requiredDays || 20} Gün)</span>` 
                         : '<span class="text-gray-400 text-xs italic">Tanımlanmadı</span>';
 
                     stuTable.innerHTML += `
@@ -682,6 +689,7 @@
             document.getElementById('stuSupervisor').value = stu.supervisorId || '';
             document.getElementById('stuPassword').value = stu.password;
             document.getElementById('stuCourseCode').value = stu.courseCode || '';
+            document.getElementById('stuRequiredDays').value = stu.requiredDays || 20;
             document.getElementById('stuStartDate').value = stu.startDate || '';
             document.getElementById('stuEndDate').value = stu.endDate || '';
 
@@ -693,6 +701,7 @@
         function cancelStuEdit() {
             document.getElementById('editStuId').value = '';
             document.getElementById('addStudentForm').reset();
+            document.getElementById('stuRequiredDays').value = 20;
             document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle';
             document.getElementById('stuSubmitBtn').innerText = 'Öğrenciyi Ekle ve Ata';
             document.getElementById('cancelStuBtn').classList.add('hidden');
@@ -706,6 +715,7 @@
             const supervisorId = document.getElementById('stuSupervisor').value;
             const password = document.getElementById('stuPassword').value;
             const courseCode = document.getElementById('stuCourseCode').value;
+            const requiredDays = document.getElementById('stuRequiredDays').value || 20;
             const startDate = document.getElementById('stuStartDate').value;
             const endDate = document.getElementById('stuEndDate').value;
 
@@ -717,6 +727,7 @@
                 supervisorId: supervisorId ? parseInt(supervisorId) : null,
                 courseCode: courseCode || null,
                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
+                requiredDays: parseInt(requiredDays),
                 startDate: startDate || null,
                 endDate: endDate || null
             };
@@ -842,7 +853,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // GELİŞTİRİLMİŞ ÖĞRENCİ EXCEL IMPORT (CANLI MYSQL API)
+        // GELİŞTİRİLMİŞ ÖĞRENCİ EXCEL IMPORT (HEDEF GÜN SAYISI & CANLI MYSQL API)
         async function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -865,6 +876,7 @@
                         const password = row['Şifre'] || row['Password'] || '1234';
                         
                         const courseCode = (row['Staj Ders Kodu'] || row['Ders Kodu'] || row['CourseCode'] || '').toString().trim().toUpperCase();
+                        const requiredDaysVal = row['Hedef Staj Gün Sayısı'] || row['Staj Gün Sayısı'] || row['Required Days'] || row['Hedef Gün'] || 20;
                         const startDate = row['Staj Başlangıç'] || row['Başlangıç Tarihi'] || row['StartDate'];
                         const endDate = row['Staj Bitiş'] || row['Bitiş Tarihi'] || row['EndDate'];
 
@@ -902,6 +914,7 @@
                                 password: String(password).trim(),
                                 courseCode: courseCode || null,
                                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
+                                requiredDays: parseInt(requiredDaysVal) || 20,
                                 startDate: formatDate(startDate),
                                 endDate: formatDate(endDate),
                                 attendance: [],
@@ -932,7 +945,7 @@
                     }
 
                     loadData();
-                    showToast(`${payloadStudents.length} öğrenci ve staj ders tanımı başarıyla aktarıldı.`, 'success');
+                    showToast(`${payloadStudents.length} öğrenci ve staj tanımı başarıyla aktarıldı.`, 'success');
                 } catch (err) {
                     console.error(err);
                     showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
