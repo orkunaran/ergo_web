@@ -63,15 +63,17 @@
                     <p class="text-sm text-gray-500 mt-2">Lütfen giriş yönteminizi seçiniz</p>
                 </div>
 
+                <!-- Tab Butonları -->
                 <div class="flex border-b border-gray-200 mb-6">
                     <button onclick="switchLoginTab('staff')" id="tabStaff" class="w-1/2 py-2 text-sm font-semibold border-b-2 border-hu-purple text-hu-purple transition-colors">
-                        Personel / Akademisyen
+                        Personel / Koordinatör
                     </button>
                     <button onclick="switchLoginTab('student')" id="tabStudent" class="w-1/2 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">
                         Öğrenci
                     </button>
                 </div>
 
+                <!-- Personel Giriş Formu -->
                 <form id="staffLoginForm" onsubmit="handleLogin(event, 'staff')" class="space-y-5">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
@@ -96,6 +98,7 @@
                     </button>
                 </form>
 
+                <!-- Öğrenci Giriş Formu -->
                 <form id="studentLoginForm" onsubmit="handleLogin(event, 'student')" class="space-y-5 hidden">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası</label>
@@ -119,57 +122,16 @@
                         Öğrenci Girişi Yap
                     </button>
                 </form>
-                
-                <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-400 space-y-1">
-                    <p class="font-semibold text-gray-500 mb-1">Test Hesapları (Şifreler: 1234):</p>
-                    <p class="text-purple-700 font-bold bg-purple-50 p-1 rounded"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Webmaster (Tüm Roller): webmaster@test.com</p>
-                    <p>Admin: admin@test.com</p>
-                    <p>Öğretim Üyesi: akademik@test.com</p>
-                    <p>Süpervizör: super@test.com</p>
-                    <p>Öğrenci No: 220000</p>
-                </div>
             </div>
         </div>
     </main>
 
     <footer class="bg-white border-t py-4 text-center text-sm text-gray-500 flex flex-col items-center justify-center">
         <p>&copy; 2026 Hacettepe Üniversitesi Ergoterapi Bölümü. Tüm hakları saklıdır.</p>
-        <button onclick="resetSystem()" class="mt-2 text-xs text-red-400 hover:text-red-600 underline font-medium cursor-pointer">
-            <i class="fa-solid fa-rotate-right mr-1"></i>Geliştirici: Sistemi/Veritabanını Sıfırla
-        </button>
     </footer>
 
     <script>
-        function resetSystem() {
-            if(confirm("Tüm test verileri sıfırlanacak ve başlangıç durumuna dönecektir. Emin misiniz?")) {
-                localStorage.clear();
-                showToast("Veritabanı sıfırlandı. Sayfa yenileniyor...", "success");
-                setTimeout(() => location.reload(), 1500);
-            }
-        }
-
-        function initializeMockDatabase() {
-            const defaultUsers = [
-                { id: 99, role: 'webmaster', email: 'webmaster@test.com', password: '1234', name: 'Webmaster / Sistem Yöneticisi' },
-                { id: 1, role: 'admin', email: 'admin@test.com', password: '1234', name: 'Sistem Yöneticisi' },
-                { id: 10, role: 'academic', email: 'akademik@test.com', password: '1234', name: 'Prof. Dr. Bölüm Başkanı' },
-                { id: 2, role: 'supervisor', email: 'super@test.com', password: '1234', name: 'Uzm. Erg. Ayşe Yılmaz' },
-                { id: 3, role: 'student', studentNo: '220000', password: '1234', name: 'Ali Can', supervisorId: 2, attendance: [] }
-            ];
-
-            let currentUsers = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-
-            if (currentUsers.length === 0) {
-                localStorage.setItem('ergoUsers', JSON.stringify(defaultUsers));
-            } else {
-                // Önceden oluşturan veritabanlarında Webmaster yoksa otomatik en başa ekle
-                const hasWebmaster = currentUsers.some(u => u.role === 'webmaster' || u.email === 'webmaster@test.com');
-                if (!hasWebmaster) {
-                    currentUsers.unshift(defaultUsers[0]);
-                    localStorage.setItem('ergoUsers', JSON.stringify(currentUsers));
-                }
-            }
-        }
+        const API_URL = 'http://localhost:5000/api';
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toastContainer');
@@ -214,45 +176,55 @@
             }
         }
 
-        function handleLogin(event, type) {
+        // CANLI MYSQL İLE GÜVENLİ GİRİŞ İŞLEMİ
+        async function handleLogin(event, type) {
             event.preventDefault();
             
-            const users = JSON.parse(localStorage.getItem('ergoUsers')) || [];
-            let authenticatedUser = null;
+            let payload = { loginType: type };
 
             if (type === 'staff') {
-                const email = document.getElementById('staffEmail').value.trim();
-                const password = document.getElementById('staffPassword').value.trim();
-                authenticatedUser = users.find(u => (u.role === 'webmaster' || u.role === 'admin' || u.role === 'supervisor' || u.role === 'academic') && u.email && u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+                payload.identifier = document.getElementById('staffEmail').value.trim();
+                payload.password = document.getElementById('staffPassword').value.trim();
             } else {
-                const studentNo = document.getElementById('studentId').value.trim();
-                const password = document.getElementById('studentPassword').value.trim();
-                authenticatedUser = users.find(u => u.role === 'student' && u.studentNo === studentNo && u.password === password);
+                payload.identifier = document.getElementById('studentId').value.trim();
+                payload.password = document.getElementById('studentPassword').value.trim();
             }
 
-            if (authenticatedUser) {
-                localStorage.setItem('activeUser', JSON.stringify(authenticatedUser));
-                showToast(`Giriş başarılı! ${authenticatedUser.name} olarak yönlendiriliyorsunuz...`, 'success');
-                
-                setTimeout(() => {
-                    if (authenticatedUser.role === 'webmaster' || authenticatedUser.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else if (authenticatedUser.role === 'academic') {
-                        window.location.href = 'academic.html';
-                    } else if (authenticatedUser.role === 'supervisor') {
-                        window.location.href = 'supervisor.html';
-                    } else if (authenticatedUser.role === 'student') {
-                        window.location.href = 'student.html';
-                    }
-                }, 800);
-            } else {
-                showToast('Hatalı e-posta, öğrenci numarası veya şifre. Lütfen kontrol ediniz.');
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('activeUser', JSON.stringify(data.user));
+
+                    showToast(`Giriş başarılı! Hoş geldiniz, ${data.user.name}`, 'success');
+                    
+                    setTimeout(() => {
+                        const role = data.user.role;
+                        if (role === 'admin' || role === 'webmaster') {
+                            window.location.href = 'admin.html';
+                        } else if (role === 'coordinator' || role === 'academic') {
+                            window.location.href = 'coordinator.html';
+                        } else if (role === 'supervisor') {
+                            window.location.href = 'supervisor.html';
+                        } else if (role === 'student') {
+                            window.location.href = 'student.html';
+                        }
+                    }, 800);
+                } else {
+                    showToast(data.message || 'Hatalı e-posta, öğrenci numarası veya şifre.');
+                }
+            } catch (error) {
+                console.error('Login Hatası:', error);
+                showToast('Sunucuya bağlanılamadı. MySQL ve backend sunucusunun açık olduğundan emin olun.');
             }
         }
-
-        window.onload = function() {
-            initializeMockDatabase();
-        };
     </script>
 </body>
 </html>
