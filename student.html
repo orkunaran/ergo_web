@@ -203,8 +203,24 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:5000/api';
+        const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
+
+        function getToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
+
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '--.--.----';
+            if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+            if (dateStr.includes('-')) {
+                const p = dateStr.split('-');
+                if (p.length === 3 && p[0].length === 4) {
+                    return `${p[2]}.${p[1]}.${p[0]}`;
+                }
+            }
+            return dateStr;
+        }
 
         document.addEventListener("DOMContentLoaded", () => {
             let activeUser = JSON.parse(localStorage.getItem('activeUser'));
@@ -229,6 +245,7 @@
 
         function logout() {
             localStorage.removeItem('activeUser');
+            localStorage.removeItem('token');
             localStorage.removeItem('authToken');
             try { window.location.href = 'index.html'; } catch(e) {}
         }
@@ -266,7 +283,7 @@
         // CANLI MYSQL'DEN ÖĞRENCİ, STAJ DERSİ VE HEDEF/ONAYLI GÜN SAYISINI ÇEKME
         async function loadAttendanceData() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/student/data`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -280,23 +297,20 @@
                         document.getElementById('supervisorNameDisplay').innerText = data.supervisor_name;
                     }
 
-                    // Staj Ders Kodu ve Tarihleri Güncelle
+                    // Staj Ders Kodu ve İsim Güncelleme
                     if (data.course_code) {
                         document.getElementById('courseCodeDisplay').innerText = data.course_code;
                         document.getElementById('courseNameDisplay').innerText = data.course_name || 'Mesleki Uygulama';
-                    } else if (currentUser.courseCode) {
-                        document.getElementById('courseCodeDisplay').innerText = currentUser.courseCode;
-                        document.getElementById('courseNameDisplay').innerText = currentUser.courseName || 'Mesleki Uygulama';
                     }
 
-                    const startDate = data.start_date || currentUser.startDate || '--.--.----';
-                    const endDate = data.end_date || currentUser.endDate || '--.--.----';
-                    document.getElementById('internshipDatesDisplay').innerText = `${startDate} - ${endDate}`;
+                    const startFormatted = formatDisplayDate(data.start_date || currentUser.startDate);
+                    const endFormatted = formatDisplayDate(data.end_date || currentUser.endDate);
+                    document.getElementById('internshipDatesDisplay').innerText = `${startFormatted} - ${endFormatted}`;
 
-                    // --- İLERLEME VE TELAFİ SAYAÇ MANTIĞI ---
+                    // İlerleme ve Telafi Sayacı
                     const requiredDays = data.required_days || currentUser.requiredDays || 20;
                     const approvedDays = data.approved_days || 0;
-                    const missingDays = requiredDays - approvedDays;
+                    const missingDays = Math.max(0, requiredDays - approvedDays);
                     const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
 
                     document.getElementById('progressTextDisplay').innerText = `${approvedDays} / ${requiredDays} Gün (%${percent})`;
@@ -308,11 +322,26 @@
                         alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2"></i>Tebrikler! Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.`;
                     } else {
                         alertCard.className = "p-3 rounded-xl text-xs font-medium flex items-center bg-amber-50 text-amber-900 border border-amber-200";
-                        alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır. Lütfen günlerinizi tamamlayınız.</span>`;
+                        alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
                     }
 
-                    // Yoklama Geçmişini Render Et
+                    // Yoklama Geçmişini Listele
                     const attendance = data.attendances || [];
+                    const todayStr = new Date().toLocaleDateString('tr-TR');
+                    const hasTodayRecord = attendance.some(a => a.date === todayStr);
+
+                    const checkInBtn = document.getElementById('checkInBtn');
+                    const checkInBtnText = document.getElementById('checkInBtnText');
+
+                    if (hasTodayRecord) {
+                        checkInBtn.disabled = true;
+                        checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-base rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                        checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
+                    } else {
+                        checkInBtn.disabled = false;
+                        checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3";
+                        checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
+                    }
 
                     if (attendance.length === 0) {
                         listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
@@ -332,7 +361,7 @@
                             <div class="p-3 flex justify-between items-center text-xs">
                                 <div>
                                     <span class="font-bold text-gray-800">${item.date}</span> ${retroBadge}
-                                    <p class="text-[11px] text-gray-400 mt-0.5">${item.created_at || item.time} - ${item.excuse ? 'Mazeret: ' + item.excuse : (item.location_info || 'GPS')}</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">${item.time || ''} - ${item.excuse ? 'Mazeret: ' + item.excuse : (item.location_info || 'GPS Konumu')}</p>
                                 </div>
                                 <div>${statusBadge}</div>
                             </div>
@@ -346,10 +375,10 @@
             }
         }
 
-        // CANLI MYSQL'E GPS YOKLAMA GÖNDERME
+        // GPS YOKLAMA GÖNDERME
         async function handleCheckIn() {
             const btnText = document.getElementById('checkInBtnText');
-            btnText.innerText = "GPS Alınıyor...";
+            btnText.innerText = "GPS Konumu Alınıyor...";
 
             let locationInfo = 'GPS Konumu Alındı';
 
@@ -362,7 +391,7 @@
                         sendCheckInRequest(locationInfo);
                     },
                     (error) => {
-                        sendCheckInRequest("GPS Alınamadı (Cihaz Saati)");
+                        sendCheckInRequest("GPS Alınamadı (Cihaz Bildirimi)");
                     },
                     { timeout: 5000 }
                 );
@@ -373,7 +402,7 @@
 
         async function sendCheckInRequest(locationInfo) {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/attendance/check-in`, {
                     method: 'POST',
                     headers: { 
@@ -386,14 +415,14 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast("Yoklama kaydınız alındı!", "success");
+                    showToast("Yoklama kaydınız başarıyla alındı!", "success");
                     loadAttendanceData();
                 } else {
                     showToast(data.message || "Yoklama gönderilemedi.", "error");
+                    document.getElementById('checkInBtnText').innerText = "STAJDAYIM / YOKLAMA VER";
                 }
             } catch (err) {
                 showToast("Sunucu bağlantı hatası.", "error");
-            } finally {
                 document.getElementById('checkInBtnText').innerText = "STAJDAYIM / YOKLAMA VER";
             }
         }
@@ -417,7 +446,7 @@
             const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/attendance/retroactive`, {
                     method: 'POST',
                     headers: { 
@@ -433,7 +462,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast("Mazeretli yoklama talebiniz gönderildi.", "success");
+                    showToast("Mazeretli yoklama talebiniz iletildi.", "success");
                     closeRetroactiveModal();
                     loadAttendanceData();
                 } else {

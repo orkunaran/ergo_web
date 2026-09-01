@@ -61,7 +61,7 @@
                     <div>
                         <h1 class="font-bold text-lg leading-tight hidden sm:block">Hacettepe Üniversitesi Ergoterapi</h1>
                         <h1 class="font-bold text-lg leading-tight sm:hidden">H.Ü. Ergoterapi</h1>
-                        <p class="text-xs text-purple-200">Sistem Yönetimi</p>
+                        <p class="text-xs text-purple-200">Sistem Yönetimi (Canlı MySQL)</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -102,7 +102,13 @@
         
         <!-- DASHBOARD (GENEL BAKIŞ) -->
         <div id="dashboard-section" class="fade-in space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800">Sistem İstatistikleri</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">Sistem İstatistikleri</h2>
+                <button onclick="loadData()" class="text-xs text-hu-purple font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border shadow-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i>Canlı Verileri Yenile
+                </button>
+            </div>
+            
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div class="bg-white overflow-hidden shadow rounded-xl border border-gray-100">
                     <div class="p-5">
@@ -152,8 +158,8 @@
             </div>
             
             <div class="bg-white shadow rounded-xl p-6 mt-8 border border-gray-100">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Hoş Geldiniz</h3>
-                <p class="text-gray-600 text-sm">Bu panel üzerinden Ergoterapi dış staj sistemine staj koordinatörleri, saha süpervizörleri ve öğrenciler ekleyebilirsiniz. Eklenen her kullanıcı kendi yetki seviyesiyle ana sayfadan giriş yapabilecektir.</p>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Canlı Veritabanı Entegrasyonu Aktif</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Eklenen veya güncellenen tüm süpervizör, koordinatör ve öğrenci kayıtları doğrudan MySQL veritabanına yazılır. Sistem yeniden başlatılsa dahi verileriniz kalıcı olarak korunur.</p>
             </div>
         </div>
 
@@ -164,7 +170,6 @@
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 id="coordFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Koordinatör Ekle</h3>
                         <form id="addCoordinatorForm" onsubmit="handleAddCoordinator(event)" class="space-y-4">
-                            <input type="hidden" id="editCoordId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Unvan ve Ad Soyad</label>
                                 <input type="text" id="coordName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Prof. Dr. Staj Koordinatörü">
@@ -177,21 +182,16 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="coordPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <div class="flex gap-2">
-                                <button id="coordSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                    Kaydet ve Ekle
-                                </button>
-                                <button type="button" id="cancelCoordBtn" onclick="cancelCoordEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
-                                    İptal
-                                </button>
-                            </div>
+                            <button id="coordSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                MySQL'e Kaydet ve Ekle
+                            </button>
                         </form>
                     </div>
 
                     <!-- Koordinatör Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Koordinatör Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olmalıdır:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
+                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları: <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
                         
                         <label for="excelUploadCoord" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -213,8 +213,8 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta / Şifre</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                                     </tr>
                                 </thead>
                                 <tbody id="coordinatorsTableBody" class="bg-white divide-y divide-gray-200">
@@ -233,7 +233,6 @@
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 id="supFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle</h3>
                         <form id="addSupervisorForm" onsubmit="handleAddSupervisor(event)" class="space-y-4">
-                            <input type="hidden" id="editSupId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad (Unvan ile)</label>
                                 <input type="text" id="supName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Uzm. Erg. Ayşe Yılmaz">
@@ -246,21 +245,16 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="supPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <div class="flex gap-2">
-                                <button id="supSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                    Kaydet ve Ekle
-                                </button>
-                                <button type="button" id="cancelSupBtn" onclick="cancelSupEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
-                                    İptal
-                                </button>
-                            </div>
+                            <button id="supSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                MySQL'e Kaydet ve Ekle
+                            </button>
                         </form>
                     </div>
 
                     <!-- Süpervizör Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Süpervizör Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olmalıdır:<br><b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
+                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları: <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
                         
                         <label for="excelUploadSup" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -282,8 +276,8 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta / Şifre</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                                     </tr>
                                 </thead>
                                 <tbody id="supervisorsTableBody" class="bg-white divide-y divide-gray-200">
@@ -302,14 +296,13 @@
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
                         <h3 id="stuFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle</h3>
                         <form id="addStudentForm" onsubmit="handleAddStudent(event)" class="space-y-4">
-                            <input type="hidden" id="editStuId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Adı Soyadı</label>
                                 <input type="text" id="stuName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Ali Can">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası (Giriş için)</label>
-                                <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 220000">
+                                <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 22000001">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Staj Ders Kodu</label>
@@ -326,7 +319,6 @@
                                 </select>
                             </div>
                             
-                            <!-- HEDEF STAJ GÜN SAYISI -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Hedef Staj Gün Sayısı</label>
                                 <input type="number" id="stuRequiredDays" min="1" max="100" value="20" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 20">
@@ -352,21 +344,16 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="stuPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <div class="flex gap-2">
-                                <button id="stuSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                    Öğrenciyi Ekle ve Ata
-                                </button>
-                                <button type="button" id="cancelStuBtn" onclick="cancelStuEdit()" class="hidden w-1/3 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium transition-colors">
-                                    İptal
-                                </button>
-                            </div>
+                            <button id="stuSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
+                                MySQL'e Ekle ve Ata
+                            </button>
                         </form>
                     </div>
 
-                    <!-- Öğrenci Excel Import (Hedef Gün / Staj Kodu / Tarih / Süpervizör Destekli) -->
+                    <!-- Öğrenci Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Öğrenci Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları şu şekilde olabilir:<br>
+                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları:<br>
                             <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Hedef Staj Gün Sayısı</b> | <b class="text-purple-700">Staj Başlangıç</b> | <b class="text-purple-700">Staj Bitiş</b> | <b class="text-purple-700">Süpervizör E-posta</b>
                         </p>
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
@@ -391,7 +378,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad / No</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atandığı Süpervizör</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Dersi / Hedef Gün</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
@@ -406,9 +393,8 @@
     </main>
 
     <script>
-        const API_URL = 'http://localhost:5000/api';
+        const API_URL = `${window.location.origin}/api`;
 
-        // Ders Kodu - Ders Adı Eşleşme Haritası
         const COURSE_MAP = {
             'ERG 228': 'Mesleki Uygulama I',
             'ERG 328': 'Mesleki Uygulama II',
@@ -419,6 +405,10 @@
             'ERG 431': 'Mesleki Uygulama VII',
             'ERG 432': 'Mesleki Uygulama VIII'
         };
+
+        function getToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
 
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
@@ -439,6 +429,7 @@
 
         function logout() {
             localStorage.removeItem('activeUser');
+            localStorage.removeItem('token');
             localStorage.removeItem('authToken');
             try { window.location.href = 'index.html'; } catch(e) {}
         }
@@ -448,11 +439,11 @@
             if(!container) return;
             const toast = document.createElement('div');
             
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const bgColor = type === 'success' ? 'bg-green-600' : 'bg-rose-600';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
 
-            toast.className = `flex items-center text-white px-4 py-3 rounded shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="fa-solid ${icon} mr-2"></i><span>${message}</span>`;
+            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-lg ${bgColor} transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto text-xs font-semibold`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-sm"></i><span>${message}</span>`;
             
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
@@ -488,228 +479,183 @@
             }
         }
 
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('ergoUsers')) || [];
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('ergoUsers', JSON.stringify(users));
-        }
-
-        function loadData() {
-            const users = getUsers();
-            const coordinators = users.filter(u => u.role === 'coordinator' || u.role === 'academic');
-            const supervisors = users.filter(u => u.role === 'supervisor');
-            const students = users.filter(u => u.role === 'student');
-
-            document.getElementById('stat-coordinators').innerText = coordinators.length;
-            document.getElementById('stat-supervisors').innerText = supervisors.length;
-            document.getElementById('stat-students').innerText = students.length;
-
-            // Staj Koordinatörü Tablosu
-            const coordTable = document.getElementById('coordinatorsTableBody');
-            if(coordTable) {
-                coordTable.innerHTML = '';
-                if(coordinators.length === 0) {
-                    coordTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı staj koordinatörü bulunmuyor.</td></tr>`;
+        // CANLI MYSQL'DEN VERİLERİ ÇEKİP TABLOLARA DOLDURAN ANA FONKSİYON
+        async function loadData() {
+            const token = getToken();
+            try {
+                // 1. Koordinatör ve Süpervizörleri Çek
+                const staffRes = await fetch(`${API_URL}/admin/supervisors`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                let coordinators = [];
+                let supervisors = [];
+                
+                if (staffRes.ok) {
+                    const allStaff = await staffRes.json();
+                    coordinators = allStaff.filter(u => u.role === 'coordinator' || u.role === 'academic');
+                    supervisors = allStaff.filter(u => u.role === 'supervisor');
                 }
-                coordinators.forEach(coord => {
-                    coordTable.innerHTML += `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${coord.name}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${coord.email}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button onclick="editCoordinator(${coord.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
-                                <button onclick="deleteUser(${coord.id})" class="text-red-600 font-bold hover:underline">Sil</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
 
-            // Süpervizör Tablosu
-            const supTable = document.getElementById('supervisorsTableBody');
-            if(supTable) {
-                supTable.innerHTML = '';
-                if(supervisors.length === 0) {
-                    supTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı süpervizör bulunmuyor.</td></tr>`;
+                // 2. Öğrencileri Çek
+                const stuRes = await fetch(`${API_URL}/coordinator/students`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                let students = [];
+                if (stuRes.ok) {
+                    students = await stuRes.json();
                 }
-                supervisors.forEach(sup => {
-                    supTable.innerHTML += `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${sup.name}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${sup.email}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button onclick="editSupervisor(${sup.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
-                                <button onclick="deleteUser(${sup.id})" class="text-red-600 font-bold hover:underline">Sil</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
 
-            // Öğrenci Tablosu
-            const stuTable = document.getElementById('studentsTableBody');
-            if(stuTable) {
-                stuTable.innerHTML = '';
-                if(students.length === 0) {
-                    stuTable.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+                // İstatistikleri Güncelle
+                document.getElementById('stat-coordinators').innerText = coordinators.length;
+                document.getElementById('stat-supervisors').innerText = supervisors.length;
+                document.getElementById('stat-students').innerText = students.length;
+
+                // Koordinatör Tablosu
+                const coordTable = document.getElementById('coordinatorsTableBody');
+                if(coordTable) {
+                    coordTable.innerHTML = '';
+                    if(coordinators.length === 0) {
+                        coordTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı staj koordinatörü bulunmuyor.</td></tr>`;
+                    }
+                    coordinators.forEach(coord => {
+                        coordTable.innerHTML += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${coord.name}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${coord.email}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right"><span class="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold">Aktif</span></td>
+                            </tr>
+                        `;
+                    });
                 }
-                students.forEach(stu => {
-                    const assignedSup = supervisors.find(s => s.id === parseInt(stu.supervisorId));
-                    const supName = assignedSup ? assignedSup.name : '<span class="text-red-500">Atanmamış</span>';
-                    const codeBadge = stu.courseCode 
-                        ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${stu.courseCode} (${stu.requiredDays || 20} Gün)</span>` 
-                        : '<span class="text-gray-400 text-xs italic">Tanımlanmadı</span>';
 
-                    stuTable.innerHTML += `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${stu.name} (${stu.studentNo})</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${codeBadge}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <button onclick="editStudent(${stu.id})" class="text-blue-600 font-bold hover:underline mr-3">Düzenle</button>
-                                <button onclick="deleteUser(${stu.id})" class="text-red-600 font-bold hover:underline">Sil</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+                // Süpervizör Tablosu
+                const supTable = document.getElementById('supervisorsTableBody');
+                if(supTable) {
+                    supTable.innerHTML = '';
+                    if(supervisors.length === 0) {
+                        supTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı süpervizör bulunmuyor.</td></tr>`;
+                    }
+                    supervisors.forEach(sup => {
+                        supTable.innerHTML += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${sup.name}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${sup.email}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right"><span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold">Aktif</span></td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Öğrenci Tablosu
+                const stuTable = document.getElementById('studentsTableBody');
+                if(stuTable) {
+                    stuTable.innerHTML = '';
+                    if(students.length === 0) {
+                        stuTable.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+                    }
+                    students.forEach(stu => {
+                        const supName = stu.supervisor_name ? stu.supervisor_name : '<span class="text-rose-500 font-bold">Atanmamış</span>';
+                        const codeBadge = stu.course_code 
+                            ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${stu.course_code} (${stu.required_days || 20} Gün)</span>` 
+                            : '<span class="text-gray-400 text-xs italic">Tanımlanmadı</span>';
+
+                        stuTable.innerHTML += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${stu.name} (${stu.student_no})</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">${codeBadge}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right"><span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">Stajyer</span></td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Öğrenci Formundaki Süpervizör Seçim Kutusunu Doldur
+                const selectBox = document.getElementById('stuSupervisor');
+                if(selectBox) {
+                    const currentVal = selectBox.value;
+                    selectBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
+                    supervisors.forEach(sup => {
+                        selectBox.innerHTML += `<option value="${sup.id}">${sup.name}</option>`;
+                    });
+                    if(currentVal) selectBox.value = currentVal;
+                }
+
+            } catch (err) {
+                console.error('Veri yükleme hatası:', err);
+                showToast('Veriler yüklenirken sunucu hatası oluştu.', 'error');
             }
-
-            // Öğrenci Formundaki Süpervizör Seçim Kutusu
-            const selectBox = document.getElementById('stuSupervisor');
-            if(selectBox) {
-                const currentVal = selectBox.value;
-                selectBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
-                supervisors.forEach(sup => {
-                    selectBox.innerHTML += `<option value="${sup.id}">${sup.name}</option>`;
-                });
-                if(currentVal) selectBox.value = currentVal;
-            }
         }
 
-        function editCoordinator(id) {
-            const users = getUsers();
-            const coord = users.find(u => u.id === id);
-            if (!coord) return;
-
-            document.getElementById('editCoordId').value = coord.id;
-            document.getElementById('coordName').value = coord.name;
-            document.getElementById('coordEmail').value = coord.email;
-            document.getElementById('coordPassword').value = coord.password;
-
-            document.getElementById('coordFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Koordinatör Düzenle';
-            document.getElementById('coordSubmitBtn').innerText = 'Güncelle ve Kaydet';
-            document.getElementById('cancelCoordBtn').classList.remove('hidden');
-        }
-
-        function cancelCoordEdit() {
-            document.getElementById('editCoordId').value = '';
-            document.getElementById('addCoordinatorForm').reset();
-            document.getElementById('coordFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Koordinatör Ekle';
-            document.getElementById('coordSubmitBtn').innerText = 'Kaydet ve Ekle';
-            document.getElementById('cancelCoordBtn').classList.add('hidden');
-        }
-
-        function handleAddCoordinator(e) {
+        // CANLI MYSQL: YENİ KOORDİNATÖR EKLEME
+        async function handleAddCoordinator(e) {
             e.preventDefault();
-            const editId = document.getElementById('editCoordId').value;
             const name = document.getElementById('coordName').value;
             const email = document.getElementById('coordEmail').value;
             const password = document.getElementById('coordPassword').value;
 
-            let users = getUsers();
+            try {
+                const token = getToken();
+                const res = await fetch(`${API_URL}/admin/supervisors/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, email, password, role: 'coordinator' })
+                });
 
-            if (editId) {
-                users = users.map(u => u.id == editId ? { ...u, name, email, password } : u);
-                showToast('Staj Koordinatörü güncellendi.', 'success');
-            } else {
-                users.push({ id: Date.now(), role: 'coordinator', name, email, password });
-                showToast('Staj Koordinatörü eklendi.', 'success');
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Staj Koordinatörü başarıyla kaydedildi.', 'success');
+                    document.getElementById('addCoordinatorForm').reset();
+                    document.getElementById('coordPassword').value = '1234';
+                    loadData();
+                } else {
+                    showToast(data.message || 'Kayıt başarısız.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucuya bağlanılamadı.', 'error');
             }
-
-            saveUsers(users);
-            cancelCoordEdit();
-            loadData();
         }
 
-        function editSupervisor(id) {
-            const users = getUsers();
-            const sup = users.find(u => u.id === id);
-            if (!sup) return;
-
-            document.getElementById('editSupId').value = sup.id;
-            document.getElementById('supName').value = sup.name;
-            document.getElementById('supEmail').value = sup.email;
-            document.getElementById('supPassword').value = sup.password;
-
-            document.getElementById('supFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Süpervizör Düzenle';
-            document.getElementById('supSubmitBtn').innerText = 'Güncelle ve Kaydet';
-            document.getElementById('cancelSupBtn').classList.remove('hidden');
-        }
-
-        function cancelSupEdit() {
-            document.getElementById('editSupId').value = '';
-            document.getElementById('addSupervisorForm').reset();
-            document.getElementById('supFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle';
-            document.getElementById('supSubmitBtn').innerText = 'Kaydet ve Ekle';
-            document.getElementById('cancelSupBtn').classList.add('hidden');
-        }
-
-        function handleAddSupervisor(e) {
+        // CANLI MYSQL: YENİ SÜPERVİZÖR EKLEME
+        async function handleAddSupervisor(e) {
             e.preventDefault();
-            const editId = document.getElementById('editSupId').value;
             const name = document.getElementById('supName').value;
             const email = document.getElementById('supEmail').value;
             const password = document.getElementById('supPassword').value;
 
-            let users = getUsers();
+            try {
+                const token = getToken();
+                const res = await fetch(`${API_URL}/admin/supervisors/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, email, password, role: 'supervisor' })
+                });
 
-            if (editId) {
-                users = users.map(u => u.id == editId ? { ...u, name, email, password } : u);
-                showToast('Süpervizör güncellendi.', 'success');
-            } else {
-                users.push({ id: Date.now(), role: 'supervisor', name, email, password });
-                showToast('Süpervizör eklendi.', 'success');
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Süpervizör başarıyla kaydedildi.', 'success');
+                    document.getElementById('addSupervisorForm').reset();
+                    document.getElementById('supPassword').value = '1234';
+                    loadData();
+                } else {
+                    showToast(data.message || 'Kayıt başarısız.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucuya bağlanılamadı.', 'error');
             }
-
-            saveUsers(users);
-            cancelSupEdit();
-            loadData();
         }
 
-        function editStudent(id) {
-            const users = getUsers();
-            const stu = users.find(u => u.id === id);
-            if (!stu) return;
-
-            document.getElementById('editStuId').value = stu.id;
-            document.getElementById('stuName').value = stu.name;
-            document.getElementById('stuNo').value = stu.studentNo;
-            document.getElementById('stuSupervisor').value = stu.supervisorId || '';
-            document.getElementById('stuPassword').value = stu.password;
-            document.getElementById('stuCourseCode').value = stu.courseCode || '';
-            document.getElementById('stuRequiredDays').value = stu.requiredDays || 20;
-            document.getElementById('stuStartDate').value = stu.startDate || '';
-            document.getElementById('stuEndDate').value = stu.endDate || '';
-
-            document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Öğrenci Düzenle';
-            document.getElementById('stuSubmitBtn').innerText = 'Güncelle ve Kaydet';
-            document.getElementById('cancelStuBtn').classList.remove('hidden');
-        }
-
-        function cancelStuEdit() {
-            document.getElementById('editStuId').value = '';
-            document.getElementById('addStudentForm').reset();
-            document.getElementById('stuRequiredDays').value = 20;
-            document.getElementById('stuFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle';
-            document.getElementById('stuSubmitBtn').innerText = 'Öğrenciyi Ekle ve Ata';
-            document.getElementById('cancelStuBtn').classList.add('hidden');
-        }
-
+        // CANLI MYSQL: YENİ ÖĞRENCİ VE STAJ DERSİ EKLEME
         async function handleAddStudent(e) {
             e.preventDefault();
-            const editId = document.getElementById('editStuId').value;
             const name = document.getElementById('stuName').value;
             const studentNo = document.getElementById('stuNo').value;
             const supervisorId = document.getElementById('stuSupervisor').value;
@@ -719,7 +665,6 @@
             const startDate = document.getElementById('stuStartDate').value;
             const endDate = document.getElementById('stuEndDate').value;
 
-            let users = getUsers();
             const payloadStudent = {
                 name,
                 studentNo,
@@ -732,18 +677,9 @@
                 endDate: endDate || null
             };
 
-            // LocalStorage Güncellemesi
-            if (editId) {
-                users = users.map(u => u.id == editId ? { ...u, ...payloadStudent } : u);
-            } else {
-                users.push({ id: Date.now(), role: 'student', ...payloadStudent, attendance: [], grade: null });
-            }
-            saveUsers(users);
-
-            // Live Backend MySQL Kaydı
             try {
-                const token = localStorage.getItem('authToken');
-                await fetch(`${API_URL}/admin/students/save`, {
+                const token = getToken();
+                const res = await fetch(`${API_URL}/admin/students/save`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -751,109 +687,93 @@
                     },
                     body: JSON.stringify({ students: [payloadStudent] })
                 });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Öğrenci ve staj tanımı başarıyla MySQL veritabanına kaydedildi.', 'success');
+                    document.getElementById('addStudentForm').reset();
+                    document.getElementById('stuRequiredDays').value = 20;
+                    document.getElementById('stuPassword').value = '1234';
+                    loadData();
+                } else {
+                    showToast(data.message || 'Öğrenci kaydedilemedi.', 'error');
+                }
             } catch(err) {
-                console.error('Backend kayıt uyarısı:', err);
-            }
-
-            showToast(editId ? 'Öğrenci güncellendi.' : 'Öğrenci ve staj dersi kaydedildi.', 'success');
-            cancelStuEdit();
-            loadData();
-        }
-
-        function deleteUser(userId) {
-            if(confirm('Kullanıcıyı silmek istediğinize emin misiniz?')) {
-                let users = getUsers();
-                users = users.filter(u => u.id !== userId);
-                saveUsers(users);
-                loadData();
-                showToast('Kullanıcı silindi.', 'success');
+                showToast('Sunucu bağlantı hatası.', 'error');
             }
         }
 
-        // KOORDİNATÖR EXCEL IMPORT
-        function handleCoordinatorExcelUpload(e) {
+        // EXCEL TOPLU KOORDİNATÖR
+        async function handleCoordinatorExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 try {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
-                    let users = getUsers();
-                    let addedCount = 0;
-                    rows.forEach(row => {
-                        const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'] || row['Name'];
-                        const email = row['E-posta'] || row['Email'] || row['Eposta'];
-                        const password = row['Şifre'] || row['Password'] || '1234';
-                        
-                        if (name && email) {
-                            users.push({
-                                id: Date.now() + Math.random(),
-                                role: 'coordinator',
-                                name: String(name).trim(),
-                                email: String(email).trim(),
-                                password: String(password).trim()
-                            });
-                            addedCount++;
-                        }
-                    });
-                    saveUsers(users);
-                    loadData();
-                    showToast(`${addedCount} staj koordinatörü Excel'den başarıyla eklendi.`, 'success');
-                } catch (err) {
-                    showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
-                } finally {
-                    e.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // SÜPERVİZÖR EXCEL IMPORT
-        function handleSupervisorExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
-                    
-                    let users = getUsers();
-                    let addedCount = 0;
-                    rows.forEach(row => {
-                        const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'] || row['Name'];
+                    const token = getToken();
+                    let count = 0;
+                    for (const row of rows) {
+                        const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'];
                         const email = row['E-posta'] || row['Email'];
-                        const password = row['Şifre'] || row['Password'] || '1234';
+                        const password = row['Şifre'] || '1234';
                         if (name && email) {
-                            users.push({
-                                id: Date.now() + Math.random(),
-                                role: 'supervisor',
-                                name: String(name).trim(),
-                                email: String(email).trim(),
-                                password: String(password).trim()
+                            await fetch(`${API_URL}/admin/supervisors/save`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ name: String(name).trim(), email: String(email).trim(), password: String(password).trim(), role: 'coordinator' })
                             });
-                            addedCount++;
+                            count++;
                         }
-                    });
-                    saveUsers(users);
+                    }
+                    showToast(`${count} koordinatör veritabanına aktarıldı.`, 'success');
                     loadData();
-                    showToast(`${addedCount} süpervizör Excel'den başarıyla eklendi.`, 'success');
                 } catch (err) {
-                    showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
-                } finally {
-                    e.target.value = '';
-                }
+                    showToast('Excel işlenirken hata oluştu.', 'error');
+                } finally { e.target.value = ''; }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // GELİŞTİRİLMİŞ ÖĞRENCİ EXCEL IMPORT (HEDEF GÜN SAYISI & CANLI MYSQL API)
+        // EXCEL TOPLU SÜPERVİZÖR
+        async function handleSupervisorExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    
+                    const token = getToken();
+                    let count = 0;
+                    for (const row of rows) {
+                        const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'];
+                        const email = row['E-posta'] || row['Email'];
+                        const password = row['Şifre'] || '1234';
+                        if (name && email) {
+                            await fetch(`${API_URL}/admin/supervisors/save`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ name: String(name).trim(), email: String(email).trim(), password: String(password).trim(), role: 'supervisor' })
+                            });
+                            count++;
+                        }
+                    }
+                    showToast(`${count} süpervizör veritabanına aktarıldı.`, 'success');
+                    loadData();
+                } catch (err) {
+                    showToast('Excel işlenirken hata oluştu.', 'error');
+                } finally { e.target.value = ''; }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // EXCEL TOPLU ÖĞRENCİ
         async function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -863,11 +783,14 @@
                 try {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
-                    let users = getUsers();
-                    const supervisors = users.filter(u => u.role === 'supervisor');
+                    const token = getToken();
+                    // Güncel süpervizörleri al
+                    const staffRes = await fetch(`${API_URL}/admin/supervisors`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const allStaff = staffRes.ok ? await staffRes.json() : [];
+                    const supervisors = allStaff.filter(u => u.role === 'supervisor');
+
                     let payloadStudents = [];
 
                     rows.forEach(row => {
@@ -876,38 +799,24 @@
                         const password = row['Şifre'] || row['Password'] || '1234';
                         
                         const courseCode = (row['Staj Ders Kodu'] || row['Ders Kodu'] || row['CourseCode'] || '').toString().trim().toUpperCase();
-                        const requiredDaysVal = row['Hedef Staj Gün Sayısı'] || row['Staj Gün Sayısı'] || row['Required Days'] || row['Hedef Gün'] || 20;
-                        const startDate = row['Staj Başlangıç'] || row['Başlangıç Tarihi'] || row['StartDate'];
-                        const endDate = row['Staj Bitiş'] || row['Bitiş Tarihi'] || row['EndDate'];
+                        const requiredDaysVal = row['Hedef Staj Gün Sayısı'] || row['Staj Gün Sayısı'] || row['Required Days'] || 20;
+                        const startDate = row['Staj Başlangıç'] || row['Başlangıç Tarihi'];
+                        const endDate = row['Staj Bitiş'] || row['Bitiş Tarihi'];
 
-                        const supRef = row['Süpervizör E-posta'] || row['Supervizor Email'] || row['Süpervizör'] || row['Danışman E-posta'] || row['Danışman'];
+                        const supRef = row['Süpervizör E-posta'] || row['Supervizor Email'] || row['Süpervizör'] || row['Danışman E-posta'];
 
                         if (name && studentNo) {
                             let matchedSupervisorId = null;
-
                             if (supRef) {
                                 const searchStr = String(supRef).trim().toLowerCase();
                                 const foundSup = supervisors.find(s => 
                                     (s.email && s.email.toLowerCase() === searchStr) || 
                                     (s.name && s.name.toLowerCase().includes(searchStr))
                                 );
-                                if (foundSup) {
-                                    matchedSupervisorId = foundSup.id;
-                                }
+                                if (foundSup) matchedSupervisorId = foundSup.id;
                             }
 
-                            function formatDate(dateVal) {
-                                if (!dateVal) return null;
-                                if (typeof dateVal === 'string' && dateVal.includes('.')) {
-                                    const p = dateVal.split('.');
-                                    return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-                                }
-                                return dateVal;
-                            }
-
-                            const studentObj = {
-                                id: Date.now() + Math.random(),
-                                role: 'student',
+                            payloadStudents.push({
                                 name: String(name).trim(),
                                 studentNo: String(studentNo).trim(),
                                 supervisorId: matchedSupervisorId,
@@ -915,43 +824,28 @@
                                 courseCode: courseCode || null,
                                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
                                 requiredDays: parseInt(requiredDaysVal) || 20,
-                                startDate: formatDate(startDate),
-                                endDate: formatDate(endDate),
-                                attendance: [],
-                                grade: null
-                            };
-
-                            users.push(studentObj);
-                            payloadStudents.push(studentObj);
+                                startDate: startDate || null,
+                                endDate: endDate || null
+                            });
                         }
                     });
 
-                    // LocalStorage Kaydı
-                    saveUsers(users);
-
-                    // Canlı Backend MySQL Kaydı
-                    try {
-                        const token = localStorage.getItem('authToken');
-                        await fetch(`${API_URL}/admin/students/save`, {
+                    if (payloadStudents.length > 0) {
+                        const res = await fetch(`${API_URL}/admin/students/save`, {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}` 
-                            },
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                             body: JSON.stringify({ students: payloadStudents })
                         });
-                    } catch(err) {
-                        console.error('Backend kayıt uyarısı:', err);
+                        if (res.ok) {
+                            showToast(`${payloadStudents.length} öğrenci veritabanına aktarıldı.`, 'success');
+                            loadData();
+                        } else {
+                            showToast('Öğrenciler aktarılırken hata oluştu.', 'error');
+                        }
                     }
-
-                    loadData();
-                    showToast(`${payloadStudents.length} öğrenci ve staj tanımı başarıyla aktarıldı.`, 'success');
                 } catch (err) {
-                    console.error(err);
-                    showToast('Excel dosyası işlenirken bir hata oluştu.', 'error');
-                } finally {
-                    e.target.value = '';
-                }
+                    showToast('Excel dosyası işlenirken hata oluştu.', 'error');
+                } finally { e.target.value = ''; }
             };
             reader.readAsArrayBuffer(file);
         }

@@ -4,49 +4,70 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
-// Güvenlik & CORS Ayarları
+// --- 1. STATİK DOSYALAR & GÜVENLİK ---
+app.use(express.static(__dirname));
+
+// Ana sayfa yönlendirmesi
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// JSON ve CORS Yapılandırması
 app.use(express.json());
 app.use(cors({
-    origin: '*', // Canlıya geçildiğinde 'https://ergostaj.hacettepe.edu.tr' yazılacak
+    origin: '*', // Canlı ortam için: 'https://ergostaj.hacettepe.edu.tr'
     credentials: true
 }));
 
-// MySQL Bağlantı Havuzu
+// --- 2. MYSQL BAĞLANTI HAVUZU ---
 const db = mysql.createPool({
     host: process.env.DB_HOST || '127.0.0.1',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASS || '',
     database: process.env.DB_NAME || 'ergo_staj',
     waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    connectionLimit: 15,
+    queueLimit: 0,
+    charset: 'utf8mb4'
 });
 
-// --- AUDIT LOG YARDIMCI FONKSİYONU ---
+// --- 3. AUDIT LOG (DENETİM İZİ) YARDIMCISI ---
 async function createAuditLog(userId, action, targetStudentId, oldValue, newValue, ip) {
     try {
         await db.execute(
             `INSERT INTO audit_logs (user_id, action, target_student_id, old_value, new_value, ip_address) 
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [userId, action, targetStudentId, JSON.stringify(oldValue), JSON.stringify(newValue), ip || null]
+            [
+                userId || null, 
+                action, 
+                targetStudentId || null, 
+                oldValue ? JSON.stringify(oldValue) : null, 
+                newValue ? JSON.stringify(newValue) : null, 
+                ip || null
+            ]
         );
     } catch (err) {
-        console.error('Audit Log Kaydedilemedi:', err);
+        console.error('Audit Log Hatası:', err.message);
     }
 }
 
-// --- GÜVENLİK MIDDLEWARE'LERİ ---
+// --- 4. GÜVENLİK MIDDLEWARE'LERİ ---
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.status(401).json({ message: 'Erişim engellendi, token eksik.' });
+    if (!token) {
+        return res.status(401).json({ message: 'Yetkisiz erişim: Giriş belirteci (token) eksik.' });
+    }
 
     jwt.verify(token, process.env.JWT_SECRET || 'super_secret_key', (err, user) => {
-        if (err) return res.status(403).json({ message: 'Geçersiz veya süresi dolmuş token.' });
+        if (err) {
+            return res.status(403).json({ message: 'Geçersiz veya süresi dolmuş oturum. Lütfen tekrar giriş yapın.' });
+        }
         req.user = user;
         next();
     });
@@ -54,22 +75,26 @@ const authenticateToken = (req, res, next) => {
 
 const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.role) && req.user.role !== 'webmaster') {
+        if (!allowedRoles.includes(req.user.role) && req.user.role !== 'webmaster' && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Bu işlem için yetkiniz bulunmamaktadır.' });
         }
         next();
     };
 };
 
-// --- API ENDPOINT'LERİ ---
+// --- 5. API ENDPOINT'LERİ ---
 
-// 1. GÜVENLİ GİRİŞ (LOGIN)
+// [1] GÜVENLİ GİRİŞ (LOGIN)
 app.post('/api/auth/login', async (req, res) => {
-    const { identifier, password, loginType } = req.body; 
+    const { identifier, password, loginType } = req.body;
+
+    if (!identifier || !password) {
+        return res.status(400).json({ message: 'Lütfen kullanıcı adı / e-posta ve şifrenizi girin.' });
+    }
 
     try {
         let query = '';
-        let queryParam = identifier;
+        let queryParam = identifier.trim();
 
         if (loginType === 'staff') {
             query = 'SELECT * FROM users WHERE email = ? AND role IN ("admin", "coordinator", "academic", "supervisor")';
@@ -80,11 +105,12 @@ app.post('/api/auth/login', async (req, res) => {
         const [rows] = await db.execute(query, [queryParam]);
 
         if (rows.length === 0) {
-            return res.status(401).json({ message: 'Kullanıcı bulunamadı veya hatalı bilgi.' });
+            return res.status(401).json({ message: 'Kullanıcı bulunamadı veya hatalı giriş türü seçildi.' });
         }
 
         const user = rows[0];
 
+        // Bcrypt ve düz metin şifre doğrulaması
         let isMatch = false;
         if (user.password_hash && (user.password_hash.startsWith('$2a$') || user.password_hash.startsWith('$2b$') || user.password_hash.startsWith('$2y$'))) {
             isMatch = await bcrypt.compare(password, user.password_hash);
@@ -97,7 +123,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, name: user.name, role: user.role },
+            { id: user.id, name: user.name, role: user.role, email: user.email },
             process.env.JWT_SECRET || 'super_secret_key',
             { expiresIn: '8h' }
         );
@@ -109,14 +135,13 @@ app.post('/api/auth/login', async (req, res) => {
             token,
             user
         });
-
     } catch (error) {
         console.error('Login Hata Logu:', error);
-        res.status(500).json({ message: 'Sunucu hatası oluştu.' });
+        res.status(500).json({ message: 'Sunucu hatası: Giriş yapılamadı.' });
     }
 });
 
-// 2. SÜPERVİZÖRE ATANAN ÖĞRENCİLER VE HEDEF/ONAYLANAN GÜN SAYILARI
+// [2] SÜPERVİZÖRE ATANAN ÖĞRENCİLER
 app.get('/api/supervisors/:id/students', authenticateToken, async (req, res) => {
     try {
         const supervisorId = req.params.id;
@@ -142,62 +167,81 @@ app.get('/api/supervisors/:id/students', authenticateToken, async (req, res) => 
 
         res.json(students);
     } catch (error) {
-        console.error(error);
+        console.error('Süpervizör Öğrenci Hatası:', error);
         res.status(500).json({ message: 'Öğrenci listesi çekilemedi.' });
     }
 });
 
-// 3. SÜPERVİZÖRÜN ÖĞRENCİLERİNE AİT YOKLAMALAR
+// [3] SÜPERVİZÖRÜN ÖĞRENCİLERİNE AİT YOKLAMALAR
 app.get('/api/supervisors/:id/attendances', authenticateToken, async (req, res) => {
     try {
+        const supervisorId = req.params.id;
         const [attendances] = await db.execute(`
             SELECT a.*, u.name as student_name, u.student_no 
             FROM attendances a
             JOIN users u ON a.student_id = u.id
             WHERE u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?)
             ORDER BY a.id DESC
-        `, [req.params.id, req.params.id]);
+        `, [supervisorId, supervisorId]);
 
         res.json(attendances);
     } catch (error) {
-        console.error(error);
+        console.error('Yoklama Listesi Hatası:', error);
         res.status(500).json({ message: 'Yoklama listesi çekilemedi.' });
     }
 });
 
-// 4. YOKLAMA ONAY / RED GÜNCELLEME
+// [4] YOKLAMA DURUM GÜNCELLEME (ONAY / RED)
 app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const { status } = req.body;
     const attendanceId = req.params.id;
 
     try {
+        const [oldRows] = await db.execute('SELECT * FROM attendances WHERE id = ?', [attendanceId]);
+        if (oldRows.length === 0) {
+            return res.status(404).json({ message: 'Yoklama kaydı bulunamadı.' });
+        }
+
         await db.execute('UPDATE attendances SET status = ? WHERE id = ?', [status, attendanceId]);
-        res.json({ message: 'Yoklama durumu güncellendi.' });
+        
+        await createAuditLog(
+            req.user.id, 
+            'ATTENDANCE_STATUS_CHANGE', 
+            oldRows[0].student_id, 
+            { status: oldRows[0].status }, 
+            { status }, 
+            req.ip
+        );
+
+        res.json({ message: 'Yoklama durumu başarıyla güncellendi.' });
     } catch (error) {
-        console.error(error);
+        console.error('Yoklama Güncelleme Hatası:', error);
         res.status(500).json({ message: 'Yoklama durumu güncellenemedi.' });
     }
 });
 
-// 5. TÜM BEKLEYEN YOKLAMALARI TOPLU ONAYLAMA
+// [5] TÜM BEKLEYEN YOKLAMALARI TOPLU ONAYLAMA
 app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), async (req, res) => {
     try {
+        const supervisorId = req.params.id;
         await db.execute(`
             UPDATE attendances a
             JOIN users u ON a.student_id = u.id
             SET a.status = 'approved'
             WHERE (u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?)) 
             AND a.status = 'pending'
-        `, [req.params.id, req.params.id]);
+        `, [supervisorId, supervisorId]);
+
+        await createAuditLog(req.user.id, 'BULK_ATTENDANCE_APPROVE', null, null, { supervisorId }, req.ip);
 
         res.json({ message: 'Tüm bekleyen yoklamalar onaylandı.' });
     } catch (error) {
-        console.error(error);
+        console.error('Toplu Onay Hatası:', error);
         res.status(500).json({ message: 'Toplu onay işlemi başarısız.' });
     }
 });
 
-// 6. GÜNLÜK YOKLAMA BİLDİRİMİ (Öğrenci Check-in)
+// [6] GÜNLÜK YOKLAMA (Öğrenci Check-in)
 app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { locationInfo } = req.body;
@@ -225,15 +269,19 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
 
         res.json({ message: 'Yoklama kaydınız başarıyla alındı.' });
     } catch (error) {
-        console.error(error);
+        console.error('Check-in Hatası:', error);
         res.status(500).json({ message: 'Yoklama kaydedilemedi.' });
     }
 });
 
-// 7. MAZERETLİ / GERİYE DÖNÜK YOKLAMA TALEBİ
+// [7] MAZERETLİ / GERİYE DÖNÜK YOKLAMA TALEBİ
 app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { date, excuse } = req.body;
+
+    if (!date || !excuse) {
+        return res.status(400).json({ message: 'Tarih ve mazeret açıklaması zorunludur.' });
+    }
 
     try {
         await db.execute(
@@ -245,12 +293,12 @@ app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('stude
 
         res.json({ message: 'Mazeretli yoklama talebiniz başarıyla iletildi.' });
     } catch (error) {
-        console.error(error);
+        console.error('Mazeret Talebi Hatası:', error);
         res.status(500).json({ message: 'Mazeretli yoklama talebi kaydedilemedi.' });
     }
 });
 
-// 8. ÖĞRENCİ PANELİ VERİLERİ (Hedef Gün Sayısı & İlerleme Dahil)
+// [8] ÖĞRENCİ PANELİ VERİLERİ
 app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     try {
         const studentId = req.user.id;
@@ -276,12 +324,12 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
 
         res.json(studentData);
     } catch (error) {
-        console.error(error);
+        console.error('Öğrenci Veri Hatası:', error);
         res.status(500).json({ message: 'Öğrenci verileri çekilemedi.' });
     }
 });
 
-// 9. STAJ KOORDİNATÖRÜ: BÖLÜM ÖĞRENCİLERİ
+// [9] STAJ KOORDİNATÖRÜ: TÜM BÖLÜM ÖĞRENCİLERİ
 app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
@@ -307,12 +355,12 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
 
         res.json(rows);
     } catch (error) {
-        console.error(error);
+        console.error('Koordinatör Öğrenci Listesi Hatası:', error);
         res.status(500).json({ message: 'Bölüm verileri çekilemedi.' });
     }
 });
 
-// 10. STAJ KOORDİNATÖRÜ: AUDIT LOGLARI
+// [10] STAJ KOORDİNATÖRÜ: ÖĞRENCİ YOKLAMA DETAYI
 app.get('/api/coordinator/attendances/:studentId', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
@@ -321,12 +369,12 @@ app.get('/api/coordinator/attendances/:studentId', authenticateToken, authorizeR
 
         res.json(rows);
     } catch (error) {
-        console.error(error);
+        console.error('Koordinatör Yoklama Çekme Hatası:', error);
         res.status(500).json({ message: 'Yoklama kayıtları çekilemedi.' });
     }
 });
 
-// 11. STAJ KOORDİNATÖRÜ: BÖLÜM FİNAL ONAYI
+// [11] STAJ KOORDİNATÖRÜ: BÖLÜM FİNAL ONAYI
 app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
     const { studentId } = req.body;
 
@@ -335,12 +383,12 @@ app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('
         await createAuditLog(req.user.id, 'DEPARTMENT_FINAL_APPROVAL', studentId, null, { approved: true }, req.ip);
         res.json({ message: 'Öğrencinin stajı resmi olarak onaylandı.' });
     } catch (error) {
-        console.error(error);
+        console.error('Koordinatör Onay Hatası:', error);
         res.status(500).json({ message: 'Onay işlemi kaydedilemedi.' });
     }
 });
 
-// 12. ADMIN: ÖĞRENCİ VE HEDEF GÜN SAYISI KAYDI (MySQL Live)
+// [12] ADMIN: ÖĞRENCİ VE STAJ KAYDI / GÜNCELLEMESİ (UPSERT - Toplu & Tekli)
 app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
     const { students } = req.body;
 
@@ -398,17 +446,68 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
         }
 
         await connection.commit();
-        res.json({ message: 'Öğrenciler ve staj tanımları başarıyla eklendi.' });
+        res.json({ message: 'Öğrenciler ve staj tanımları başarıyla kaydedildi/güncellendi.' });
     } catch (err) {
         await connection.rollback();
-        console.error('Kayıt Hatası:', err);
-        res.status(500).json({ message: 'Kayıt sırasında hata oluştu.' });
+        console.error('Öğrenci Kayıt Hatası:', err);
+        res.status(500).json({ message: 'Öğrenci kaydı sırasında veritabanı hatası oluştu.' });
     } finally {
         connection.release();
     }
 });
 
-// 13. NOT GİRİŞİ / DÜZENLEME
+// [13] ADMIN: SÜPERVİZÖR / PERSONEL KAYDI VE GÜNCELLEMESİ (UPSERT)
+app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email) {
+        return res.status(400).json({ message: 'İsim ve E-posta alanları zorunludur.' });
+    }
+
+    const assignedRole = role || 'supervisor';
+
+    try {
+        const [existing] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
+        
+        if (existing.length > 0) {
+            // Mevcut süpervizörü güncelle
+            await db.execute(
+                'UPDATE users SET name = ?, role = ? WHERE id = ?',
+                [name, assignedRole, existing[0].id]
+            );
+            res.json({ message: 'Süpervizör bilgileri başarıyla güncellendi.' });
+        } else {
+            // Yeni süpervizör oluştur
+            const defaultHash = await bcrypt.hash(password || '1234', 10);
+            await db.execute(
+                'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                [name, email, defaultHash, assignedRole]
+            );
+            res.json({ message: 'Yeni süpervizör başarıyla sisteme eklendi.' });
+        }
+    } catch (err) {
+        console.error('Süpervizör Kayıt Hatası:', err);
+        res.status(500).json({ message: 'Süpervizör kaydı sırasında hata oluştu.' });
+    }
+});
+
+// [14] ADMIN: SÜPERVİZÖR LİSTESİ GETİRME (Dropdown ve tablolar için)
+app.get('/api/admin/supervisors', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT id, name, email, role, created_at 
+            FROM users 
+            WHERE role IN ('supervisor', 'coordinator', 'academic') 
+            ORDER BY name ASC
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error('Süpervizör Listeleme Hatası:', error);
+        res.status(500).json({ message: 'Süpervizör listesi çekilemedi.' });
+    }
+});
+
+// [15] NOT GİRİŞİ / DÜZENLEME (Rubrik)
 app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'academic', 'admin'), async (req, res) => {
     const evaluatorId = req.user.id;
     const { studentId, totalScore, rubricDetails, note } = req.body;
@@ -453,14 +552,13 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
         );
 
         res.json({ message: 'Not başarıyla kaydedildi.' });
-
     } catch (error) {
-        console.error(error);
+        console.error('Not Kayıt Hatası:', error);
         res.status(500).json({ message: 'Not kaydı sırasında sunucu hatası oluştu.' });
     }
 });
 
-// 14. ÖĞRENCİ DETAYLI NOTU GETİRME
+// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME
 app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.execute(`
@@ -477,13 +575,13 @@ app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) =>
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(error);
+        console.error('Not Getirme Hatası:', error);
         res.status(500).json({ message: 'Not bilgisi çekilemedi.' });
     }
 });
 
-// SUNUCUYU BAŞLAT
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Güvenli Backend Sunucusu ${PORT} portunda başarıyla çalışıyor.`);
+// --- 6. SUNUCUYU BAŞLATMA ---
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Güvenli Canlı Backend Sunucusu http://127.0.0.1:${PORT} adresinde aktif.`);
 });
