@@ -669,10 +669,10 @@
                 name,
                 studentNo,
                 password,
-                supervisorId: supervisorId ? parseInt(supervisorId) : null,
+                supervisorId: supervisorId ? parseInt(supervisorId, 10) : null,
                 courseCode: courseCode || null,
                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
-                requiredDays: parseInt(requiredDays),
+                requiredDays: parseInt(requiredDays, 10),
                 startDate: startDate || null,
                 endDate: endDate || null
             };
@@ -823,7 +823,7 @@
                                 password: String(password).trim(),
                                 courseCode: courseCode || null,
                                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
-                                requiredDays: parseInt(requiredDaysVal) || 20,
+                                requiredDays: parseInt(requiredDaysVal, 10) || 20,
                                 startDate: startDate || null,
                                 endDate: endDate || null
                             });

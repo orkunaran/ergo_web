@@ -108,7 +108,7 @@
                         <h2 class="text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
                         <p class="text-xs text-gray-500 mt-1">Öğrencilerin staj yoklama durumlarını (telafi takibi) ve staj sonu değerlendirme formlarını takip edebilirsiniz.</p>
                     </div>
-                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
                         <i class="fa-solid fa-rotate-right mr-1"></i>Listeyi Yenile
                     </button>
                 </div>
@@ -127,7 +127,7 @@
                         <i class="fa-solid fa-check-double mr-1.5"></i> Tüm Bekleyenleri Onayla
                     </button>
                 </div>
-                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
                     <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                 </button>
             </div>
@@ -221,10 +221,14 @@
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
 
+        function getToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
             
-            if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'webmaster')) {
+            if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
                 logout();
                 return;
             }
@@ -245,6 +249,7 @@
 
         function logout() {
             localStorage.removeItem('activeUser');
+            localStorage.removeItem('token');
             localStorage.removeItem('authToken');
             try { window.location.href = 'index.html'; } catch(e) {}
         }
@@ -258,11 +263,16 @@
             if(!container) return;
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
 
-            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-xl ${bgColor} text-xs font-medium`;
-            toast.innerHTML = `<i class="fa-solid fa-check-circle mr-2"></i><span>${message}</span>`;
+            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-xl ${bgColor} text-xs font-medium transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-base"></i><span>${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         function switchTab(tabId) {
@@ -283,7 +293,7 @@
         // CANLI MYSQL: SÜPERVİZÖRE ATANAN ÖĞRENCİLER, HEDEF GÜN SAYISI & TELAFİ HESAPLAMA
         async function loadSupervisorData() {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/students`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -311,7 +321,7 @@
                         // Yoklama & Telafi Gün Hesaplaması
                         const requiredDays = stu.required_days || 20;
                         const approvedDays = stu.approved_days || 0;
-                        const missingDays = requiredDays - approvedDays;
+                        const missingDays = Math.max(0, requiredDays - approvedDays);
 
                         let statusBadge = '';
                         if (approvedDays >= requiredDays) {
@@ -362,14 +372,14 @@
                     grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Öğrenci Verisi Hatası:', err);
             }
         }
 
         // CANLI MYSQL: ONAY BEKLEYEN YOKLAMALARI ÇEKME
         async function loadAttendanceApprovals() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/attendances`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -384,15 +394,15 @@
                     attendances.forEach(rec => {
                         if (rec.status === 'pending') {
                             pendingCount++;
-                            const isRetro = rec.is_retroactive;
+                            const isRetro = rec.is_retroactive == 1;
                             const badge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
 
                             tbody.innerHTML += `
                                 <tr>
                                     <td class="px-6 py-4 font-bold text-gray-900">${rec.student_name} (${rec.student_no})</td>
                                     <td class="px-6 py-4 text-xs font-bold">${rec.date} ${badge}</td>
-                                    <td class="px-6 py-4 text-xs text-gray-500">${rec.created_at || rec.time}</td>
-                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + rec.excuse : (rec.location_info || 'GPS')}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500">${rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-')}</td>
+                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + rec.excuse : (rec.location_info || 'GPS Konumu Alındı')}</td>
                                     <td class="px-6 py-4 text-right space-x-2">
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Onayla</button>
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Reddet</button>
@@ -415,13 +425,13 @@
                     }
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Yoklama Listesi Hatası:', err);
             }
         }
 
         async function updateAttendanceStatus(attendanceId, status) {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/attendances/${attendanceId}/status`, {
                     method: 'PUT',
                     headers: { 
@@ -445,7 +455,7 @@
 
         async function approveAllPending() {
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/approve-all`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -490,7 +500,7 @@
             const total = beh + evalScore + intScore;
 
             try {
-                const token = localStorage.getItem('authToken');
+                const token = getToken();
                 const response = await fetch(`${API_URL}/grades/assign`, {
                     method: 'POST',
                     headers: { 
