@@ -218,6 +218,18 @@
     </div>
 
     <script>
+
+        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
+        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
 
@@ -345,10 +357,10 @@
                             <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
                                 <div>
                                     <div class="flex justify-between items-start mb-2">
-                                        <h3 class="font-bold text-gray-900 text-base">${stu.name}</h3>
+                                        <h3 class="font-bold text-gray-900 text-base">${escapeHtml(stu.name)}</h3>
                                         ${courseBadge}
                                     </div>
-                                    <p class="text-xs text-gray-500 mb-3">No: ${stu.student_no}</p>
+                                    <p class="text-xs text-gray-500 mb-3">No: ${escapeHtml(stu.student_no)}</p>
 
                                     <!-- İlerleme & Telafi Durumu -->
                                     <div class="space-y-1">
@@ -362,7 +374,7 @@
                                     </div>
                                 </div>
 
-                                <button onclick="openEvaluationModal(${stu.id}, '${stu.name}')" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
+                                <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" onclick="openEvaluationModal(this.dataset.studentId, this.dataset.studentName)" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
                                     <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Güncelle' : 'Öğrenciyi Değerlendir'}
                                 </button>
                             </div>
@@ -399,10 +411,10 @@
 
                             tbody.innerHTML += `
                                 <tr>
-                                    <td class="px-6 py-4 font-bold text-gray-900">${rec.student_name} (${rec.student_no})</td>
+                                    <td class="px-6 py-4 font-bold text-gray-900">${escapeHtml(rec.student_name)} (${escapeHtml(rec.student_no)})</td>
                                     <td class="px-6 py-4 text-xs font-bold">${rec.date} ${badge}</td>
                                     <td class="px-6 py-4 text-xs text-gray-500">${rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-')}</td>
-                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + rec.excuse : (rec.location_info || 'GPS Konumu Alındı')}</td>
+                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + escapeHtml(rec.excuse) : escapeHtml(rec.location_info || 'GPS Konumu Alındı')}</td>
                                     <td class="px-6 py-4 text-right space-x-2">
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Onayla</button>
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Reddet</button>

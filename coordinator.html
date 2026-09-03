@@ -219,6 +219,18 @@
     </div>
 
     <script>
+
+        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
+        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         const API_URL = `${window.location.origin}/api`;
         let activeUser = null;
 
@@ -309,7 +321,7 @@
                 }
 
                 students.forEach(stu => {
-                    const supName = stu.supervisor_name || '<span class="text-rose-500 font-bold">Atanmamış</span>';
+                    const supName = stu.supervisor_name ? escapeHtml(stu.supervisor_name) : '<span class="text-rose-500 font-bold">Atanmamış</span>';
                     
                     const scoreVal = stu.total_score;
                     const gradeText = (scoreVal !== null && scoreVal !== undefined) 
@@ -326,7 +338,7 @@
                     const requiredDays = stu.required_days || 20;
 
                     const auditButton = `
-                        <button onclick="openAuditModal(${stu.id}, '${stu.name}', '${stu.student_no}')" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center">
+                        <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" data-student-no="${escapeHtml(stu.student_no)}" onclick="openAuditModal(this.dataset.studentId, this.dataset.studentName, this.dataset.studentNo)" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center">
                             <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> ${approvedCount}/${requiredDays} Gün (${retroCount} Mazeretli)
                         </button>
                     `;
@@ -338,7 +350,7 @@
 
                     tbody.innerHTML += `
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${stu.name} <span class="text-xs font-normal text-gray-400">(${stu.student_no})</span></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${escapeHtml(stu.name)} <span class="text-xs font-normal text-gray-400">(${escapeHtml(stu.student_no)})</span></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${auditButton}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${gradeText}</td>
@@ -359,8 +371,8 @@
                         mySupervisedGrid.innerHTML += `
                             <div class="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm flex flex-col justify-between space-y-4">
                                 <div>
-                                    <h3 class="font-bold text-gray-900 text-base mb-1">${stu.name}</h3>
-                                    <p class="text-xs text-gray-500 mb-2">Öğrenci No: ${stu.student_no}</p>
+                                    <h3 class="font-bold text-gray-900 text-base mb-1">${escapeHtml(stu.name)}</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Öğrenci No: ${escapeHtml(stu.student_no)}</p>
                                     <p class="text-xs text-gray-600">Staj Notu: <b class="text-hu-purple font-bold">${stu.total_score ? stu.total_score + ' / 100' : 'Girilmedi'}</b></p>
                                 </div>
                                 <div class="flex items-center justify-between pt-2 border-t border-gray-100">
@@ -396,7 +408,7 @@
                 document.getElementById('gradeDetailSubTitle').innerText = `Öğrenci No: ${data.student_no} | Süpervizör: ${data.evaluator_name || 'Saha Süpervizörü'}`;
 
                 const d = typeof data.rubric_details === 'string' ? JSON.parse(data.rubric_details) : (data.rubric_details || {});
-                const noteText = data.note ? data.note : 'Süpervizör tarafından ek görüş eklenmedi.';
+                const noteText = data.note ? escapeHtml(data.note) : 'Süpervizör tarafından ek görüş eklenmedi.';
 
                 const behTotal = (parseInt(d.beh) || 0);
                 const evalTotal = (parseInt(d.eval) || 0);
@@ -465,8 +477,8 @@
                             const subTime = item.time || (item.created_at ? item.created_at.replace('T', ' ').substring(0, 19) : '-');
                             const isRetro = item.is_retroactive == 1;
                             const typeText = isRetro 
-                                ? `<span class="text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-200">⚠️ Mazeretli: ${item.excuse || ''}</span>` 
-                                : `<span class="text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold">${item.location_info || 'GPS Konumu Alındı'}</span>`;
+                                ? `<span class="text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-200">⚠️ Mazeretli: ${escapeHtml(item.excuse || '')}</span>` 
+                                : `<span class="text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold">${escapeHtml(item.location_info || 'GPS Konumu Alındı')}</span>`;
 
                             const statusBadge = item.status === 'approved' 
                                 ? `<span class="text-emerald-600 font-bold">✓ Onaylandı</span>` 

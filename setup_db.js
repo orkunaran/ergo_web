@@ -1,16 +1,26 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 
+const REQUIRED_DB_VARS = ['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME'];
+const missing = REQUIRED_DB_VARS.filter(v => !process.env[v]);
+if (missing.length > 0) {
+    console.error(`❌ Eksik ortam değişkenleri: ${missing.join(', ')}. .env dosyanızı kontrol edin.`);
+    process.exit(1);
+}
+
 async function setupDatabase() {
     try {
         console.log('Canlı MySQL sunucusuna bağlanılıyor...');
 
         const connection = await mysql.createConnection({
-            host: process.env.DB_HOST || '127.0.0.1',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASS || '',
-            database: process.env.DB_NAME || 'ergo_staj',
-            port: 3306
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASS,
+            database: process.env.DB_NAME,
+            port: process.env.DB_PORT || 3306,
+            ssl: process.env.DB_SSL === 'true'
+                ? { minVersion: 'TLSv1.2', ca: process.env.DB_CA || undefined, rejectUnauthorized: true }
+                : undefined
         });
 
         console.log('✅ Canlı MySQL Sunucusuna başarıyla bağlandı!');
