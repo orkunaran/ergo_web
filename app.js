@@ -1,12 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const db = require('./db'); // Postgres (Supabase) bağlantı katmanı
 
 // --- 0. ZORUNLU ORTAM DEĞİŞKENİ KONTROLÜ ---
 // JWT_SECRET tanımlı değilse, bilinen bir varsayılan değerle sunucu ASLA çalışmamalı.
@@ -16,15 +16,8 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET;
-
-// Veritabanı bağlantı bilgileri eksikse sunucu (yanlış/varsayılan bir sunucuya
-// sessizce bağlanmaya çalışmak yerine) net bir hata ile başlamamalı.
-const REQUIRED_DB_VARS = ['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME'];
-const missingDbVars = REQUIRED_DB_VARS.filter(v => !process.env[v]);
-if (missingDbVars.length > 0) {
-    console.error(`❌ KRİTİK HATA: Eksik ortam değişkenleri: ${missingDbVars.join(', ')}. Sunucu başlatılmıyor.`);
-    process.exit(1);
-}
+// (DATABASE_URL kontrolü db.js içinde yapılıyor — burada require('./db') satırı zaten
+// eksikse sunucuyu başlatmadan önce sürecin çökmesini sağlıyor.)
 
 const app = express();
 
@@ -37,7 +30,19 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", 'https://cdn.tailwindcss.com'],
+            // Tailwind CDN script'i tarayıcıda çalışan bir derleyici (JIT) olduğu için
+            // 'unsafe-eval' gerektiriyor; bu olmadan Tailwind sessizce çalışmayı durdurup
+            // sayfa tamamen stilsiz görünür.
+            // Bu proje, sayfa mantığını (login, veri çekme vb.) her HTML dosyasının
+            // içine gömülü <script> bloğu olarak yazıyor (nonce/hash tabanlı bir
+            // şablon sistemi yok). Bu yüzden 'unsafe-inline' burada ZORUNLU — aksi
+            // halde tarayıcı bu script'lerin tamamını (giriş formu dahil) çalıştırmayı
+            // reddediyor. Bu, CSP'nin XSS'e karşı sağladığı korumayı zayıflatır;
+            // birincil XSS savunması artık kullanıcı verisinin HTML'e basılmadan önce
+            // escape edilmesidir (bkz. escapeHtml() kullanımları). İleride daha sıkı
+            // bir CSP isterseniz, script'leri harici .js dosyalarına taşıyıp
+            // sunucu tarafında üretilen bir nonce ile CSP'yi sıkılaştırabiliriz.
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.tailwindcss.com'],
             styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com', 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://cdnjs.cloudflare.com', 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:'],
@@ -89,27 +94,8 @@ const loginLimiter = rateLimit({
     legacyHeaders: false
 });
 
-// --- 3. MYSQL BAĞLANTI HAVUZU (Uzak/Üniversite Sunucusu) ---
-// Vercel'de her fonksiyon çağrısı ayrı bir "instance" olabileceğinden connectionLimit
-// düşük tutulmalı; aksi halde üniversite MySQL sunucusunun max_connections limiti dolabilir.
-const dbSslEnabled = process.env.DB_SSL === 'true';
-const db = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: parseInt(process.env.DB_CONN_LIMIT || '5', 10),
-    queueLimit: 0,
-    connectTimeout: 10000,
-    charset: 'utf8mb4',
-    // Üniversite sunucusu internete açık olacağı için şifreli bağlantı ZORUNLU tutulmalı.
-    // DB_SSL=true ve gerekirse DB_CA (PEM sertifika içeriği) .env üzerinden sağlanmalı.
-    ssl: dbSslEnabled
-        ? { minVersion: 'TLSv1.2', ca: process.env.DB_CA || undefined, rejectUnauthorized: true }
-        : undefined
-});
+// --- 3. VERİTABANI ---
+// Bağlantı havuzu artık db.js içinde (Postgres/Supabase). Yukarıda require('./db') ile alındı.
 
 // --- 3. AUDIT LOG (DENETİM İZİ) YARDIMCISI ---
 async function createAuditLog(userId, action, targetStudentId, oldValue, newValue, ip) {
@@ -186,9 +172,9 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
         let queryParam = identifier.trim();
 
         if (loginType === 'staff') {
-            query = 'SELECT * FROM users WHERE email = ? AND role IN ("admin", "coordinator", "academic", "supervisor")';
+            query = "SELECT * FROM users WHERE email = ? AND role IN ('admin', 'coordinator', 'academic', 'supervisor')";
         } else {
-            query = 'SELECT * FROM users WHERE student_no = ? AND role = "student"';
+            query = "SELECT * FROM users WHERE student_no = ? AND role = 'student'";
         }
 
         const [rows] = await db.execute(query, [queryParam]);
@@ -315,10 +301,11 @@ app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('
         const supervisorId = req.params.id;
         await db.execute(`
             UPDATE attendances a
-            JOIN users u ON a.student_id = u.id
-            SET a.status = 'approved'
-            WHERE (u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?)) 
-            AND a.status = 'pending'
+            SET status = 'approved'
+            FROM users u
+            WHERE a.student_id = u.id
+              AND (u.supervisor_id = ? OR a.student_id IN (SELECT student_id FROM internships WHERE supervisor_id = ?))
+              AND a.status = 'pending'
         `, [supervisorId, supervisorId]);
 
         await createAuditLog(req.user.id, 'BULK_ATTENDANCE_APPROVE', null, null, { supervisorId }, req.ip);
@@ -350,7 +337,7 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
         }
 
         await db.execute(
-            'INSERT INTO attendances (student_id, date, time, location_info, status, is_retroactive) VALUES (?, ?, ?, ?, "pending", 0)',
+            "INSERT INTO attendances (student_id, date, time, location_info, status, is_retroactive) VALUES (?, ?, ?, ?, 'pending', 0)",
             [studentId, dateStr, timeStr, locationInfo || 'GPS Konumu Alındı']
         );
 
@@ -374,7 +361,7 @@ app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('stude
 
     try {
         await db.execute(
-            'INSERT INTO attendances (student_id, date, time, excuse, status, is_retroactive) VALUES (?, ?, "Mazeretli", ?, "pending", 1)',
+            "INSERT INTO attendances (student_id, date, time, excuse, status, is_retroactive) VALUES (?, ?, 'Mazeretli', ?, 'pending', 1)",
             [studentId, date, excuse]
         );
 
@@ -502,10 +489,10 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
             } else {
                 const defaultHash = await bcrypt.hash(stu.password || '1234', 10);
                 const [insertRes] = await connection.execute(
-                    'INSERT INTO users (name, student_no, password_hash, role, supervisor_id) VALUES (?, ?, ?, "student", ?)',
+                    "INSERT INTO users (name, student_no, password_hash, role, supervisor_id) VALUES (?, ?, ?, 'student', ?) RETURNING id",
                     [stu.name, stu.studentNo, defaultHash, stu.supervisorId || null]
                 );
-                studentId = insertRes.insertId;
+                studentId = insertRes[0].id;
             }
 
             if (stu.courseCode) {
@@ -514,13 +501,13 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 await connection.execute(
                     `INSERT INTO internships (student_id, course_code, course_name, start_date, end_date, required_days, supervisor_id) 
                      VALUES (?, ?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE 
-                        course_code = VALUES(course_code),
-                        course_name = VALUES(course_name),
-                        start_date = VALUES(start_date),
-                        end_date = VALUES(end_date),
-                        required_days = VALUES(required_days),
-                        supervisor_id = VALUES(supervisor_id)`,
+                     ON CONFLICT (student_id) DO UPDATE SET 
+                        course_code = EXCLUDED.course_code,
+                        course_name = EXCLUDED.course_name,
+                        start_date = EXCLUDED.start_date,
+                        end_date = EXCLUDED.end_date,
+                        required_days = EXCLUDED.required_days,
+                        supervisor_id = EXCLUDED.supervisor_id`,
                     [
                         studentId, 
                         stu.courseCode, 
@@ -699,6 +686,20 @@ app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) =>
     }
 });
 
-// --- 6. UYGULAMAYI DIŞA AKTAR ---
+// --- 6. GENEL HATA YAKALAYICI ---
+// Route içindeki try/catch'lerin dışında kalan her hata (ör. CORS reddi, beklenmeyen
+// middleware hataları) buraya düşer. Express'in varsayılan davranışı bir HTML hata
+// sayfası (ve stack trace) döndürmektir — bu hem frontend'in JSON beklerken hata
+// almasına hem de sunucu iç detaylarının sızmasına yol açar. Bunun yerine her zaman
+// sade bir JSON hatası dönüyoruz.
+app.use((err, req, res, next) => {
+    console.error('Yakalanmamış Hata:', err.message);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(err.status || 500).json({ message: 'Sunucu hatası oluştu. Lütfen tekrar deneyin.' });
+});
+
+// --- 7. UYGULAMAYI DIŞA AKTAR ---
 // app.listen() burada YOK: yerel geliştirme için server.js, Vercel için api/index.js kullanır.
 module.exports = app;

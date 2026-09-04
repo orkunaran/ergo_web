@@ -17,6 +17,6 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.23.1"
+    "pg": "^8.13.1"
   }
 }
