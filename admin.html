@@ -61,7 +61,7 @@
                     <div>
                         <h1 class="font-bold text-lg leading-tight hidden sm:block">Hacettepe Üniversitesi Ergoterapi</h1>
                         <h1 class="font-bold text-lg leading-tight sm:hidden">H.Ü. Ergoterapi</h1>
-                        <p class="text-xs text-purple-200">Sistem Yönetimi (Canlı MySQL)</p>
+                        <p class="text-xs text-purple-200">Sistem Yönetimi</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -69,7 +69,7 @@
                         <p class="text-sm font-semibold" id="adminNameDisplay">Yönetici</p>
                         <p class="text-xs text-purple-200" id="adminRoleDisplay">Admin</p>
                     </div>
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm border border-purple-800">
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm border border-purple-800 cursor-pointer">
                         <i class="fa-solid fa-sign-out-alt mr-2"></i>Çıkış
                     </button>
                 </div>
@@ -79,17 +79,20 @@
         <div class="bg-white text-gray-600 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
-                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple cursor-pointer">
                         <i class="fa-solid fa-chart-pie mr-2"></i>Genel Bakış
                     </button>
-                    <button onclick="switchTab('coordinators')" id="tab-coordinators" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors">
-                        <i class="fa-solid fa-chalkboard-user mr-2"></i>Staj Koordinatörleri
+                    <button onclick="switchTab('departments')" id="tab-departments" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors cursor-pointer">
+                        <i class="fa-solid fa-building-user mr-2"></i>Departman & Hoca Eşleştirme
                     </button>
-                    <button onclick="switchTab('supervisors')" id="tab-supervisors" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors">
+                    <button onclick="switchTab('coordinators')" id="tab-coordinators" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors cursor-pointer">
+                        <i class="fa-solid fa-chalkboard-user mr-2"></i>Akademik Personel / Danışmanlar
+                    </button>
+                    <button onclick="switchTab('supervisors')" id="tab-supervisors" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors cursor-pointer">
                         <i class="fa-solid fa-user-doctor mr-2"></i>Saha Süpervizörleri
                     </button>
-                    <button onclick="switchTab('students')" id="tab-students" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors">
-                        <i class="fa-solid fa-user-graduate mr-2"></i>Öğrenci Yönetimi
+                    <button onclick="switchTab('students')" id="tab-students" class="whitespace-nowrap py-4 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors cursor-pointer">
+                        <i class="fa-solid fa-user-graduate mr-2"></i>Öğrenci & Staj Yönetimi
                     </button>
                 </nav>
             </div>
@@ -100,11 +103,11 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <!-- DASHBOARD (GENEL BAKIŞ) -->
+        <!-- 1. DASHBOARD -->
         <div id="dashboard-section" class="fade-in space-y-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-gray-800">Sistem İstatistikleri</h2>
-                <button onclick="loadData()" class="text-xs text-hu-purple font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border shadow-sm">
+                <button onclick="loadData()" class="text-xs text-hu-purple font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border shadow-sm cursor-pointer">
                     <i class="fa-solid fa-rotate-right mr-1.5"></i>Canlı Verileri Yenile
                 </button>
             </div>
@@ -118,7 +121,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Staj Koordinatörü</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Akademik Personel / Danışman</dt>
                                     <dd class="text-2xl font-semibold text-gray-900" id="stat-coordinators">0</dd>
                                 </dl>
                             </div>
@@ -133,7 +136,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Kayıtlı Süpervizör</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Kayıtlı Dış Süpervizör</dt>
                                     <dd class="text-2xl font-semibold text-gray-900" id="stat-supervisors">0</dd>
                                 </dl>
                             </div>
@@ -158,39 +161,93 @@
             </div>
             
             <div class="bg-white shadow rounded-xl p-6 mt-8 border border-gray-100">
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Canlı Veritabanı Entegrasyonu Aktif</h3>
-                <p class="text-gray-600 text-sm leading-relaxed">Eklenen veya güncellenen tüm süpervizör, koordinatör ve öğrenci kayıtları doğrudan MySQL veritabanına yazılır. Sistem yeniden başlatılsa dahi verileriniz kalıcı olarak korunur.</p>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Çift Yoklama & Ortak Değerlendirme Modeli Aktif</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    Hacettepe bünyesinde staj yapan öğrenciler Salı, Çarşamba, Perşembe ve Cuma günleri sabah (09:00-13:00) ve öğleden sonra (13:00-17:00) olmak üzere günde 2 yoklama verirler. 
+                    Departman hocaları öğrencileri ortak değerlendirebilir. Dış stajyerler tek süpervizör tarafından değerlendirilir ve tek günlük yoklama verir.
+                </p>
             </div>
         </div>
 
-        <!-- STAJ KOORDİNATÖRÜ SEKMESİ -->
+        <!-- 2. DEPARTMAN VE HOCA EŞLEŞTİRME SEKMESİ -->
+        <div id="departments-section" class="fade-in hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">
+                            <i class="fa-solid fa-link text-hu-purple mr-2"></i>Departmana Hoca / Asistan Ata
+                        </h3>
+                        <form id="assignDeptForm" onsubmit="event.preventDefault(); handleAssignDept(event); return false;" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Departman</label>
+                                <select id="deptSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple">
+                                    <option value="">Departman Seçiniz...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Bölüm Hocası / Asistan</label>
+                                <select id="deptStaffSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple">
+                                    <option value="">Hoca / Asistan Seçiniz...</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors cursor-pointer">
+                                Eşleştirmeyi Kaydet
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-900">Departmanlar ve Yetkili Hocalar</h3>
+                            <button onclick="loadDepartmentAssignments()" class="text-xs text-hu-purple font-medium hover:underline flex items-center cursor-pointer">
+                                <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                            </button>
+                        </div>
+                        <div id="departmentsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AKADEMİK PERSONEL / DANIŞMAN SEKMESİ -->
         <div id="coordinators-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 id="coordFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Koordinatör Ekle</h3>
-                        <form id="addCoordinatorForm" onsubmit="handleAddCoordinator(event)" class="space-y-4">
+                        <div class="flex justify-between items-center border-b pb-2 mb-4">
+                            <h3 id="coordFormTitle" class="text-lg font-bold text-gray-900"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademik Personel Ekle</h3>
+                            <button type="button" id="coordCancelEditBtn" onclick="resetCoordinatorForm()" class="hidden text-xs text-rose-600 font-bold hover:underline cursor-pointer">İptal</button>
+                        </div>
+                        <form id="addCoordinatorForm" onsubmit="event.preventDefault(); handleAddCoordinator(event); return false;" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Unvan ve Ad Soyad</label>
-                                <input type="text" id="coordName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Prof. Dr. Staj Koordinatörü">
+                                <input type="text" id="coordName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Dr. Öğr. Üyesi ...">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi (Giriş için)</label>
-                                <input type="email" id="coordEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="koordinator@hacettepe.edu.tr">
+                                <input type="email" id="coordEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="hoca@hacettepe.edu.tr">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
-                                <input type="text" id="coordPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                                <select id="coordRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
+                                    <option value="academic">Akademik Danışman (Bölüm Hocası / Asistanı)</option>
+                                    <option value="coordinator">Staj Koordinatörü (Resmi Onay Yetkili)</option>
+                                </select>
                             </div>
-                            <button id="coordSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                MySQL'e Kaydet ve Ekle
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" id="coordPasswordLabel">Geçici Şifre</label>
+                                <input type="text" id="coordPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
+                                <p id="coordPasswordHelp" class="hidden text-[11px] text-gray-400 mt-1">Şifreyi değiştirmek istemiyorsanız bu alanı boş bırakabilirsiniz.</p>
+                            </div>
+                            <button type="submit" id="coordSubmitBtn" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors cursor-pointer">
+                                Sisteme Kaydet
                             </button>
                         </form>
                     </div>
 
-                    <!-- Koordinatör Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Koordinatör Ekle</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Akademik Personel</h3>
                         <p class="text-xs text-gray-500 mb-4">Sütun başlıkları: <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
                         
                         <label for="excelUploadCoord" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
@@ -206,7 +263,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Bölüm Staj Koordinatörleri</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Akademik Personel ve Danışmanlar</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -214,11 +271,11 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
                                     </tr>
                                 </thead>
-                                <tbody id="coordinatorsTableBody" class="bg-white divide-y divide-gray-200">
-                                </tbody>
+                                <tbody id="coordinatorsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
                             </table>
                         </div>
                     </div>
@@ -226,34 +283,33 @@
             </div>
         </div>
 
-        <!-- SÜPERVİZÖR SEKMESİ -->
+        <!-- 4. SÜPERVİZÖR SEKMESİ -->
         <div id="supervisors-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 id="supFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Süpervizör Ekle</h3>
-                        <form id="addSupervisorForm" onsubmit="handleAddSupervisor(event)" class="space-y-4">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle text-hu-purple mr-2"></i>Yeni Dış Kurum Süpervizörü</h3>
+                        <form id="addSupervisorForm" onsubmit="event.preventDefault(); handleAddSupervisor(event); return false;" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad (Unvan ile)</label>
                                 <input type="text" id="supName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Uzm. Erg. Ayşe Yılmaz">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi (Giriş için)</label>
-                                <input type="email" id="supEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="ayse@hastane.com">
+                                <input type="email" id="supEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="ayse@kurum.com">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="supPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <button id="supSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                MySQL'e Kaydet ve Ekle
+                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors cursor-pointer">
+                                Süpervizörü Kaydet
                             </button>
                         </form>
                     </div>
 
-                    <!-- Süpervizör Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Süpervizör Ekle</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Süpervizör</h3>
                         <p class="text-xs text-gray-500 mb-4">Sütun başlıkları: <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">E-posta</b> | <b class="text-gray-800">Şifre</b></p>
                         
                         <label for="excelUploadSup" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
@@ -269,7 +325,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Saha Süpervizörleri</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Dış Kurum Saha Süpervizörleri</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -280,8 +336,7 @@
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                                     </tr>
                                 </thead>
-                                <tbody id="supervisorsTableBody" class="bg-white divide-y divide-gray-200">
-                                </tbody>
+                                <tbody id="supervisorsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
                             </table>
                         </div>
                     </div>
@@ -289,13 +344,13 @@
             </div>
         </div>
 
-        <!-- ÖĞRENCİ SEKMESİ -->
+        <!-- 5. ÖĞRENCİ SEKMESİ -->
         <div id="students-section" class="fade-in hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 id="stuFormTitle" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci Ekle</h3>
-                        <form id="addStudentForm" onsubmit="handleAddStudent(event)" class="space-y-4">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Öğrenci ve Staj Tanımı</h3>
+                        <form id="addStudentForm" onsubmit="event.preventDefault(); handleAddStudent(event); return false;" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Adı Soyadı</label>
                                 <input type="text" id="stuName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: Ali Can">
@@ -304,6 +359,15 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Öğrenci Numarası (Giriş için)</label>
                                 <input type="text" id="stuNo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 22000001">
                             </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Staj Yeri / Türü</label>
+                                <select id="stuInternshipType" onchange="toggleInternshipTypeFields()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple font-semibold text-hu-purple">
+                                    <option value="internal">Hacettepe İçi (Günde 2 Yoklama / Departman Modeli)</option>
+                                    <option value="external">Hacettepe Dışı Kurum (Günde 1 Yoklama / Süpervizör Modeli)</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Staj Ders Kodu</label>
                                 <select id="stuCourseCode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
@@ -320,8 +384,38 @@
                             </div>
                             
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Akademik Danışmanı (İzleyici Hoca)</label>
+                                <select id="stuAdvisor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
+                                    <option value="">Danışman Hoca Seçiniz...</option>
+                                </select>
+                            </div>
+
+                            <div id="internalDeptFields" class="space-y-3 p-3 bg-purple-50/60 rounded-xl border border-purple-100">
+                                <p class="text-xs font-bold text-hu-purple uppercase">Bölüm Departman Atamaları</p>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Sabah Departmanı (09:00 - 13:00)</label>
+                                    <select id="stuMorningDept" class="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-hu-purple bg-white">
+                                        <option value="">Sabah Departmanı Seçiniz...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Öğleden Sonra Departmanı (13:00 - 17:00)</label>
+                                    <select id="stuAfternoonDept" class="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-hu-purple bg-white">
+                                        <option value="">Öğleden Sonra Departmanı Seçiniz...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="externalSupervisorField" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dış Kurum Saha Süpervizörü</label>
+                                <select id="stuSupervisor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
+                                    <option value="">Süpervizör Seçiniz...</option>
+                                </select>
+                            </div>
+                            
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Hedef Staj Gün Sayısı</label>
-                                <input type="number" id="stuRequiredDays" min="1" max="100" value="20" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: 20">
+                                <input type="number" id="stuRequiredDays" min="1" max="100" value="20" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
                             </div>
 
                             <div class="grid grid-cols-2 gap-2">
@@ -334,27 +428,22 @@
                                     <input type="date" id="stuEndDate" class="w-full px-2 py-2 border border-gray-300 rounded-md text-xs focus:ring-hu-purple focus:border-hu-purple">
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Staj Yapacağı Süpervizör / Danışman</label>
-                                <select id="stuSupervisor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple">
-                                    <option value="">Süpervizör Seçiniz...</option>
-                                </select>
-                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
                                 <input type="text" id="stuPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" value="1234">
                             </div>
-                            <button id="stuSubmitBtn" type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors">
-                                MySQL'e Ekle ve Ata
+
+                            <button type="submit" class="w-full bg-hu-purple text-white py-2 rounded-md hover:bg-hu-dark font-medium transition-colors cursor-pointer">
+                                Öğrenci ve Stajı Kaydet
                             </button>
                         </form>
                     </div>
 
-                    <!-- Öğrenci Excel Import -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100 mt-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Toplu Öğrenci Ekle</h3>
-                        <p class="text-xs text-gray-500 mb-4">Sütun başlıkları:<br>
-                            <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Hedef Staj Gün Sayısı</b> | <b class="text-purple-700">Staj Başlangıç</b> | <b class="text-purple-700">Staj Bitiş</b> | <b class="text-purple-700">Süpervizör E-posta</b>
+                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                            Sütunlar: <b class="text-gray-800">Ad Soyad</b> | <b class="text-gray-800">Öğrenci No</b> | <b class="text-gray-800">Şifre</b> | <b class="text-purple-700">Staj Ders Kodu</b> | <b class="text-purple-700">Staj Türü (internal/external)</b> | <b class="text-purple-700">Sabah Dept ID</b> | <b class="text-purple-700">Öğle Dept ID</b> | <b class="text-purple-700">Süpervizör E-posta</b> | <b class="text-purple-700">Danışman E-posta</b>
                         </p>
                         <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -369,20 +458,19 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler ve Staj Tanımları</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Kayıtlı Öğrenciler ve Staj Modelleri</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad / No</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atandığı Süpervizör</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Dersi / Hedef Gün</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Öğrenci Bilgisi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staj Türü / Departman</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danışman / Süpervizör</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ders / Gün</th>
                                     </tr>
                                 </thead>
-                                <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
-                                </tbody>
+                                <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
                             </table>
                         </div>
                     </div>
@@ -393,9 +481,6 @@
     </main>
 
     <script>
-
-        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
-        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -418,15 +503,20 @@
             'ERG 432': 'Mesleki Uygulama VIII'
         };
 
+        let loadedCoordinators = [];
+
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            
+            if (activeUser && activeUser.role) {
+                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            }
+
             if (!activeUser || (activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
-                try { window.location.href = 'index.html'; } catch(e) {}
+                logout();
                 return; 
             }
 
@@ -437,13 +527,28 @@
             }
 
             loadData();
+            loadDepartmentAssignments();
         });
 
         function logout() {
             localStorage.removeItem('activeUser');
             localStorage.removeItem('token');
             localStorage.removeItem('authToken');
-            try { window.location.href = 'index.html'; } catch(e) {}
+            try { window.location.replace('index.html'); } catch(e) {}
+        }
+
+        function toggleInternshipTypeFields() {
+            const type = document.getElementById('stuInternshipType').value;
+            const internalDiv = document.getElementById('internalDeptFields');
+            const externalDiv = document.getElementById('externalSupervisorField');
+
+            if (type === 'internal') {
+                internalDiv.classList.remove('hidden');
+                externalDiv.classList.add('hidden');
+            } else {
+                internalDiv.classList.add('hidden');
+                externalDiv.classList.remove('hidden');
+            }
         }
 
         function showToast(message, type = 'success') {
@@ -467,14 +572,11 @@
         }
 
         function switchTab(tabId) {
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('coordinators-section').classList.add('hidden');
-            document.getElementById('supervisors-section').classList.add('hidden');
-            document.getElementById('students-section').classList.add('hidden');
-
-            const tabs = ['dashboard', 'coordinators', 'supervisors', 'students'];
+            const tabs = ['dashboard', 'departments', 'coordinators', 'supervisors', 'students'];
             tabs.forEach(t => {
+                const sec = document.getElementById(`${t}-section`);
                 const btn = document.getElementById(`tab-${t}`);
+                if(sec) sec.classList.add('hidden');
                 if(btn) {
                     btn.classList.remove('border-hu-purple', 'text-hu-purple');
                     btn.classList.add('border-transparent', 'hover:text-gray-700', 'hover:border-gray-300', 'text-gray-600');
@@ -482,20 +584,21 @@
             });
 
             const activeSection = document.getElementById(`${tabId}-section`);
-            if(activeSection) activeSection.classList.remove('hidden');
-            
             const activeBtn = document.getElementById(`tab-${tabId}`);
+            if(activeSection) activeSection.classList.remove('hidden');
             if(activeBtn) {
                 activeBtn.classList.remove('border-transparent', 'hover:text-gray-700', 'hover:border-gray-300', 'text-gray-600');
                 activeBtn.classList.add('border-hu-purple', 'text-hu-purple');
             }
+
+            if (tabId === 'departments') {
+                loadDepartmentAssignments();
+            }
         }
 
-        // CANLI MYSQL'DEN VERİLERİ ÇEKİP TABLOLARA DOLDURAN ANA FONKSİYON
         async function loadData() {
             const token = getToken();
             try {
-                // 1. Koordinatör ve Süpervizörleri Çek
                 const staffRes = await fetch(`${API_URL}/admin/supervisors`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -507,9 +610,9 @@
                     const allStaff = await staffRes.json();
                     coordinators = allStaff.filter(u => u.role === 'coordinator' || u.role === 'academic');
                     supervisors = allStaff.filter(u => u.role === 'supervisor');
+                    loadedCoordinators = coordinators;
                 }
 
-                // 2. Öğrencileri Çek
                 const stuRes = await fetch(`${API_URL}/coordinator/students`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -519,35 +622,42 @@
                     students = await stuRes.json();
                 }
 
-                // İstatistikleri Güncelle
                 document.getElementById('stat-coordinators').innerText = coordinators.length;
                 document.getElementById('stat-supervisors').innerText = supervisors.length;
                 document.getElementById('stat-students').innerText = students.length;
 
-                // Koordinatör Tablosu
+                // Akademik Personel Tablosu (Düzenle Butonu Eklendi)
                 const coordTable = document.getElementById('coordinatorsTableBody');
                 if(coordTable) {
                     coordTable.innerHTML = '';
                     if(coordinators.length === 0) {
-                        coordTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı staj koordinatörü bulunmuyor.</td></tr>`;
+                        coordTable.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı personel bulunmuyor.</td></tr>`;
                     }
                     coordinators.forEach(coord => {
+                        const roleBadge = coord.role === 'coordinator' 
+                            ? '<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded font-bold">Staj Koordinatörü</span>' 
+                            : '<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-bold">Akademik Danışman</span>';
                         coordTable.innerHTML += `
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${escapeHtml(coord.name)}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${escapeHtml(coord.email)}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right"><span class="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold">Aktif</span></td>
+                                <td class="px-6 py-4 whitespace-nowrap">${roleBadge}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                                    <button onclick="editCoordinator(${coord.id})" class="text-xs bg-purple-50 hover:bg-purple-100 text-hu-purple font-bold px-2.5 py-1 rounded-lg border border-purple-200 transition cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square mr-1"></i>Düzenle
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
                 }
 
-                // Süpervizör Tablosu
+                // Dış Süpervizör Tablosu
                 const supTable = document.getElementById('supervisorsTableBody');
                 if(supTable) {
                     supTable.innerHTML = '';
                     if(supervisors.length === 0) {
-                        supTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı süpervizör bulunmuyor.</td></tr>`;
+                        supTable.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı dış süpervizör bulunmuyor.</td></tr>`;
                     }
                     supervisors.forEach(sup => {
                         supTable.innerHTML += `
@@ -568,31 +678,62 @@
                         stuTable.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
                     }
                     students.forEach(stu => {
-                        const supName = stu.supervisor_name ? escapeHtml(stu.supervisor_name) : '<span class="text-rose-500 font-bold">Atanmamış</span>';
-                        const codeBadge = stu.course_code 
-                            ? `<span class="bg-purple-100 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${escapeHtml(stu.course_code)} (${escapeHtml(stu.required_days || 20)} Gün)</span>` 
-                            : '<span class="text-gray-400 text-xs italic">Tanımlanmadı</span>';
+                        const isInternal = stu.internship_type === 'internal';
+                        const typeBadge = isInternal 
+                            ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold border border-emerald-200">Hacettepe İçi (Çift Yoklama)</span>' 
+                            : '<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-bold border border-blue-200">Dış Staj</span>';
+
+                        const advisorText = stu.advisor_name ? `<span class="text-xs text-gray-700">🎓 ${escapeHtml(stu.advisor_name)}</span>` : '<span class="text-gray-400 text-xs italic">Danışman Yok</span>';
+                        const supText = stu.supervisor_name ? `<span class="text-xs text-hu-purple font-semibold">🏥 ${escapeHtml(stu.supervisor_name)}</span>` : '<span class="text-gray-400 text-xs italic">Departman Ortak</span>';
 
                         stuTable.innerHTML += `
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${escapeHtml(stu.name)} (${escapeHtml(stu.student_no)})</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">${codeBadge}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right"><span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">Stajyer</span></td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="font-bold text-gray-900">${escapeHtml(stu.name)}</div>
+                                    <div class="text-xs text-gray-500">${escapeHtml(stu.student_no)}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs">${typeBadge}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>${advisorText}</div>
+                                    <div>${supText}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <span class="bg-purple-50 text-hu-purple text-xs px-2.5 py-1 rounded-full font-bold border border-purple-200">${escapeHtml(stu.course_code || 'ERG')} (${stu.required_days || 20} Gün)</span>
+                                </td>
                             </tr>
                         `;
                     });
                 }
 
-                // Öğrenci Formundaki Süpervizör Seçim Kutusunu Doldur
-                const selectBox = document.getElementById('stuSupervisor');
-                if(selectBox) {
-                    const currentVal = selectBox.value;
-                    selectBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
-                    supervisors.forEach(sup => {
-                        selectBox.innerHTML += `<option value="${sup.id}">${escapeHtml(sup.name)}</option>`;
+                // Dropdown'ları güncelle
+                const advisorBox = document.getElementById('stuAdvisor');
+                if(advisorBox) {
+                    const currentAdv = advisorBox.value;
+                    advisorBox.innerHTML = '<option value="">Danışman Hoca Seçiniz...</option>';
+                    coordinators.forEach(adv => {
+                        advisorBox.innerHTML += `<option value="${adv.id}">${escapeHtml(adv.name)}</option>`;
                     });
-                    if(currentVal) selectBox.value = currentVal;
+                    if(currentAdv) advisorBox.value = currentAdv;
+                }
+
+                const supBox = document.getElementById('stuSupervisor');
+                if(supBox) {
+                    const currentSup = supBox.value;
+                    supBox.innerHTML = '<option value="">Süpervizör Seçiniz...</option>';
+                    supervisors.forEach(sup => {
+                        supBox.innerHTML += `<option value="${sup.id}">${escapeHtml(sup.name)}</option>`;
+                    });
+                    if(currentSup) supBox.value = currentSup;
+                }
+
+                const deptStaffSelect = document.getElementById('deptStaffSelect');
+                if(deptStaffSelect) {
+                    const currentStaff = deptStaffSelect.value;
+                    deptStaffSelect.innerHTML = '<option value="">Hoca / Asistan Seçiniz...</option>';
+                    coordinators.forEach(st => {
+                        deptStaffSelect.innerHTML += `<option value="${st.id}">${escapeHtml(st.name)} (${st.email})</option>`;
+                    });
+                    if(currentStaff) deptStaffSelect.value = currentStaff;
                 }
 
             } catch (err) {
@@ -601,11 +742,156 @@
             }
         }
 
-        // CANLI MYSQL: YENİ KOORDİNATÖR EKLEME
+        // AKADEMİK PERSONEL DÜZENLEME MODUNA ALMA
+        function editCoordinator(id) {
+            const coord = loadedCoordinators.find(c => c.id === id);
+            if (!coord) return;
+
+            document.getElementById('coordName').value = coord.name;
+            document.getElementById('coordEmail').value = coord.email;
+            document.getElementById('coordEmail').readOnly = true;
+            document.getElementById('coordEmail').classList.add('bg-gray-100');
+            document.getElementById('coordRole').value = coord.role;
+            
+            document.getElementById('coordPassword').value = '';
+            document.getElementById('coordPasswordLabel').innerText = 'Yeni Şifre (İsteğe Bağlı)';
+            document.getElementById('coordPasswordHelp').classList.remove('hidden');
+
+            document.getElementById('coordFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-hu-purple mr-2"></i>Personeli Düzenle';
+            document.getElementById('coordSubmitBtn').innerText = 'Değişiklikleri Kaydet';
+            document.getElementById('coordCancelEditBtn').classList.remove('hidden');
+
+            document.getElementById('coordName').focus();
+        }
+
+        // DÜZENLEME MODUNU SIFIRLAMA
+        function resetCoordinatorForm() {
+            document.getElementById('addCoordinatorForm').reset();
+            const emailInput = document.getElementById('coordEmail');
+            emailInput.readOnly = false;
+            emailInput.classList.remove('bg-gray-100');
+
+            document.getElementById('coordPassword').value = '1234';
+            document.getElementById('coordPasswordLabel').innerText = 'Geçici Şifre';
+            document.getElementById('coordPasswordHelp').classList.add('hidden');
+
+            document.getElementById('coordFormTitle').innerHTML = '<i class="fa-solid fa-user-plus text-hu-purple mr-2"></i>Yeni Akademik Personel Ekle';
+            document.getElementById('coordSubmitBtn').innerText = 'Sisteme Kaydet';
+            document.getElementById('coordCancelEditBtn').classList.add('hidden');
+        }
+
+        // DEPARTMANLARI VE BAĞLI HOCALARI YÜKLE
+        async function loadDepartmentAssignments() {
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_URL}/admin/departments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const depts = await res.json();
+
+                const deptSelect = document.getElementById('deptSelect');
+                const morningSelect = document.getElementById('stuMorningDept');
+                const afternoonSelect = document.getElementById('stuAfternoonDept');
+
+                if (deptSelect) {
+                    const curDept = deptSelect.value;
+                    deptSelect.innerHTML = '<option value="">Departman Seçiniz...</option>';
+                    if (morningSelect) morningSelect.innerHTML = '<option value="">Sabah Departmanı Seçiniz...</option>';
+                    if (afternoonSelect) afternoonSelect.innerHTML = '<option value="">Öğleden Sonra Departmanı Seçiniz...</option>';
+
+                    depts.forEach(d => {
+                        const opt = `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
+                        deptSelect.innerHTML += opt;
+                        if (morningSelect) morningSelect.innerHTML += opt;
+                        if (afternoonSelect) afternoonSelect.innerHTML += opt;
+                    });
+                    if(curDept) deptSelect.value = curDept;
+                }
+
+                const grid = document.getElementById('departmentsGrid');
+                if (grid) {
+                    grid.innerHTML = '';
+                    depts.forEach(d => {
+                        let supsHtml = '';
+                        if (d.supervisors && d.supervisors.length > 0) {
+                            supsHtml = d.supervisors.map(s => `
+                                <div class="flex items-center justify-between bg-purple-50 px-2.5 py-1.5 rounded-lg border border-purple-100 text-xs mt-1.5">
+                                    <span class="font-bold text-gray-800">${escapeHtml(s.user_name)}</span>
+                                    <button onclick="removeDeptSupervisor(${d.id}, ${s.user_id})" class="text-rose-600 hover:text-rose-800 font-bold ml-2 cursor-pointer">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            `).join('');
+                        } else {
+                            supsHtml = '<p class="text-[11px] text-gray-400 italic mt-1">Henüz hoca atanmamış.</p>';
+                        }
+
+                        grid.innerHTML += `
+                            <div class="border border-gray-200 rounded-xl p-4 bg-white shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-bold text-sm text-hu-purple border-b pb-1 mb-2">${escapeHtml(d.name)}</h4>
+                                    <div class="space-y-1">${supsHtml}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error('Departman verileri yüklenemedi:', err);
+            }
+        }
+
+        async function handleAssignDept(e) {
+            const departmentId = document.getElementById('deptSelect').value;
+            const supervisorId = document.getElementById('deptStaffSelect').value;
+            const token = getToken();
+
+            if (!departmentId || !supervisorId) {
+                showToast('Lütfen departman ve hoca seçiniz.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/admin/departments/assign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ departmentId, supervisorId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Eşleştirme başarıyla kaydedildi.', 'success');
+                    loadDepartmentAssignments();
+                } else {
+                    showToast(data.message || 'Hata oluştu.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu hatası.', 'error');
+            }
+        }
+
+        async function removeDeptSupervisor(departmentId, supervisorId) {
+            if (!confirm('Bu hocayı departmandan çıkarmak istediğinize emin misiniz?')) return;
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_URL}/admin/departments/remove`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ departmentId, supervisorId })
+                });
+                if (res.ok) {
+                    showToast('Hoca departmandan çıkarıldı.', 'success');
+                    loadDepartmentAssignments();
+                }
+            } catch (err) {
+                showToast('Sunucu hatası.', 'error');
+            }
+        }
+
         async function handleAddCoordinator(e) {
-            e.preventDefault();
             const name = document.getElementById('coordName').value;
             const email = document.getElementById('coordEmail').value;
+            const role = document.getElementById('coordRole').value;
             const password = document.getElementById('coordPassword').value;
 
             try {
@@ -616,26 +902,23 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ name, email, password, role: 'coordinator' })
+                    body: JSON.stringify({ name, email, password, role })
                 });
 
                 const data = await res.json();
                 if (res.ok) {
-                    showToast(data.message || 'Staj Koordinatörü başarıyla kaydedildi.', 'success');
-                    document.getElementById('addCoordinatorForm').reset();
-                    document.getElementById('coordPassword').value = '1234';
+                    showToast(data.message || 'Bilgiler başarıyla güncellendi.', 'success');
+                    resetCoordinatorForm();
                     loadData();
                 } else {
-                    showToast(data.message || 'Kayıt başarısız.', 'error');
+                    showToast(data.message || 'İşlem başarısız.', 'error');
                 }
             } catch (err) {
                 showToast('Sunucuya bağlanılamadı.', 'error');
             }
         }
 
-        // CANLI MYSQL: YENİ SÜPERVİZÖR EKLEME
         async function handleAddSupervisor(e) {
-            e.preventDefault();
             const name = document.getElementById('supName').value;
             const email = document.getElementById('supEmail').value;
             const password = document.getElementById('supPassword').value;
@@ -653,7 +936,7 @@
 
                 const data = await res.json();
                 if (res.ok) {
-                    showToast(data.message || 'Süpervizör başarıyla kaydedildi.', 'success');
+                    showToast(data.message || 'Dış süpervizör kaydedildi.', 'success');
                     document.getElementById('addSupervisorForm').reset();
                     document.getElementById('supPassword').value = '1234';
                     loadData();
@@ -665,12 +948,14 @@
             }
         }
 
-        // CANLI MYSQL: YENİ ÖĞRENCİ VE STAJ DERSİ EKLEME
         async function handleAddStudent(e) {
-            e.preventDefault();
             const name = document.getElementById('stuName').value;
             const studentNo = document.getElementById('stuNo').value;
+            const internshipType = document.getElementById('stuInternshipType').value;
+            const advisorId = document.getElementById('stuAdvisor').value;
             const supervisorId = document.getElementById('stuSupervisor').value;
+            const morningDeptId = document.getElementById('stuMorningDept').value;
+            const afternoonDeptId = document.getElementById('stuAfternoonDept').value;
             const password = document.getElementById('stuPassword').value;
             const courseCode = document.getElementById('stuCourseCode').value;
             const requiredDays = document.getElementById('stuRequiredDays').value || 20;
@@ -681,7 +966,11 @@
                 name,
                 studentNo,
                 password,
-                supervisorId: supervisorId ? parseInt(supervisorId, 10) : null,
+                internshipType,
+                advisorId: advisorId ? parseInt(advisorId, 10) : null,
+                supervisorId: (internshipType === 'external' && supervisorId) ? parseInt(supervisorId, 10) : null,
+                morningDeptId: (internshipType === 'internal' && morningDeptId) ? parseInt(morningDeptId, 10) : null,
+                afternoonDeptId: (internshipType === 'internal' && afternoonDeptId) ? parseInt(afternoonDeptId, 10) : null,
                 courseCode: courseCode || null,
                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
                 requiredDays: parseInt(requiredDays, 10),
@@ -702,10 +991,11 @@
 
                 const data = await res.json();
                 if (res.ok) {
-                    showToast('Öğrenci ve staj tanımı başarıyla MySQL veritabanına kaydedildi.', 'success');
+                    showToast('Öğrenci ve staj modeli başarıyla kaydedildi.', 'success');
                     document.getElementById('addStudentForm').reset();
                     document.getElementById('stuRequiredDays').value = 20;
                     document.getElementById('stuPassword').value = '1234';
+                    toggleInternshipTypeFields();
                     loadData();
                 } else {
                     showToast(data.message || 'Öğrenci kaydedilemedi.', 'error');
@@ -715,7 +1005,6 @@
             }
         }
 
-        // EXCEL TOPLU KOORDİNATÖR
         async function handleCoordinatorExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -732,16 +1021,17 @@
                         const name = row['Ad Soyad'] || row['Adı Soyadı'] || row['Ad'];
                         const email = row['E-posta'] || row['Email'];
                         const password = row['Şifre'] || '1234';
+                        const role = (row['Rol'] || '').toLowerCase().includes('koordinat') ? 'coordinator' : 'academic';
                         if (name && email) {
                             await fetch(`${API_URL}/admin/supervisors/save`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                body: JSON.stringify({ name: String(name).trim(), email: String(email).trim(), password: String(password).trim(), role: 'coordinator' })
+                                body: JSON.stringify({ name: String(name).trim(), email: String(email).trim(), password: String(password).trim(), role })
                             });
                             count++;
                         }
                     }
-                    showToast(`${count} koordinatör veritabanına aktarıldı.`, 'success');
+                    showToast(`${count} akademik personel aktarıldı.`, 'success');
                     loadData();
                 } catch (err) {
                     showToast('Excel işlenirken hata oluştu.', 'error');
@@ -750,7 +1040,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // EXCEL TOPLU SÜPERVİZÖR
         async function handleSupervisorExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -776,7 +1065,7 @@
                             count++;
                         }
                     }
-                    showToast(`${count} süpervizör veritabanına aktarıldı.`, 'success');
+                    showToast(`${count} dış süpervizör aktarıldı.`, 'success');
                     loadData();
                 } catch (err) {
                     showToast('Excel işlenirken hata oluştu.', 'error');
@@ -785,7 +1074,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // EXCEL TOPLU ÖĞRENCİ
         async function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -798,10 +1086,10 @@
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
                     const token = getToken();
-                    // Güncel süpervizörleri al
                     const staffRes = await fetch(`${API_URL}/admin/supervisors`, { headers: { 'Authorization': `Bearer ${token}` } });
                     const allStaff = staffRes.ok ? await staffRes.json() : [];
                     const supervisors = allStaff.filter(u => u.role === 'supervisor');
+                    const academics = allStaff.filter(u => u.role === 'academic' || u.role === 'coordinator');
 
                     let payloadStudents = [];
 
@@ -810,28 +1098,43 @@
                         const studentNo = row['Öğrenci No'] || row['Ogrenci No'] || row['No'] || row['StudentNo'];
                         const password = row['Şifre'] || row['Password'] || '1234';
                         
+                        const typeRaw = (row['Staj Türü'] || row['Tür'] || 'internal').toString().toLowerCase().trim();
+                        const internshipType = typeRaw.includes('dış') || typeRaw === 'external' ? 'external' : 'internal';
+
                         const courseCode = (row['Staj Ders Kodu'] || row['Ders Kodu'] || row['CourseCode'] || '').toString().trim().toUpperCase();
-                        const requiredDaysVal = row['Hedef Staj Gün Sayısı'] || row['Staj Gün Sayısı'] || row['Required Days'] || 20;
+                        const requiredDaysVal = row['Hedef Staj Gün Sayısı'] || row['Staj Gün Sayısı'] || 20;
                         const startDate = row['Staj Başlangıç'] || row['Başlangıç Tarihi'];
                         const endDate = row['Staj Bitiş'] || row['Bitiş Tarihi'];
 
-                        const supRef = row['Süpervizör E-posta'] || row['Supervizor Email'] || row['Süpervizör'] || row['Danışman E-posta'];
+                        const morningDeptId = row['Sabah Dept ID'] || row['Sabah Departmanı ID'] || null;
+                        const afternoonDeptId = row['Öğle Dept ID'] || row['Öğleden Sonra Dept ID'] || null;
+
+                        const supRef = row['Süpervizör E-posta'] || row['Süpervizör'];
+                        const advRef = row['Danışman E-posta'] || row['Danışman'];
 
                         if (name && studentNo) {
                             let matchedSupervisorId = null;
                             if (supRef) {
-                                const searchStr = String(supRef).trim().toLowerCase();
-                                const foundSup = supervisors.find(s => 
-                                    (s.email && s.email.toLowerCase() === searchStr) || 
-                                    (s.name && s.name.toLowerCase().includes(searchStr))
-                                );
+                                const sSearch = String(supRef).trim().toLowerCase();
+                                const foundSup = supervisors.find(s => (s.email && s.email.toLowerCase() === sSearch) || (s.name && s.name.toLowerCase().includes(sSearch)));
                                 if (foundSup) matchedSupervisorId = foundSup.id;
+                            }
+
+                            let matchedAdvisorId = null;
+                            if (advRef) {
+                                const aSearch = String(advRef).trim().toLowerCase();
+                                const foundAdv = academics.find(a => (a.email && a.email.toLowerCase() === aSearch) || (a.name && a.name.toLowerCase().includes(aSearch)));
+                                if (foundAdv) matchedAdvisorId = foundAdv.id;
                             }
 
                             payloadStudents.push({
                                 name: String(name).trim(),
                                 studentNo: String(studentNo).trim(),
+                                internshipType,
+                                advisorId: matchedAdvisorId,
                                 supervisorId: matchedSupervisorId,
+                                morningDeptId: morningDeptId ? parseInt(morningDeptId, 10) : null,
+                                afternoonDeptId: afternoonDeptId ? parseInt(afternoonDeptId, 10) : null,
                                 password: String(password).trim(),
                                 courseCode: courseCode || null,
                                 courseName: COURSE_MAP[courseCode] || 'Mesleki Uygulama',
@@ -849,7 +1152,7 @@
                             body: JSON.stringify({ students: payloadStudents })
                         });
                         if (res.ok) {
-                            showToast(`${payloadStudents.length} öğrenci veritabanına aktarıldı.`, 'success');
+                            showToast(`${payloadStudents.length} öğrenci başarıyla aktarıldı.`, 'success');
                             loadData();
                         } else {
                             showToast('Öğrenciler aktarılırken hata oluştu.', 'error');

@@ -45,7 +45,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">Hacettepe Üniversitesi</h1>
-                        <p class="text-xs text-purple-200">Ergoterapi Dış Staj Takip Sistemi</p>
+                        <p class="text-xs text-purple-200">Ergoterapi Staj Takip Sistemi</p>
                     </div>
                 </div>
                 <div class="hidden sm:block text-right">
@@ -72,23 +72,23 @@
 
                 <!-- Giriş Türü Sekmeleri -->
                 <div class="flex border-b border-gray-200 mb-6">
-                    <button type="button" onclick="switchLoginTab('staff')" id="tabStaff" class="w-1/2 py-2.5 text-sm font-bold border-b-2 border-hu-purple text-hu-purple transition-all flex items-center justify-center">
+                    <button type="button" onclick="switchLoginTab('staff')" id="tabStaff" class="w-1/2 py-2.5 text-sm font-bold border-b-2 border-hu-purple text-hu-purple transition-all flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-user-tie mr-2"></i>Personel / Yönetim
                     </button>
-                    <button type="button" onclick="switchLoginTab('student')" id="tabStudent" class="w-1/2 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center justify-center">
+                    <button type="button" onclick="switchLoginTab('student')" id="tabStudent" class="w-1/2 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center justify-center cursor-pointer">
                         <i class="fa-solid fa-user-graduate mr-2"></i>Öğrenci
                     </button>
                 </div>
 
                 <!-- 1. Personel / Koordinatör / Süpervizör / Admin Giriş Formu -->
-                <form id="staffLoginForm" onsubmit="handleLogin(event, 'staff')" class="space-y-4">
+                <div id="staffLoginForm" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kurumsal E-posta Adresi</label>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kullanıcı Adı veya E-posta</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-envelope text-gray-400 text-sm"></i>
+                                <i class="fa-solid fa-user text-gray-400 text-sm"></i>
                             </div>
-                            <input type="email" id="staffEmail" required class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="ad.soyad@hacettepe.edu.tr">
+                            <input type="text" id="staffEmail" autocomplete="username" class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Kullanıcı adı veya e-posta adresi" onkeydown="if(event.key==='Enter') handleLogin('staff')">
                         </div>
                     </div>
                     <div>
@@ -97,23 +97,23 @@
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-lock text-gray-400 text-sm"></i>
                             </div>
-                            <input type="password" id="staffPassword" required class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••">
+                            <input type="password" id="staffPassword" autocomplete="current-password" class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin('staff')">
                         </div>
                     </div>
-                    <button type="submit" id="staffSubmitBtn" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-all">
+                    <button type="button" id="staffSubmitBtn" onclick="handleLogin('staff')" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-all cursor-pointer">
                         <span>Giriş Yap</span>
                     </button>
-                </form>
+                </div>
 
                 <!-- 2. Öğrenci Giriş Formu -->
-                <form id="studentLoginForm" onsubmit="handleLogin(event, 'student')" class="space-y-4 hidden">
+                <div id="studentLoginForm" class="space-y-4 hidden">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Öğrenci Numarası</label>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Öğrenci Numarası veya Kullanıcı Adı</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-id-card text-gray-400 text-sm"></i>
                             </div>
-                            <input type="text" id="studentId" required class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Örn: 22000001">
+                            <input type="text" id="studentId" autocomplete="username" class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="Örn: 22000001 veya kullanıcı adı" onkeydown="if(event.key==='Enter') handleLogin('student')">
                         </div>
                     </div>
                     <div>
@@ -122,16 +122,13 @@
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-lock text-gray-400 text-sm"></i>
                             </div>
-                            <input type="password" id="studentPassword" required class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••">
+                            <input type="password" id="studentPassword" autocomplete="current-password" class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-hu-purple focus:border-hu-purple transition-shadow" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin('student')">
                         </div>
                     </div>
-                    <button type="submit" id="studentSubmitBtn" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-all">
+                    <button type="button" id="studentSubmitBtn" onclick="handleLogin('student')" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-hu-purple hover:bg-hu-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hu-purple transition-all cursor-pointer">
                         <span>Öğrenci Girişi Yap</span>
                     </button>
-                </form>
-            </div>
-            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 text-center">
-                <p class="text-[11px] text-gray-400">Giriş sorunu yaşayan öğrencilerimiz Staj Koordinatörlüğü ile iletişime geçebilir.</p>
+                </div>
             </div>
         </div>
     </main>
@@ -145,7 +142,7 @@
 
         function showToast(message, type = 'error') {
             const container = document.getElementById('toastContainer');
-            if(!container) return;
+            if (!container) return;
             const toast = document.createElement('div');
             
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
@@ -176,6 +173,7 @@
                 tabStaff.classList.remove('border-transparent', 'text-gray-500', 'font-semibold');
                 tabStudent.classList.add('border-transparent', 'text-gray-500', 'font-semibold');
                 tabStudent.classList.remove('border-hu-purple', 'text-hu-purple', 'font-bold');
+                document.getElementById('staffEmail').focus();
             } else {
                 studentForm.classList.remove('hidden');
                 staffForm.classList.add('hidden');
@@ -183,13 +181,11 @@
                 tabStudent.classList.remove('border-transparent', 'text-gray-500', 'font-semibold');
                 tabStaff.classList.add('border-transparent', 'text-gray-500', 'font-semibold');
                 tabStaff.classList.remove('border-hu-purple', 'text-hu-purple', 'font-bold');
+                document.getElementById('studentId').focus();
             }
         }
 
-        // CANLI MYSQL İLE GÜVENLİ GİRİŞ İŞLEMİ
-        async function handleLogin(event, type) {
-            event.preventDefault();
-            
+        async function handleLogin(type) {
             const submitBtn = type === 'staff' 
                 ? document.getElementById('staffSubmitBtn') 
                 : document.getElementById('studentSubmitBtn');
@@ -208,6 +204,13 @@
                 payload.password = document.getElementById('studentPassword').value.trim();
             }
 
+            if (!payload.identifier || !payload.password) {
+                showToast('Lütfen kullanıcı adı / numara ve şifrenizi giriniz.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
@@ -218,35 +221,41 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Token'ı her iki yaygın anahtar adıyla da sakla
+                    const normalizedUser = {
+                        ...data.user,
+                        role: (data.user.role || '').toLowerCase().trim()
+                    };
+
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('activeUser', JSON.stringify(data.user));
+                    localStorage.setItem('activeUser', JSON.stringify(normalizedUser));
 
                     showToast(`Giriş başarılı! Hoş geldiniz, ${data.user.name}`, 'success');
                     
                     setTimeout(() => {
-                        const role = data.user.role;
+                        const role = normalizedUser.role;
                         if (role === 'admin' || role === 'webmaster') {
-                            window.location.href = 'admin.html';
+                            window.location.replace('admin.html');
                         } else if (role === 'coordinator' || role === 'academic') {
-                            window.location.href = 'coordinator.html';
+                            window.location.replace('coordinator.html');
                         } else if (role === 'supervisor') {
-                            window.location.href = 'supervisor.html';
+                            window.location.replace('supervisor.html');
                         } else if (role === 'student') {
-                            window.location.href = 'student.html';
+                            window.location.replace('student.html');
                         } else {
-                            window.location.href = 'index.html';
+                            showToast(`Tanımsız rol: "${data.user.role}".`, 'error');
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
                         }
-                    }, 600);
+                    }, 300);
                 } else {
-                    showToast(data.message || 'Hatalı e-posta, öğrenci numarası veya şifre.');
+                    showToast(data.message || 'Hatalı kullanıcı adı veya şifre.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
                 }
             } catch (error) {
                 console.error('Login Hatası:', error);
-                showToast('Sunucuya bağlanılamadı. MySQL ve Node.js sunucusunun açık olduğundan emin olun.');
+                showToast('Sunucuya bağlanılamadı.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             }

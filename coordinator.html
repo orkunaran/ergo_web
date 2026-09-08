@@ -61,7 +61,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi Bölümü</h1>
-                        <p class="text-xs text-purple-200">Staj Koordinatör Paneli (Canlı MySQL)</p>
+                        <p class="text-xs text-purple-200">Staj Koordinatör Paneli</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -70,11 +70,11 @@
                         <p class="text-xs text-purple-200">Bölüm Sorumlusu</p>
                     </div>
                     
-                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
+                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center cursor-pointer">
                         <i class="fa-solid fa-right-left mr-1.5"></i> Süpervizör Paneline Geç
                     </button>
 
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800">
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 cursor-pointer">
                         <i class="fa-solid fa-sign-out-alt sm:mr-1"></i><span class="hidden sm:inline">Çıkış</span>
                     </button>
                 </div>
@@ -84,10 +84,10 @@
         <div class="bg-white text-gray-600 shadow-sm border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
-                    <button onclick="switchTab('department-students')" id="tab-department-students" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center">
+                    <button onclick="switchTab('department-students')" id="tab-department-students" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center cursor-pointer">
                         <i class="fa-solid fa-users-rectangle mr-2"></i>Tüm Bölüm Stajyerleri
                     </button>
-                    <button onclick="switchTab('my-supervision')" id="tab-my-supervision" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center">
+                    <button onclick="switchTab('my-supervision')" id="tab-my-supervision" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center cursor-pointer">
                         <i class="fa-solid fa-user-doctor mr-2"></i>Kendi Danışmanlıklarım
                     </button>
                 </nav>
@@ -109,7 +109,7 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <span class="bg-purple-50 text-hu-purple text-xs font-bold px-3 py-1.5 rounded-xl border border-purple-100">Resmi Onay Mercii</span>
-                        <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
+                        <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border cursor-pointer">
                             <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                         </button>
                     </div>
@@ -142,7 +142,7 @@
                         <h2 class="text-xl font-bold text-gray-900">Doğrudan Benim Danışmanlığımdaki Öğrenciler</h2>
                         <p class="text-xs text-gray-500 mt-1">Saha süpervizörü olarak bizzat atandığınız öğrencilerin listesi.</p>
                     </div>
-                    <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                    <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center cursor-pointer">
                         <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                     </button>
                 </div>
@@ -164,7 +164,7 @@
                         <h3 class="font-bold text-lg text-gray-900" id="auditStudentName">Öğrenci Yoklama Audit Raporu</h3>
                         <p class="text-xs text-purple-700 font-medium" id="auditStudentDetails">-</p>
                     </div>
-                    <button onclick="closeAuditModal()" class="text-gray-400 hover:text-gray-600">
+                    <button onclick="closeAuditModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
@@ -186,7 +186,7 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-t text-right">
-                    <button onclick="closeAuditModal()" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Kapat</button>
+                    <button onclick="closeAuditModal()" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Kapat</button>
                 </div>
             </div>
         </div>
@@ -202,7 +202,7 @@
                         <h3 class="font-bold text-lg text-gray-900" id="gradeDetailStudentName">Öğrenci Staj Değerlendirme Detayları</h3>
                         <p class="text-xs text-purple-700 font-medium" id="gradeDetailSubTitle">-</p>
                     </div>
-                    <button onclick="closeGradeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <button onclick="closeGradeDetailModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
@@ -212,16 +212,13 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-t text-right flex-shrink-0">
-                    <button onclick="closeGradeDetailModal()" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Kapat</button>
+                    <button onclick="closeGradeDetailModal()" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Kapat</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-
-        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
-        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -238,9 +235,24 @@
             return localStorage.getItem('token') || localStorage.getItem('authToken');
         }
 
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '--.--.----';
+            if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+            if (dateStr.includes('-')) {
+                const p = dateStr.split('-');
+                if (p.length === 3 && p[0].length === 4) {
+                    return `${p[2]}.${p[1]}.${p[0]}`;
+                }
+            }
+            return dateStr;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            
+            if (activeUser && activeUser.role) {
+                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            }
+
             if (!activeUser || (activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
                 logout();
                 return;
@@ -258,7 +270,7 @@
             localStorage.removeItem('activeUser');
             localStorage.removeItem('token');
             localStorage.removeItem('authToken');
-            try { window.location.href = 'index.html'; } catch(e) {}
+            try { window.location.replace('index.html'); } catch(e) {}
         }
 
         function toggleRole() {
@@ -298,7 +310,6 @@
             activeBtn.classList.add('border-hu-purple', 'text-hu-purple');
         }
 
-        // CANLI MYSQL VERİ ÇEKME İŞLEMİ
         async function loadDepartmentData() {
             try {
                 const token = getToken();
@@ -327,7 +338,7 @@
                     const gradeText = (scoreVal !== null && scoreVal !== undefined) 
                         ? `<div class="flex items-center space-x-2">
                             <span class="font-black text-hu-purple text-sm">${scoreVal} / 100</span>
-                            <button onclick="openGradeDetailModal(${stu.id})" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-1 rounded-lg font-bold transition flex items-center">
+                            <button onclick="openGradeDetailModal(${stu.id})" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-1 rounded-lg font-bold transition flex items-center cursor-pointer">
                                 <i class="fa-solid fa-eye mr-1"></i>Rubrik
                             </button>
                            </div>` 
@@ -338,7 +349,7 @@
                     const requiredDays = stu.required_days || 20;
 
                     const auditButton = `
-                        <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" data-student-no="${escapeHtml(stu.student_no)}" onclick="openAuditModal(this.dataset.studentId, this.dataset.studentName, this.dataset.studentNo)" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center">
+                        <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" data-student-no="${escapeHtml(stu.student_no)}" onclick="openAuditModal(this.dataset.studentId, this.dataset.studentName, this.dataset.studentNo)" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center cursor-pointer">
                             <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> ${approvedCount}/${requiredDays} Gün (${retroCount} Mazeretli)
                         </button>
                     `;
@@ -346,7 +357,7 @@
                     const isDepartmentApproved = stu.department_approved == 1;
                     const approveBtn = isDepartmentApproved
                         ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-extrabold inline-flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i>Bölüm Onayladı</span>`
-                        : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark text-white text-xs px-3.5 py-1.5 rounded-xl font-bold transition shadow-sm flex items-center ml-auto"><i class="fa-solid fa-check mr-1.5"></i>Final Onayı Ver</button>`;
+                        : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark text-white text-xs px-3.5 py-1.5 rounded-xl font-bold transition shadow-sm flex items-center ml-auto cursor-pointer"><i class="fa-solid fa-check mr-1.5"></i>Final Onayı Ver</button>`;
 
                     tbody.innerHTML += `
                         <tr>
@@ -359,7 +370,6 @@
                     `;
                 });
 
-                // Kendi Süpervizörlüğündeki Öğrencileri Render Et
                 const mySupervisedGrid = document.getElementById('mySupervisedList');
                 mySupervisedGrid.innerHTML = '';
                 
@@ -377,7 +387,7 @@
                                 </div>
                                 <div class="flex items-center justify-between pt-2 border-t border-gray-100">
                                     <span class="text-[11px] bg-purple-100 text-hu-purple py-1 px-2.5 rounded-lg font-bold">Aktif Danışmanlık</span>
-                                    <a href="supervisor.html" class="text-xs text-hu-purple font-bold hover:underline flex items-center">
+                                    <a href="supervisor.html" class="text-xs text-hu-purple font-bold hover:underline flex items-center cursor-pointer">
                                         Değerlendir <i class="fa-solid fa-arrow-right ml-1 text-[10px]"></i>
                                     </a>
                                 </div>
@@ -407,7 +417,12 @@
                 document.getElementById('gradeDetailStudentName').innerText = `${data.student_name} - Detaylı Rubrik Raporu`;
                 document.getElementById('gradeDetailSubTitle').innerText = `Öğrenci No: ${data.student_no} | Süpervizör: ${data.evaluator_name || 'Saha Süpervizörü'}`;
 
-                const d = typeof data.rubric_details === 'string' ? JSON.parse(data.rubric_details) : (data.rubric_details || {});
+                let d = data.rubric_details;
+                if (typeof d === 'string') {
+                    try { d = JSON.parse(d); } catch(e) { d = {}; }
+                }
+                d = d || {};
+
                 const noteText = data.note ? escapeHtml(data.note) : 'Süpervizör tarafından ek görüş eklenmedi.';
 
                 const behTotal = (parseInt(d.beh) || 0);
@@ -486,7 +501,7 @@
 
                             tbody.innerHTML += `
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2.5 font-bold text-gray-800">${item.date}</td>
+                                    <td class="px-4 py-2.5 font-bold text-gray-800">${formatDisplayDate(item.date)}</td>
                                     <td class="px-4 py-2.5 font-mono text-gray-600">${subTime}</td>
                                     <td class="px-4 py-2.5">${typeText}</td>
                                     <td class="px-4 py-2.5 text-right">${statusBadge}</td>

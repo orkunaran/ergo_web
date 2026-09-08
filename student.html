@@ -7,7 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -63,7 +63,7 @@
                     <p class="text-xs text-purple-200" id="studentNoDisplay">No: -</p>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-purple-800 flex items-center">
+            <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-purple-800 flex items-center cursor-pointer">
                 <i class="fa-solid fa-sign-out-alt mr-1"></i> Çıkış
             </button>
         </div>
@@ -73,7 +73,7 @@
 
     <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full space-y-6">
 
-        <!-- AKTİF STAJ DERSİ VE SÜPERVİZÖR KARTLARI -->
+        <!-- AKTİF STAJ DERSİ VE SORUMLU / DEPARTMAN KARTLARI -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Staj Ders Kodu & Tarihi -->
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
@@ -82,30 +82,33 @@
                         <i class="fa-solid fa-book-bookmark text-base"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium">Staj Dersi</p>
-                        <p class="text-sm font-extrabold text-hu-purple" id="courseCodeDisplay">ERG ---</p>
+                        <div class="flex items-center gap-1.5">
+                            <p class="text-sm font-extrabold text-hu-purple" id="courseCodeDisplay">ERG ---</p>
+                            <span id="internshipTypeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Okul İçi</span>
+                        </div>
                         <p class="text-[11px] text-gray-500 font-semibold" id="courseNameDisplay">Mesleki Uygulama</p>
                     </div>
                 </div>
                 <div class="text-right border-l pl-3 border-gray-100">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Staj Tarih Aralığı</p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Staj Aralığı</p>
                     <p class="text-xs font-bold text-gray-700 mt-0.5" id="internshipDatesDisplay">--.--.---- - --.--.----</p>
                 </div>
             </div>
 
-            <!-- Süpervizör Bilgisi -->
+            <!-- Süpervizör / Danışman / Departman Bilgisi -->
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple">
-                        <i class="fa-solid fa-user-doctor text-lg"></i>
+                        <i class="fa-solid fa-building-user text-lg"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium">Staj Süpervizörünüz</p>
-                        <p class="text-sm font-bold text-gray-800" id="supervisorNameDisplay">Atanmadı</p>
+                        <p class="text-[11px] text-gray-400 font-bold uppercase" id="supervisorTitleDisplay">Staj Departmanları</p>
+                        <p class="text-xs font-bold text-gray-800" id="supervisorNameDisplay">Yükleniyor...</p>
+                        <p class="text-[10px] text-purple-700 font-semibold mt-0.5" id="advisorNameDisplay"></p>
                     </div>
                 </div>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                    <i class="fa-solid fa-circle-check mr-1 text-[10px]"></i> Aktif
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800">
+                    <i class="fa-solid fa-circle-check mr-1 text-[9px]"></i> Aktif
                 </span>
             </div>
         </div>
@@ -139,19 +142,19 @@
                 </div>
 
                 <div>
-                    <h2 class="text-2xl font-extrabold tracking-tight">GÜNLÜK YOKLAMA BİLDİRİMİ</h2>
+                    <h2 class="text-2xl font-extrabold tracking-tight" id="checkInHeader">GÜNLÜK YOKLAMA BİLDİRİMİ</h2>
                     <p class="text-xs text-purple-200 mt-1 max-w-md mx-auto" id="checkInSubText">
-                        Staj yerine vardığınızda aşağıdaki butona basarak GPS konumunuzla katılımınızı bildirebilirsiniz.
+                        Staj yerine vardığınızda butona basarak GPS konumunuzla katılımınızı bildirebilirsiniz.
                     </p>
                 </div>
 
                 <div class="pt-2 flex flex-col sm:flex-row justify-center items-center gap-3">
-                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3">
+                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer">
                         <i class="fa-solid fa-location-crosshairs text-xl animate-pulse"></i>
-                        <span id="checkInBtnText">STAJDAYIM / YOKLAMA VER</span>
+                        <span id="checkInBtnText">YOKLAMA VER</span>
                     </button>
 
-                    <button onclick="openRetroactiveModal()" class="w-full sm:w-auto px-5 py-4 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/40 text-amber-100 font-bold text-xs rounded-2xl transition-all flex items-center justify-center space-x-2">
+                    <button onclick="openRetroactiveModal()" class="w-full sm:w-auto px-5 py-4 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/40 text-amber-100 font-bold text-xs rounded-2xl transition-all flex items-center justify-center space-x-2 cursor-pointer">
                         <i class="fa-solid fa-clock-rotate-left text-sm"></i>
                         <span>Mazeretli / Geriye Dönük Bildir</span>
                     </button>
@@ -162,8 +165,11 @@
         <!-- YOKLAMA GEÇMİŞİ -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-gray-800 text-sm">Yoklama Geçmişi</h3>
-                <button onclick="loadAttendanceData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center">
+                <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-gray-800 text-sm">Yoklama Geçmişi</h3>
+                    <span id="attendanceCountBadge" class="text-[10px] bg-purple-100 text-hu-purple font-black px-2 py-0.5 rounded-full">0 Kayıt</span>
+                </div>
+                <button onclick="loadAttendanceData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center cursor-pointer">
                     <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                 </button>
             </div>
@@ -180,12 +186,21 @@
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeRetroactiveModal()"></div>
             <div class="bg-white rounded-2xl max-w-md w-full p-6 z-10 relative shadow-2xl">
                 <h3 class="font-bold text-lg text-gray-900 mb-1">Geriye Dönük / Mazeretli Yoklama Bildir</h3>
-                <p class="text-xs text-gray-500 mb-4">Giremediğiniz geçmiş bir staj günü için mazeretinizle birlikte süpervizör onayına gönderin.</p>
+                <p class="text-xs text-gray-500 mb-4">Giremediğiniz geçmiş bir staj oturumu için mazeretinizle birlikte onay talebi gönderin.</p>
 
-                <form onsubmit="handleRetroactiveSubmit(event)" class="space-y-4">
+                <form onsubmit="event.preventDefault(); handleRetroactiveSubmit(event); return false;" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Yapılan Tarih</label>
                         <input type="date" id="retroDate" required class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple">
+                    </div>
+
+                    <div id="retroSessionTypeContainer">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Oturumu</label>
+                        <select id="retroSessionType" class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple bg-white">
+                            <option value="morning">Sabah Oturumu (09:00 - 13:00)</option>
+                            <option value="afternoon">Öğleden Sonra Oturumu (13:00 - 17:00)</option>
+                            <option value="full_day">Tam Gün (Dış Kurum Stajı)</option>
+                        </select>
                     </div>
 
                     <div>
@@ -194,8 +209,8 @@
                     </div>
 
                     <div class="flex justify-end space-x-2 pt-2">
-                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl">İptal</button>
-                        <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Talebi Gönder</button>
+                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
+                        <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Talebi Gönder</button>
                     </div>
                 </form>
             </div>
@@ -203,9 +218,6 @@
     </div>
 
     <script>
-
-        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
-        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -217,6 +229,7 @@
         }
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
+        let currentInternshipType = 'internal';
 
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -236,7 +249,10 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             let activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            
+            if (activeUser && activeUser.role) {
+                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            }
+
             if (!activeUser || (activeUser.role !== 'student' && activeUser.role !== 'webmaster')) {
                 logout();
                 return;
@@ -259,7 +275,7 @@
             localStorage.removeItem('activeUser');
             localStorage.removeItem('token');
             localStorage.removeItem('authToken');
-            try { window.location.href = 'index.html'; } catch(e) {}
+            try { window.location.replace('index.html'); } catch(e) {}
         }
 
         function showToast(message, type = 'success') {
@@ -292,7 +308,6 @@
             setInterval(update, 1000);
         }
 
-        // CANLI MYSQL'DEN ÖĞRENCİ, STAJ DERSİ VE HEDEF/ONAYLI GÜN SAYISINI ÇEKME
         async function loadAttendanceData() {
             try {
                 const token = getToken();
@@ -304,12 +319,35 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    if (data.supervisor_name) {
-                        document.getElementById('supervisorNameDisplay').innerText = data.supervisor_name;
+                    currentInternshipType = data.internship_type || 'internal';
+
+                    // 1. Staj Türü ve Üst Kart Bilgileri
+                    const isInternal = currentInternshipType === 'internal';
+                    const typeBadge = document.getElementById('internshipTypeBadge');
+                    if (isInternal) {
+                        typeBadge.innerText = 'Okul İçi (Çift Yoklama)';
+                        typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200';
+                        document.getElementById('supervisorTitleDisplay').innerText = 'Staj Departmanları';
+                        
+                        const mDept = data.morning_dept_name || 'Atanmadı';
+                        const aDept = data.afternoon_dept_name || 'Atanmadı';
+                        document.getElementById('supervisorNameDisplay').innerHTML = `
+                            <div class="text-[11px] leading-tight">
+                                <span class="font-semibold text-gray-500">Sabah:</span> ${escapeHtml(mDept)}<br>
+                                <span class="font-semibold text-gray-500">Öğle:</span> ${escapeHtml(aDept)}
+                            </div>
+                        `;
+                    } else {
+                        typeBadge.innerText = 'Dış Kurum Stajı';
+                        typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200';
+                        document.getElementById('supervisorTitleDisplay').innerText = 'Saha Süpervizörü';
+                        document.getElementById('supervisorNameDisplay').innerText = data.supervisor_name || 'Atanmadı';
                     }
 
-                    // Staj Ders Kodu ve İsim Güncelleme
+                    if (data.advisor_name) {
+                        document.getElementById('advisorNameDisplay').innerText = `Akademik Danışman: ${data.advisor_name}`;
+                    }
+
                     if (data.course_code) {
                         document.getElementById('courseCodeDisplay').innerText = data.course_code;
                         document.getElementById('courseNameDisplay').innerText = data.course_name || 'Mesleki Uygulama';
@@ -319,9 +357,18 @@
                     const endFormatted = formatDisplayDate(data.end_date || currentUser.endDate);
                     document.getElementById('internshipDatesDisplay').innerText = `${startFormatted} - ${endFormatted}`;
 
-                    // İlerleme ve Telafi Sayacı
+                    // 2. İlerleme Hesabı
                     const requiredDays = data.required_days || currentUser.requiredDays || 20;
-                    const approvedDays = data.approved_days || 0;
+                    const approvedAttendances = (data.attendances || []).filter(a => a.status === 'approved');
+                    
+                    // Okul içinde 2 yoklama = 1 tam gün kabul edilir; dış stajda 1 yoklama = 1 gün
+                    let approvedDays = 0;
+                    if (isInternal) {
+                        approvedDays = (approvedAttendances.length / 2);
+                    } else {
+                        approvedDays = approvedAttendances.length;
+                    }
+
                     const missingDays = Math.max(0, requiredDays - approvedDays);
                     const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
 
@@ -337,24 +384,67 @@
                         alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
                     }
 
-                    // Yoklama Geçmişini Listele
+                    // 3. Buton Durumu ve Oturum Kontrolü
                     const attendance = data.attendances || [];
-                    const todayStr = new Date().toLocaleDateString('tr-TR');
-                    const hasTodayRecord = attendance.some(a => a.date === todayStr);
+                    document.getElementById('attendanceCountBadge').innerText = `${attendance.length} Kayıt`;
+
+                    const now = new Date();
+                    const dayOfWeek = now.getDay(); // 2: Salı, 3: Çarş, 4: Perş, 5: Cuma
+                    const currentHour = now.getHours();
+                    const todayIso = now.toISOString().split('T')[0];
 
                     const checkInBtn = document.getElementById('checkInBtn');
                     const checkInBtnText = document.getElementById('checkInBtnText');
+                    const checkInSubText = document.getElementById('checkInSubText');
 
-                    if (hasTodayRecord) {
-                        checkInBtn.disabled = true;
-                        checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-base rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
-                        checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
+                    if (isInternal) {
+                        // Salı, Çarşamba, Perşembe, Cuma kontrolü
+                        const isValidDay = [2, 3, 4, 5].includes(dayOfWeek);
+                        const isWorkingHours = currentHour >= 9 && currentHour < 17;
+                        const currentSession = currentHour < 13 ? 'morning' : 'afternoon';
+                        const sessionName = currentSession === 'morning' ? 'Sabah' : 'Öğleden Sonra';
+
+                        // Bugün bu oturum için yoklama verilmiş mi?
+                        const hasCurrentSessionRecord = attendance.some(a => a.date === todayIso && a.session_type === currentSession);
+
+                        if (!isValidDay) {
+                            checkInBtn.disabled = true;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-gray-400 text-white font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL (SALI-CUMA)";
+                            checkInSubText.innerText = "Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.";
+                        } else if (!isWorkingHours) {
+                            checkInBtn.disabled = true;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-gray-400 text-white font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtnText.innerText = "STAJ SAATLERİ DIŞINDA (09:00 - 17:00)";
+                            checkInSubText.innerText = "Yoklama sadece staj saatleri (09:00 - 17:00) içerisinde alınabilir.";
+                        } else if (hasCurrentSessionRecord) {
+                            checkInBtn.disabled = true;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI ALINDI`;
+                            checkInSubText.innerText = currentSession === 'morning' 
+                                ? "Sabah oturumu yoklamanız alındı. Saat 13:00'ten sonra öğleden sonra yoklamanızı verebilirsiniz." 
+                                : "Öğleden sonra oturumu yoklamanız başarıyla alındı. Bugünkü stajınızı tamamladınız.";
+                        } else {
+                            checkInBtn.disabled = false;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer";
+                            checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI VER`;
+                            checkInSubText.innerText = `${sessionName} stajınız için konumunuzu doğrulayarak katılımınızı bildirebilirsiniz.`;
+                        }
                     } else {
-                        checkInBtn.disabled = false;
-                        checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3";
-                        checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
+                        // Dış Staj Modeli (Günde 1 Yoklama)
+                        const hasTodayRecord = attendance.some(a => a.date === todayIso);
+                        if (hasTodayRecord) {
+                            checkInBtn.disabled = true;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
+                        } else {
+                            checkInBtn.disabled = false;
+                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer";
+                            checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
+                        }
                     }
 
+                    // 4. Yoklama Geçmişi Listesi
                     if (attendance.length === 0) {
                         listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
                         return;
@@ -362,18 +452,31 @@
 
                     listContainer.innerHTML = '';
                     attendance.forEach(item => {
-                        const isRetro = item.is_retroactive;
+                        const isRetro = item.is_retroactive == 1;
                         const statusBadge = item.status === 'approved' 
                             ? '<span class="font-bold text-emerald-600"><i class="fa-solid fa-check mr-1"></i>Onaylandı</span>' 
                             : (item.status === 'rejected' ? '<span class="font-bold text-rose-600"><i class="fa-solid fa-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
 
-                        const retroBadge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+                        let sessionBadge = '';
+                        if (item.session_type === 'morning') {
+                            sessionBadge = '<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-blue-200"><i class="fa-solid fa-sun mr-1 text-[9px]"></i>Sabah</span>';
+                        } else if (item.session_type === 'afternoon') {
+                            sessionBadge = '<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-amber-200"><i class="fa-solid fa-cloud-sun mr-1 text-[9px]"></i>Öğle</span>';
+                        } else {
+                            sessionBadge = '<span class="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-gray-200">Tam Gün</span>';
+                        }
+
+                        const retroBadge = isRetro ? '<span class="bg-rose-100 text-rose-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1 border border-rose-200">Mazeretli</span>' : '';
 
                         listContainer.innerHTML += `
-                            <div class="p-3 flex justify-between items-center text-xs">
+                            <div class="p-3.5 flex justify-between items-center text-xs">
                                 <div>
-                                    <span class="font-bold text-gray-800">${item.date}</span> ${retroBadge}
-                                    <p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(item.time || '')} - ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Konumu')}</p>
+                                    <div class="flex items-center">
+                                        <span class="font-bold text-gray-900">${formatDisplayDate(item.date)}</span>
+                                        ${sessionBadge}
+                                        ${retroBadge}
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 mt-1">${escapeHtml(item.time || '')} - ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Konumu')}</p>
                                 </div>
                                 <div>${statusBadge}</div>
                             </div>
@@ -387,9 +490,9 @@
             }
         }
 
-        // GPS YOKLAMA GÖNDERME
         async function handleCheckIn() {
             const btnText = document.getElementById('checkInBtnText');
+            const originalText = btnText.innerText;
             btnText.innerText = "GPS Konumu Alınıyor...";
 
             let locationInfo = 'GPS Konumu Alındı';
@@ -400,19 +503,19 @@
                         const lat = position.coords.latitude.toFixed(4);
                         const lng = position.coords.longitude.toFixed(4);
                         locationInfo = `GPS: ${lat}, ${lng}`;
-                        sendCheckInRequest(locationInfo);
+                        sendCheckInRequest(locationInfo, originalText);
                     },
                     (error) => {
-                        sendCheckInRequest("GPS Alınamadı (Cihaz Bildirimi)");
+                        sendCheckInRequest("GPS Alınamadı (Cihaz Bildirimi)", originalText);
                     },
                     { timeout: 5000 }
                 );
             } else {
-                sendCheckInRequest("GPS Desteklenmiyor");
+                sendCheckInRequest("GPS Desteklenmiyor", originalText);
             }
         }
 
-        async function sendCheckInRequest(locationInfo) {
+        async function sendCheckInRequest(locationInfo, fallbackBtnText) {
             try {
                 const token = getToken();
                 const response = await fetch(`${API_URL}/attendance/check-in`, {
@@ -427,19 +530,25 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast("Yoklama kaydınız başarıyla alındı!", "success");
+                    showToast(data.message || "Yoklama kaydınız başarıyla alındı!", "success");
                     loadAttendanceData();
                 } else {
                     showToast(data.message || "Yoklama gönderilemedi.", "error");
-                    document.getElementById('checkInBtnText').innerText = "STAJDAYIM / YOKLAMA VER";
+                    document.getElementById('checkInBtnText').innerText = fallbackBtnText;
                 }
             } catch (err) {
                 showToast("Sunucu bağlantı hatası.", "error");
-                document.getElementById('checkInBtnText').innerText = "STAJDAYIM / YOKLAMA VER";
+                document.getElementById('checkInBtnText').innerText = fallbackBtnText;
             }
         }
 
         function openRetroactiveModal() {
+            const sessionSelect = document.getElementById('retroSessionType');
+            if (currentInternshipType === 'internal') {
+                sessionSelect.value = 'morning';
+            } else {
+                sessionSelect.value = 'full_day';
+            }
             document.getElementById('retroactiveModal').classList.remove('hidden');
         }
 
@@ -448,14 +557,12 @@
         }
 
         async function handleRetroactiveSubmit(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const rawDate = document.getElementById('retroDate').value;
             const excuse = document.getElementById('retroExcuse').value;
+            const sessionType = document.getElementById('retroSessionType').value;
 
-            if(!rawDate || !excuse) return;
-
-            const parts = rawDate.split('-');
-            const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+            if (!rawDate || !excuse) return;
 
             try {
                 const token = getToken();
@@ -466,8 +573,9 @@
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ 
-                        date: formattedDate,
-                        excuse: excuse
+                        date: rawDate,
+                        excuse: excuse,
+                        sessionType: sessionType
                     })
                 });
 

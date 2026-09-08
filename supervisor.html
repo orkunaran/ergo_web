@@ -70,11 +70,11 @@
                         <p class="text-xs text-purple-200" id="supervisorEmailDisplay">Eğitmen</p>
                     </div>
 
-                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center">
+                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center cursor-pointer">
                         <i class="fa-solid fa-right-left mr-1.5"></i> Koordinatör Paneline Geç
                     </button>
 
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800">
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 cursor-pointer">
                         <i class="fa-solid fa-sign-out-alt sm:mr-1"></i><span class="hidden sm:inline">Çıkış</span>
                     </button>
                 </div>
@@ -84,10 +84,10 @@
         <div class="bg-white text-gray-600 shadow-sm border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
-                    <button onclick="switchTab('evaluation')" id="tab-evaluation" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center">
+                    <button onclick="switchTab('evaluation')" id="tab-evaluation" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center cursor-pointer">
                         <i class="fa-solid fa-clipboard-list mr-2"></i>Öğrencilerim & Değerlendirme
                     </button>
-                    <button onclick="switchTab('attendance')" id="tab-attendance" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center relative">
+                    <button onclick="switchTab('attendance')" id="tab-attendance" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center relative cursor-pointer">
                         <i class="fa-solid fa-calendar-check mr-2"></i>Yoklama Onayları
                         <span id="pendingBadge" class="hidden ml-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                     </button>
@@ -108,7 +108,7 @@
                         <h2 class="text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
                         <p class="text-xs text-gray-500 mt-1">Öğrencilerin staj yoklama durumlarını (telafi takibi) ve staj sonu değerlendirme formlarını takip edebilirsiniz.</p>
                     </div>
-                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
+                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border cursor-pointer">
                         <i class="fa-solid fa-rotate-right mr-1"></i>Listeyi Yenile
                     </button>
                 </div>
@@ -123,11 +123,11 @@
         <div id="attendance-section" class="fade-in hidden space-y-6">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div class="flex items-center space-x-2">
-                    <button onclick="approveAllPending()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center">
+                    <button onclick="approveAllPending()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center cursor-pointer">
                         <i class="fa-solid fa-check-double mr-1.5"></i> Tüm Bekleyenleri Onayla
                     </button>
                 </div>
-                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border">
+                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border cursor-pointer">
                     <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                 </button>
             </div>
@@ -167,7 +167,7 @@
                         <h3 class="text-lg font-bold">Staj Değerlendirme Formu</h3>
                         <p class="text-xs text-purple-200">100 Tam Puan Üzerinden Rubrik Notlandırması</p>
                     </div>
-                    <button onclick="closeModal()" class="text-white/80 hover:text-white">
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white cursor-pointer">
                         <i class="fa-solid fa-xmark text-2xl"></i>
                     </button>
                 </div>
@@ -184,7 +184,7 @@
                         </div>
                     </div>
 
-                    <form id="evaluationForm" onsubmit="submitEvaluation(event)" class="space-y-4">
+                    <form id="evaluationForm" onsubmit="event.preventDefault(); submitEvaluation(event); return false;" class="space-y-4">
                         <input type="hidden" id="evalStudentId">
 
                         <div class="border rounded-xl p-4 space-y-3">
@@ -208,8 +208,8 @@
                         </div>
 
                         <div class="pt-3 border-t flex justify-end space-x-2">
-                            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-xl">İptal</button>
-                            <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark">Kaydet ve Onayla</button>
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
+                            <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Kaydet ve Onayla</button>
                         </div>
                     </form>
                 </div>
@@ -218,9 +218,6 @@
     </div>
 
     <script>
-
-        // Güvenlik: kullanıcıdan/veritabanından gelen metinleri HTML'e basmadan önce kaçış (escape) et.
-        // Bu fonksiyon olmadan innerHTML ile basılan isim, mazeret, not gibi alanlar XSS'e (script enjeksiyonu) açık olurdu.
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -237,9 +234,24 @@
             return localStorage.getItem('token') || localStorage.getItem('authToken');
         }
 
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '--.--.----';
+            if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+            if (dateStr.includes('-')) {
+                const p = dateStr.split('-');
+                if (p.length === 3 && p[0].length === 4) {
+                    return `${p[2]}.${p[1]}.${p[0]}`;
+                }
+            }
+            return dateStr;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            
+            if (activeUser && activeUser.role) {
+                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            }
+
             if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
                 logout();
                 return;
@@ -263,7 +275,7 @@
             localStorage.removeItem('activeUser');
             localStorage.removeItem('token');
             localStorage.removeItem('authToken');
-            try { window.location.href = 'index.html'; } catch(e) {}
+            try { window.location.replace('index.html'); } catch(e) {}
         }
 
         function toggleRole() {
@@ -302,7 +314,6 @@
             }
         }
 
-        // CANLI MYSQL: SÜPERVİZÖRE ATANAN ÖĞRENCİLER, HEDEF GÜN SAYISI & TELAFİ HESAPLAMA
         async function loadSupervisorData() {
             try {
                 const token = getToken();
@@ -325,12 +336,10 @@
                         const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
                         const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
 
-                        // Ders Kodu Rozeti
                         const courseBadge = stu.course_code 
                             ? `<span class="bg-purple-100 text-hu-purple text-[11px] px-2.5 py-1 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
                             : `<span class="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
 
-                        // Yoklama & Telafi Gün Hesaplaması
                         const requiredDays = stu.required_days || 20;
                         const approvedDays = stu.approved_days || 0;
                         const missingDays = Math.max(0, requiredDays - approvedDays);
@@ -348,7 +357,6 @@
                                            </div>`;
                         }
 
-                        // Pending Onay İkazı
                         const pendingNotice = stu.pending_days > 0 
                             ? `<p class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
                             : '';
@@ -362,7 +370,6 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mb-3">No: ${escapeHtml(stu.student_no)}</p>
 
-                                    <!-- İlerleme & Telafi Durumu -->
                                     <div class="space-y-1">
                                         ${statusBadge}
                                         ${pendingNotice}
@@ -374,7 +381,7 @@
                                     </div>
                                 </div>
 
-                                <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" onclick="openEvaluationModal(this.dataset.studentId, this.dataset.studentName)" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm">
+                                <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" onclick="openEvaluationModal(this.dataset.studentId, this.dataset.studentName)" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm cursor-pointer">
                                     <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Güncelle' : 'Öğrenciyi Değerlendir'}
                                 </button>
                             </div>
@@ -388,7 +395,6 @@
             }
         }
 
-        // CANLI MYSQL: ONAY BEKLEYEN YOKLAMALARI ÇEKME
         async function loadAttendanceApprovals() {
             try {
                 const token = getToken();
@@ -412,12 +418,12 @@
                             tbody.innerHTML += `
                                 <tr>
                                     <td class="px-6 py-4 font-bold text-gray-900">${escapeHtml(rec.student_name)} (${escapeHtml(rec.student_no)})</td>
-                                    <td class="px-6 py-4 text-xs font-bold">${rec.date} ${badge}</td>
+                                    <td class="px-6 py-4 text-xs font-bold">${formatDisplayDate(rec.date)} ${badge}</td>
                                     <td class="px-6 py-4 text-xs text-gray-500">${rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-')}</td>
                                     <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + escapeHtml(rec.excuse) : escapeHtml(rec.location_info || 'GPS Konumu Alındı')}</td>
                                     <td class="px-6 py-4 text-right space-x-2">
-                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Onayla</button>
-                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition">Reddet</button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Onayla</button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Reddet</button>
                                     </td>
                                 </tr>
                             `;
@@ -504,7 +510,7 @@
         }
 
         async function submitEvaluation(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             const studentId = document.getElementById('evalStudentId').value;
             const beh = parseInt(document.getElementById('score_beh').value) || 0;
             const evalScore = parseInt(document.getElementById('score_eval').value) || 0;
