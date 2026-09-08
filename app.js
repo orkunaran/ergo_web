@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 
 app.use(express.json());
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ergostaj.hacettepe.edu.tr')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://ergo-web-pi.vercel.app/')
     .split(',')
     .map(o => o.trim());
 
