@@ -31,18 +31,23 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+        .fade-in { animation: fadeIn 0.25s ease-out; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
+<body class="min-h-screen flex flex-col text-gray-800 antialiased selection:bg-purple-200">
 
     <!-- WEBMASTER HIZLI GEÇİŞ BARI -->
-    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
+    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-40">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
@@ -57,79 +62,80 @@
         </div>
     </div>
 
-    <header class="bg-hu-purple text-white shadow-md sticky top-0 z-20">
+    <!-- MOBİL ÜST BAR (APP HEADER) -->
+    <header class="bg-hu-purple text-white shadow-md sticky top-0 z-30 pt-[env(safe-area-inset-top)]">
         <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20">
+                <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20 shadow-inner">
                     <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-base leading-tight" id="studentNameDisplay">Öğrenci Paneli</h1>
-                    <p class="text-xs text-purple-200" id="studentNoDisplay">No: -</p>
+                    <h1 class="font-extrabold text-sm sm:text-base leading-tight truncate max-w-[200px] sm:max-w-none" id="studentNameDisplay">Öğrenci Paneli</h1>
+                    <p class="text-[11px] text-purple-200 font-medium" id="studentNoDisplay">No: -</p>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-purple-800 flex items-center cursor-pointer">
+            <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border border-purple-800/80 flex items-center cursor-pointer">
                 <i class="fa-solid fa-sign-out-alt mr-1"></i> Çıkış
             </button>
         </div>
     </header>
 
-    <div id="toastContainer" class="fixed top-16 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+    <div id="toastContainer" class="fixed top-16 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none max-w-sm sm:w-full mx-auto"></div>
 
-    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full space-y-6">
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-5 w-full space-y-5">
 
         <!-- AKTİF STAJ DERSİ VE SORUMLU / DEPARTMAN KARTLARI -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <!-- Staj Ders Kodu & Tarihi -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple font-black text-xs">
+                    <div class="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-hu-purple font-black text-sm flex-shrink-0 border border-purple-100">
                         <i class="fa-solid fa-book-bookmark text-base"></i>
                     </div>
                     <div>
-                        <div class="flex items-center gap-1.5">
-                            <p class="text-sm font-extrabold text-hu-purple" id="courseCodeDisplay">ERG ---</p>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <p class="text-sm font-black text-hu-purple" id="courseCodeDisplay">ERG ---</p>
                             <span id="internshipTypeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Okul İçi</span>
                         </div>
-                        <p class="text-[11px] text-gray-500 font-semibold" id="courseNameDisplay">Mesleki Uygulama</p>
+                        <p class="text-[11px] text-gray-500 font-semibold truncate" id="courseNameDisplay">Mesleki Uygulama</p>
                     </div>
                 </div>
-                <div class="text-right border-l pl-3 border-gray-100">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Staj Aralığı</p>
-                    <p class="text-xs font-bold text-gray-700 mt-0.5" id="internshipDatesDisplay">--.--.---- - --.--.----</p>
+                <div class="text-right border-l pl-3 border-gray-100 flex-shrink-0">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Staj Aralığı</p>
+                    <p class="text-[11px] font-bold text-gray-700 mt-0.5" id="internshipDatesDisplay">--.-- - --.--</p>
                 </div>
             </div>
 
             <!-- Süpervizör / Danışman / Departman Bilgisi -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-purple-100 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-hu-purple">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-hu-purple flex-shrink-0 border border-purple-100">
                         <i class="fa-solid fa-building-user text-lg"></i>
                     </div>
-                    <div>
-                        <p class="text-[11px] text-gray-400 font-bold uppercase" id="supervisorTitleDisplay">Staj Departmanları</p>
-                        <p class="text-xs font-bold text-gray-800" id="supervisorNameDisplay">Yükleniyor...</p>
-                        <p class="text-[10px] text-purple-700 font-semibold mt-0.5" id="advisorNameDisplay"></p>
+                    <div class="overflow-hidden">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" id="supervisorTitleDisplay">Staj Departmanları</p>
+                        <p class="text-xs font-bold text-gray-800 truncate" id="supervisorNameDisplay">Yükleniyor...</p>
+                        <p class="text-[10px] text-purple-700 font-semibold truncate mt-0.5" id="advisorNameDisplay"></p>
                     </div>
                 </div>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800">
-                    <i class="fa-solid fa-circle-check mr-1 text-[9px]"></i> Aktif
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex-shrink-0">
+                    <i class="fa-solid fa-circle-check mr-1 text-[8px]"></i> Aktif
                 </span>
             </div>
         </div>
 
         <!-- STAJ İLERLEME VE TELAFİ SAYACI KARTI -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 space-y-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-chart-line text-hu-purple"></i>
-                    <h3 class="font-bold text-sm text-gray-800">Staj Yoklama İlerlemesi & Hedef</h3>
+                    <i class="fa-solid fa-chart-line text-hu-purple text-sm"></i>
+                    <h3 class="font-bold text-xs sm:text-sm text-gray-800">Yoklama Hedefi & Durumu</h3>
                 </div>
-                <span class="text-xs font-black text-hu-purple" id="progressTextDisplay">0 / 20 Gün</span>
+                <span class="text-xs font-black text-hu-purple bg-purple-50 px-2.5 py-1 rounded-full border border-purple-100" id="progressTextDisplay">0 / 20 Gün</span>
             </div>
 
             <!-- Progress Bar -->
-            <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+            <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
                 <div id="progressBar" class="bg-hu-purple h-full rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
 
@@ -139,42 +145,42 @@
             </div>
         </div>
 
-        <!-- YOKLAMA VERME ALANI -->
-        <div class="bg-gradient-to-br from-hu-purple to-hu-dark text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <div class="relative z-10 text-center space-y-4">
-                <div class="inline-block bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-medium text-purple-100 border border-white/10">
+        <!-- YOKLAMA VERME ALANI (HERO ACTION) -->
+        <div id="checkInArea" class="bg-gradient-to-br from-hu-purple via-hu-dark to-purple-950 text-white rounded-3xl p-5 sm:p-7 shadow-xl relative overflow-hidden">
+            <div class="relative z-10 text-center space-y-3 sm:space-y-4">
+                <div class="inline-block bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-semibold text-purple-100 border border-white/10">
                     <i class="fa-regular fa-clock mr-1.5"></i><span id="liveClock">--:--:--</span> | <span id="liveDate">--.--.----</span>
                 </div>
 
                 <div>
-                    <h2 class="text-2xl font-extrabold tracking-tight" id="checkInHeader">GÜNLÜK YOKLAMA BİLDİRİMİ</h2>
-                    <p class="text-xs text-purple-200 mt-1 max-w-md mx-auto" id="checkInSubText">
+                    <h2 class="text-xl sm:text-2xl font-black tracking-tight" id="checkInHeader">GÜNLÜK YOKLAMA BİLDİRİMİ</h2>
+                    <p class="text-xs text-purple-200 mt-1 max-w-sm sm:max-w-md mx-auto leading-relaxed" id="checkInSubText">
                         Staj yerine vardığınızda butona basarak GPS konumunuzla katılımınızı bildirebilirsiniz.
                     </p>
                 </div>
 
-                <div class="pt-2 flex flex-col sm:flex-row justify-center items-center gap-3">
-                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer">
-                        <i class="fa-solid fa-location-crosshairs text-xl animate-pulse"></i>
+                <div class="pt-2 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer">
+                        <i class="fa-solid fa-location-crosshairs text-lg animate-pulse"></i>
                         <span id="checkInBtnText">YOKLAMA VER</span>
                     </button>
 
-                    <button onclick="openRetroactiveModal()" class="w-full sm:w-auto px-5 py-4 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/40 text-amber-100 font-bold text-xs rounded-2xl transition-all flex items-center justify-center space-x-2 cursor-pointer">
+                    <button onclick="openRetroactiveModal()" class="w-full sm:w-auto min-h-[46px] px-5 py-3 bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-purple-100 font-bold text-xs rounded-2xl transition-all flex items-center justify-center space-x-2 cursor-pointer">
                         <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-                        <span>Mazeretli / Geriye Dönük Bildir</span>
+                        <span>Mazeretli / Geriye Dönük</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- YOKLAMA GEÇMİŞİ -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <!-- YOKLAMA GEÇMİŞİ (MOBİL KART GÖRÜNÜMÜ) -->
+        <div id="historySection" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center space-x-2">
-                    <h3 class="font-bold text-gray-800 text-sm">Yoklama Geçmişi</h3>
+                    <h3 class="font-bold text-gray-800 text-xs sm:text-sm">Yoklama Geçmişi</h3>
                     <span id="attendanceCountBadge" class="text-[10px] bg-purple-100 text-hu-purple font-black px-2 py-0.5 rounded-full">0 Kayıt</span>
                 </div>
-                <button onclick="loadAttendanceData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center cursor-pointer">
+                <button onclick="loadAttendanceData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center cursor-pointer p-1">
                     <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                 </button>
             </div>
@@ -185,23 +191,41 @@
 
     </main>
 
+    <!-- SABİT MOBİL ALT MENÜ (BOTTOM APP BAR) -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-30 px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-lg">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center text-hu-purple focus:outline-none">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px] font-bold mt-1">Ana Panel</span>
+        </button>
+        <button onclick="document.getElementById('checkInArea').scrollIntoView({behavior: 'smooth'})" class="flex flex-col items-center text-emerald-600 focus:outline-none">
+            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center -mt-3 shadow-md border border-emerald-300">
+                <i class="fa-solid fa-location-dot text-sm"></i>
+            </div>
+            <span class="text-[10px] font-extrabold mt-0.5">Yoklama</span>
+        </button>
+        <button onclick="document.getElementById('historySection').scrollIntoView({behavior: 'smooth'})" class="flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none">
+            <i class="fa-solid fa-list-check text-base"></i>
+            <span class="text-[10px] font-bold mt-1">Geçmiş</span>
+        </button>
+    </nav>
+
     <!-- GERİYE DÖNÜK / MAZERETLİ YOKLAMA MODALI -->
     <div id="retroactiveModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeRetroactiveModal()"></div>
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 z-10 relative shadow-2xl">
-                <h3 class="font-bold text-lg text-gray-900 mb-1">Geriye Dönük / Mazeretli Yoklama Bildir</h3>
-                <p class="text-xs text-gray-500 mb-4">Giremediğiniz geçmiş bir staj oturumu için mazeretinizle birlikte onay talebi gönderin.</p>
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeRetroactiveModal()"></div>
+            <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 z-10 relative shadow-2xl">
+                <h3 class="font-black text-base sm:text-lg text-gray-900 mb-1">Mazeretli Yoklama Bildir</h3>
+                <p class="text-xs text-gray-500 mb-4 leading-relaxed">Geçmiş bir staj oturumu için gerekçenizle birlikte onay talebi gönderin.</p>
 
-                <form onsubmit="event.preventDefault(); handleRetroactiveSubmit(event); return false;" class="space-y-4">
+                <form onsubmit="event.preventDefault(); handleRetroactiveSubmit(event); return false;" class="space-y-3.5">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Yapılan Tarih</label>
-                        <input type="date" id="retroDate" required class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Staj Yapılan Tarih</label>
+                        <input type="date" id="retroDate" required class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:ring-hu-purple">
                     </div>
 
                     <div id="retroSessionTypeContainer">
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Staj Oturumu</label>
-                        <select id="retroSessionType" class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple bg-white">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Staj Oturumu</label>
+                        <select id="retroSessionType" class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:ring-hu-purple bg-white font-medium">
                             <option value="morning">Sabah Oturumu (09:00 - 13:00)</option>
                             <option value="afternoon">Öğleden Sonra Oturumu (13:00 - 17:00)</option>
                             <option value="full_day">Tam Gün (Dış Kurum Stajı)</option>
@@ -209,13 +233,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Mazeret / Açıklama</label>
-                        <textarea id="retroExcuse" rows="3" required placeholder="Gününde bildirim yapamama nedeniniz..." class="w-full text-xs p-2.5 border rounded-xl focus:ring-hu-purple"></textarea>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mazeret / Açıklama</label>
+                        <textarea id="retroExcuse" rows="3" required placeholder="Bildirim yapamama nedeninizi açıklayınız..." class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:ring-hu-purple"></textarea>
                     </div>
 
                     <div class="flex justify-end space-x-2 pt-2">
-                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
-                        <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Talebi Gönder</button>
+                        <button type="button" onclick="closeRetroactiveModal()" class="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Talebi Gönder</button>
                     </div>
                 </form>
             </div>
@@ -291,14 +315,14 @@
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
             const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
 
-            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-xl ${bgColor} text-xs font-medium transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.className = `flex items-center text-white px-4 py-3 rounded-2xl shadow-xl ${bgColor} text-xs font-semibold transform transition-all duration-300 translate-y-[-10px] opacity-0 pointer-events-auto`;
             toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-base"></i><span>${message}</span>`;
             
             container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+            requestAnimationFrame(() => toast.classList.remove('translate-y-[-10px]', 'opacity-0'));
 
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-x-full');
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
@@ -366,14 +390,7 @@
                     const requiredDays = data.required_days || currentUser.requiredDays || 20;
                     const approvedAttendances = (data.attendances || []).filter(a => a.status === 'approved');
                     
-                    // Okul içinde 2 yoklama = 1 tam gün kabul edilir; dış stajda 1 yoklama = 1 gün
-                    let approvedDays = 0;
-                    if (isInternal) {
-                        approvedDays = (approvedAttendances.length / 2);
-                    } else {
-                        approvedDays = approvedAttendances.length;
-                    }
-
+                    let approvedDays = isInternal ? (approvedAttendances.length / 2) : approvedAttendances.length;
                     const missingDays = Math.max(0, requiredDays - approvedDays);
                     const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
 
@@ -383,7 +400,7 @@
                     const alertCard = document.getElementById('attendanceAlertCard');
                     if (approvedDays >= requiredDays) {
                         alertCard.className = "p-3 rounded-xl text-xs font-bold flex items-center bg-emerald-50 text-emerald-800 border border-emerald-200";
-                        alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2"></i>Tebrikler! Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.`;
+                        alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2 flex-shrink-0"></i><span>Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.</span>`;
                     } else {
                         alertCard.className = "p-3 rounded-xl text-xs font-medium flex items-center bg-amber-50 text-amber-900 border border-amber-200";
                         alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
@@ -394,7 +411,7 @@
                     document.getElementById('attendanceCountBadge').innerText = `${attendance.length} Kayıt`;
 
                     const now = new Date();
-                    const dayOfWeek = now.getDay(); // 2: Salı, 3: Çarş, 4: Perş, 5: Cuma
+                    const dayOfWeek = now.getDay();
                     const currentHour = now.getHours();
                     const todayIso = now.toISOString().split('T')[0];
 
@@ -403,55 +420,52 @@
                     const checkInSubText = document.getElementById('checkInSubText');
 
                     if (isInternal) {
-                        // Salı, Çarşamba, Perşembe, Cuma kontrolü
                         const isValidDay = [2, 3, 4, 5].includes(dayOfWeek);
                         const isWorkingHours = currentHour >= 9 && currentHour < 17;
                         const currentSession = currentHour < 13 ? 'morning' : 'afternoon';
                         const sessionName = currentSession === 'morning' ? 'Sabah' : 'Öğleden Sonra';
 
-                        // Bugün bu oturum için yoklama verilmiş mi?
                         const hasCurrentSessionRecord = attendance.some(a => a.date === todayIso && a.session_type === currentSession);
 
                         if (!isValidDay) {
                             checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-gray-400 text-white font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
                             checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL (SALI-CUMA)";
                             checkInSubText.innerText = "Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.";
                         } else if (!isWorkingHours) {
                             checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-gray-400 text-white font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
                             checkInBtnText.innerText = "STAJ SAATLERİ DIŞINDA (09:00 - 17:00)";
-                            checkInSubText.innerText = "Yoklama sadece staj saatleri (09:00 - 17:00) içerisinde alınabilir.";
+                            checkInSubText.innerText = "Yoklama staj saatleri (09:00 - 17:00) içerisinde alınabilir.";
                         } else if (hasCurrentSessionRecord) {
                             checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
                             checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI ALINDI`;
                             checkInSubText.innerText = currentSession === 'morning' 
                                 ? "Sabah oturumu yoklamanız alındı. Saat 13:00'ten sonra öğleden sonra yoklamanızı verebilirsiniz." 
-                                : "Öğleden sonra oturumu yoklamanız başarıyla alındı. Bugünkü stajınızı tamamladınız.";
+                                : "Öğleden sonra oturumu yoklamanız alındı. Bugünkü stajınızı tamamladınız.";
                         } else {
                             checkInBtn.disabled = false;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
                             checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI VER`;
                             checkInSubText.innerText = `${sessionName} stajınız için konumunuzu doğrulayarak katılımınızı bildirebilirsiniz.`;
                         }
                     } else {
-                        // Dış Staj Modeli (Günde 1 Yoklama)
                         const hasTodayRecord = attendance.some(a => a.date === todayIso);
                         if (hasTodayRecord) {
                             checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-700/80 text-white/90 font-bold text-sm rounded-2xl shadow transition cursor-not-allowed flex items-center justify-center space-x-3";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
                             checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
                         } else {
                             checkInBtn.disabled = false;
-                            checkInBtn.className = "w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 cursor-pointer";
+                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
                             checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
                         }
                     }
 
-                    // 4. Yoklama Geçmişi Listesi
+                    // 4. Yoklama Geçmişi Listesi (Mobil Kart Formatında)
                     if (attendance.length === 0) {
-                        listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
+                        listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
                         return;
                     }
 
@@ -459,36 +473,36 @@
                     attendance.forEach(item => {
                         const isRetro = item.is_retroactive == 1;
                         const statusBadge = item.status === 'approved' 
-                            ? '<span class="font-bold text-emerald-600"><i class="fa-solid fa-check mr-1"></i>Onaylandı</span>' 
-                            : (item.status === 'rejected' ? '<span class="font-bold text-rose-600"><i class="fa-solid fa-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
+                            ? '<span class="font-bold text-emerald-600 text-[11px]"><i class="fa-solid fa-circle-check mr-1"></i>Onaylandı</span>' 
+                            : (item.status === 'rejected' ? '<span class="font-bold text-rose-600 text-[11px]"><i class="fa-solid fa-circle-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500 text-[11px]"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
 
                         let sessionBadge = '';
                         if (item.session_type === 'morning') {
-                            sessionBadge = '<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-blue-200"><i class="fa-solid fa-sun mr-1 text-[9px]"></i>Sabah</span>';
+                            sessionBadge = '<span class="bg-blue-50 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-200/60"><i class="fa-solid fa-sun mr-1 text-[8px]"></i>Sabah</span>';
                         } else if (item.session_type === 'afternoon') {
-                            sessionBadge = '<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-amber-200"><i class="fa-solid fa-cloud-sun mr-1 text-[9px]"></i>Öğle</span>';
+                            sessionBadge = '<span class="bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-200/60"><i class="fa-solid fa-cloud-sun mr-1 text-[8px]"></i>Öğle</span>';
                         } else {
-                            sessionBadge = '<span class="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 border border-gray-200">Tam Gün</span>';
+                            sessionBadge = '<span class="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-gray-200">Tam Gün</span>';
                         }
 
-                        const retroBadge = isRetro ? '<span class="bg-rose-100 text-rose-800 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1 border border-rose-200">Mazeretli</span>' : '';
+                        const retroBadge = isRetro ? '<span class="bg-rose-50 text-rose-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-rose-200/60">Mazeretli</span>' : '';
 
                         listContainer.innerHTML += `
-                            <div class="p-3.5 flex justify-between items-center text-xs">
-                                <div>
-                                    <div class="flex items-center">
+                            <div class="py-3 px-1 flex justify-between items-center text-xs">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
                                         <span class="font-bold text-gray-900">${formatDisplayDate(item.date)}</span>
                                         ${sessionBadge}
                                         ${retroBadge}
                                     </div>
-                                    <p class="text-[11px] text-gray-400 mt-1">${escapeHtml(item.time || '')} - ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Konumu')}</p>
+                                    <p class="text-[11px] text-gray-400">${escapeHtml(item.time || '')} • ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Bildirimi')}</p>
                                 </div>
-                                <div>${statusBadge}</div>
+                                <div class="flex-shrink-0">${statusBadge}</div>
                             </div>
                         `;
                     });
                 } else {
-                    listContainer.innerHTML = `<p class="text-xs text-gray-400 p-3 italic text-center">Veriler yüklenirken sunucu hatası oluştu.</p>`;
+                    listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Veriler yüklenirken sunucu hatası oluştu.</p>`;
                 }
             } catch (err) {
                 console.error('Veri Çekme Hatası:', err);
@@ -498,7 +512,7 @@
         async function handleCheckIn() {
             const btnText = document.getElementById('checkInBtnText');
             const originalText = btnText.innerText;
-            btnText.innerText = "GPS Konumu Alınıyor...";
+            btnText.innerText = "GPS Alınıyor...";
 
             let locationInfo = 'GPS Konumu Alındı';
 
@@ -513,7 +527,7 @@
                     (error) => {
                         sendCheckInRequest("GPS Alınamadı (Cihaz Bildirimi)", originalText);
                     },
-                    { timeout: 5000 }
+                    { timeout: 5000, enableHighAccuracy: true }
                 );
             } else {
                 sendCheckInRequest("GPS Desteklenmiyor", originalText);

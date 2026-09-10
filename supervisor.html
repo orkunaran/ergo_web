@@ -2,12 +2,18 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#5e2b97">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <title>Süpervizör Paneli | Hacettepe Ergoterapi</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -26,18 +32,23 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+        .fade-in { animation: fadeIn 0.25s ease-out; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
+<body class="min-h-screen flex flex-col text-gray-800 antialiased selection:bg-purple-200">
 
     <!-- HIZLI PANEL GEÇİŞ BARI -->
-    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
+    <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
@@ -52,36 +63,38 @@
         </div>
     </div>
 
-    <header class="bg-hu-purple text-white shadow-md z-20 sticky top-0">
+    <!-- MOBİL UYUMLU ÜST BAŞLIK -->
+    <header class="bg-hu-purple text-white shadow-md z-30 sticky top-0 pt-[env(safe-area-inset-top)]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20">
+                    <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20 shadow-inner flex-shrink-0">
                         <i class="fa-solid fa-user-doctor"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi</h1>
-                        <p class="text-xs text-purple-200">Süpervizör & Danışman Değerlendirme Paneli</p>
+                        <h1 class="font-extrabold text-sm sm:text-base leading-tight">H.Ü. Ergoterapi</h1>
+                        <p class="text-[11px] text-purple-200">Süpervizör & Değerlendirme</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-semibold" id="supervisorNameDisplay">Süpervizör</p>
-                        <p class="text-xs text-purple-200" id="supervisorEmailDisplay">Eğitmen</p>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-semibold truncate max-w-[150px]" id="supervisorNameDisplay">Süpervizör</p>
+                        <p class="text-xs text-purple-200 truncate max-w-[150px]" id="supervisorEmailDisplay">Eğitmen</p>
                     </div>
 
-                    <button onclick="toggleRole()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 flex items-center cursor-pointer">
-                        <i class="fa-solid fa-right-left mr-1.5"></i> Koordinatör Paneline Geç
+                    <button onclick="toggleRole()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
+                        <i class="fa-solid fa-right-left sm:mr-1.5"></i> <span class="hidden sm:inline">Koordinatör Paneli</span>
                     </button>
 
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-3 py-2 rounded-lg text-xs font-medium transition-colors shadow-sm border border-purple-800 cursor-pointer">
+                    <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 cursor-pointer">
                         <i class="fa-solid fa-sign-out-alt sm:mr-1"></i><span class="hidden sm:inline">Çıkış</span>
                     </button>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white text-gray-600 shadow-sm border-b border-gray-100">
+        <!-- MASAÜSTÜ SEKMELER -->
+        <div class="hidden sm:block bg-white text-gray-600 shadow-sm border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
                     <button onclick="switchTab('evaluation')" id="tab-evaluation" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center cursor-pointer">
@@ -89,52 +102,57 @@
                     </button>
                     <button onclick="switchTab('attendance')" id="tab-attendance" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center relative cursor-pointer">
                         <i class="fa-solid fa-calendar-check mr-2"></i>Yoklama Onayları
-                        <span id="pendingBadge" class="hidden ml-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                        <span id="pendingBadgeDesktop" class="hidden ml-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                     </button>
                 </nav>
             </div>
         </div>
     </header>
 
-    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+    <div id="toastContainer" class="fixed top-20 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none max-w-sm sm:w-full mx-auto"></div>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 w-full space-y-5">
         
         <!-- 1. SEKMELER: ÖĞRENCİLERİM & DEĞERLENDİRME -->
-        <div id="evaluation-section" class="fade-in space-y-6">
-            <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
-                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+        <div id="evaluation-section" class="fade-in space-y-4">
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 sm:mb-6 border-b border-gray-100 pb-3">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
-                        <p class="text-xs text-gray-500 mt-1">Öğrencilerin staj yoklama durumlarını (telafi takibi) ve staj sonu değerlendirme formlarını takip edebilirsiniz.</p>
+                        <h2 class="text-base sm:text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
+                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Staj telafi takibi, dönem sonu notlandırma ve kişisel Excel yedeği.</p>
                     </div>
-                    <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border cursor-pointer">
-                        <i class="fa-solid fa-rotate-right mr-1"></i>Listeyi Yenile
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportMyStudentsToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer active:scale-95">
+                            <i class="fa-solid fa-file-excel mr-1.5 text-sm"></i>Notlarımı Excel Olarak İndir
+                        </button>
+                        <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="myStudentsList">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="myStudentsList">
                     <!-- JS ile doldurulacak -->
                 </div>
             </div>
         </div>
 
         <!-- 2. SEKMELER: YOKLAMA ONAYLARI -->
-        <div id="attendance-section" class="fade-in hidden space-y-6">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="flex items-center space-x-2">
-                    <button onclick="approveAllPending()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center cursor-pointer">
-                        <i class="fa-solid fa-check-double mr-1.5"></i> Tüm Bekleyenleri Onayla
-                    </button>
-                </div>
-                <button onclick="loadAttendanceApprovals()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border cursor-pointer">
+        <div id="attendance-section" class="fade-in hidden space-y-4">
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center gap-2">
+                <button onclick="approveAllPending()" class="w-full sm:w-auto min-h-[44px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-check-double mr-2"></i> Tüm Bekleyenleri Onayla
+                </button>
+                <button onclick="loadAttendanceApprovals()" class="min-h-[44px] text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3.5 py-2.5 rounded-xl border border-gray-200 cursor-pointer">
                     <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                 </button>
             </div>
 
-            <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Onay Bekleyen Günlük Yoklamalar</h2>
-                <div class="overflow-x-auto">
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
+                <h2 class="text-sm sm:text-base font-bold text-gray-900 mb-3">Onay Bekleyen Günlük Yoklamalar</h2>
+                
+                <!-- Masaüstü Tablo Görünümü -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-semibold">
                             <tr>
@@ -145,73 +163,130 @@
                                 <th class="px-6 py-3 text-right">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-100 text-sm">
-                            <!-- JS ile doldurulacak -->
-                        </tbody>
+                        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-100 text-sm"></tbody>
                     </table>
+                </div>
+
+                <!-- Mobil Liste / Kart Görünümü -->
+                <div id="attendanceMobileList" class="md:hidden divide-y divide-gray-100">
+                    <!-- JS ile doldurulacak -->
                 </div>
             </div>
         </div>
 
     </main>
 
+    <!-- SABİT MOBİL ALT MENÜ -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-40 px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-lg">
+        <button onclick="switchTab('evaluation')" id="mNavEvaluation" class="flex flex-col items-center text-hu-purple focus:outline-none">
+            <i class="fa-solid fa-clipboard-list text-base"></i>
+            <span class="text-[10px] font-bold mt-1">Öğrencilerim</span>
+        </button>
+        <button onclick="switchTab('attendance')" id="mNavAttendance" class="flex flex-col items-center text-gray-500 hover:text-hu-purple relative focus:outline-none">
+            <div class="relative">
+                <i class="fa-solid fa-calendar-check text-base"></i>
+                <span id="pendingBadgeMobile" class="hidden absolute -top-1 -right-2 bg-amber-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full">0</span>
+            </div>
+            <span class="text-[10px] font-bold mt-1">Yoklamalar</span>
+        </button>
+    </nav>
+
     <!-- NOT GİRİŞİ / RUBRİK MODALI -->
     <div id="evaluationModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-3 sm:px-4 pb-6 text-center">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeModal()"></div>
 
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
-                <div class="bg-hu-purple px-6 py-4 flex justify-between items-center text-white">
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-lg z-10">
+                <div class="bg-hu-purple px-5 py-4 flex justify-between items-center text-white">
                     <div>
-                        <h3 class="text-lg font-bold">Staj Değerlendirme Formu</h3>
-                        <p class="text-xs text-purple-200">100 Tam Puan Üzerinden Rubrik Notlandırması</p>
+                        <h3 class="text-base font-bold" id="evalModalTitle">Staj Değerlendirme Formu</h3>
+                        <p class="text-[11px] text-purple-200">100 Puan Üzerinden Rubrik Notlandırması</p>
                     </div>
-                    <button onclick="closeModal()" class="text-white/80 hover:text-white cursor-pointer">
-                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
                 
-                <div class="bg-white px-6 pt-5 pb-6 max-h-[75vh] overflow-y-auto space-y-6">
-                    <div class="flex justify-between items-center bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                <div class="bg-white px-5 pt-4 pb-6 max-h-[75vh] overflow-y-auto space-y-4">
+                    <div class="flex justify-between items-center bg-purple-50 p-3.5 rounded-2xl border border-purple-100">
                         <div>
-                            <p class="text-xs text-gray-500 font-medium">Öğrenci:</p>
-                            <p class="font-black text-gray-900 text-lg" id="evalStudentName">Öğrenci Adı</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">Değerlendirilen Öğrenci</p>
+                            <p class="font-extrabold text-gray-900 text-sm sm:text-base" id="evalStudentName">Öğrenci Adı</p>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] uppercase font-bold text-gray-400">Toplam Puan</p>
-                            <p class="text-3xl font-black text-hu-purple" id="liveTotalScore">0 <span class="text-xs font-normal text-gray-400">/ 100</span></p>
+                            <p class="text-2xl font-black text-hu-purple" id="liveTotalScore">0 <span class="text-xs font-normal text-gray-400">/ 100</span></p>
                         </div>
                     </div>
 
-                    <form id="evaluationForm" onsubmit="event.preventDefault(); submitEvaluation(event); return false;" class="space-y-4">
+                    <form id="evaluationForm" onsubmit="event.preventDefault(); promptConfirmEvaluation(); return false;" class="space-y-3.5">
                         <input type="hidden" id="evalStudentId">
 
-                        <div class="border rounded-xl p-4 space-y-3">
-                            <h4 class="font-bold text-xs text-hu-purple uppercase">1. Mesleki Tutum (Max 20 Puan)</h4>
-                            <input type="number" min="0" max="20" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_beh" placeholder="Puan veriniz (0-20)">
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">1. Mesleki Tutum & Davranış</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 20</span>
+                            </div>
+                            <input type="number" min="0" max="20" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_beh" placeholder="Puan (0-20)">
+                            <p class="text-[10px] text-gray-400">0 ile 20 arasında puan veriniz.</p>
                         </div>
 
-                        <div class="border rounded-xl p-4 space-y-3">
-                            <h4 class="font-bold text-xs text-hu-purple uppercase">2. Klinik Mantık ve Değerlendirme (Max 40 Puan)</h4>
-                            <input type="number" min="0" max="40" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_eval" placeholder="Puan veriniz (0-40)">
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">2. Klinik Mantık & Değerlendirme</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 40</span>
+                            </div>
+                            <input type="number" min="0" max="40" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_eval" placeholder="Puan (0-40)">
+                            <p class="text-[10px] text-gray-400">0 ile 40 arasında puan veriniz.</p>
                         </div>
 
-                        <div class="border rounded-xl p-4 space-y-3">
-                            <h4 class="font-bold text-xs text-hu-purple uppercase">3. Müdahale Becerisi (Max 40 Puan)</h4>
-                            <input type="number" min="0" max="40" required oninput="calculateTotalScore()" class="score-input border p-2 rounded w-full text-xs" id="score_int" placeholder="Puan veriniz (0-40)">
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">3. Müdahale & Klinik Beceriler</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 40</span>
+                            </div>
+                            <input type="number" min="0" max="40" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_int" placeholder="Puan (0-40)">
+                            <p class="text-[10px] text-gray-400">0 ile 40 arasında puan veriniz.</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-800 mb-1">Süpervizör Notu & Görüşü</label>
-                            <textarea id="evalNote" rows="3" placeholder="Görüşlerinizi buraya yazabilirsiniz..." class="w-full text-xs p-2.5 border rounded-xl"></textarea>
+                            <label class="block text-xs font-bold text-gray-800 mb-1">Süpervizör Görüşü & Geri Bildirim</label>
+                            <textarea id="evalNote" rows="2" placeholder="Öğrenci hakkındaki kanaat ve görüşlerinizi yazabilirsiniz..." class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:ring-hu-purple"></textarea>
                         </div>
 
-                        <div class="pt-3 border-t flex justify-end space-x-2">
-                            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
-                            <button type="submit" class="px-5 py-2 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark cursor-pointer">Kaydet ve Onayla</button>
+                        <div class="pt-2 flex justify-end space-x-2">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-gray-100 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
+                            <button type="submit" id="saveEvalBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition cursor-pointer">
+                                Notu Kaydet
+                            </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONAY TEYİT MODALI (MAL SAVAR GÜVENLİK KONTROLÜ) -->
+    <div id="confirmEvalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeConfirmModal()"></div>
+            <div class="bg-white rounded-3xl max-w-sm w-full p-6 z-10 relative shadow-2xl text-center space-y-4">
+                <div class="w-14 h-14 mx-auto rounded-full bg-purple-100 flex items-center justify-center text-hu-purple text-2xl">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-gray-900 text-base">Not Kaydını Onaylıyor musunuz?</h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed" id="confirmPromptText">
+                        Öğrenciye not veriyorsunuz.
+                    </p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                        Vazgeç / Düzelt
+                    </button>
+                    <button onclick="executeFinalEvaluationSubmit()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer">
+                        Evet, Kaydet
+                    </button>
                 </div>
             </div>
         </div>
@@ -229,6 +304,7 @@
         }
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
+        let cachedStudents = []; // Excel indirme ve düzenleme için hafızada tutulacak liste
 
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -260,7 +336,6 @@
             const isEgeHoca = (email === 'egetmzkn@gmail.com' || role === 'coordinator');
             const isFacultyOrSupervisor = (role === 'supervisor' || role === 'academic' || role === 'faculty');
 
-            // Erişim İzni Doğrulaması
             if (!isMasterAdmin && !isEgeHoca && !isFacultyOrSupervisor) {
                 logout();
                 return;
@@ -272,21 +347,40 @@
                 document.getElementById('supervisorEmailDisplay').innerText = currentUser.email;
             }
 
-            // Hızlı panel değiştirici bar kontrolü
             const bar = document.getElementById('webmasterBar');
             if (bar && (isMasterAdmin || isEgeHoca)) {
                 bar.classList.remove('hidden');
-                
-                // Ege Hoca için Admin butonunu gizle
                 if (!isMasterAdmin && isEgeHoca) {
                     const adminLink = document.getElementById('navAdminBtn');
                     if (adminLink) adminLink.classList.add('hidden');
                 }
             }
 
+            setupClampedInputs();
             loadSupervisorData();
             loadAttendanceApprovals();
         });
+
+        // Sayı girişlerinde klavye taşmasını (örneğin 40 yerine 400 yazılmasını) anında düzelten koruma
+        function setupClampedInputs() {
+            document.querySelectorAll('.score-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const max = parseInt(e.target.max, 10);
+                    const min = parseInt(e.target.min, 10) || 0;
+                    let val = parseInt(e.target.value, 10);
+
+                    if (isNaN(val)) {
+                        calculateTotalScore();
+                        return;
+                    }
+
+                    if (val > max) e.target.value = max;
+                    if (val < min) e.target.value = min;
+
+                    calculateTotalScore();
+                });
+            });
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');
@@ -306,12 +400,12 @@
             const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
             const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
 
-            toast.className = `flex items-center text-white px-4 py-3 rounded-xl shadow-xl ${bgColor} text-xs font-medium transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.className = `flex items-center text-white px-4 py-3 rounded-2xl shadow-xl ${bgColor} text-xs font-semibold transform transition-all duration-300 translate-y-[-10px] opacity-0 pointer-events-auto`;
             toast.innerHTML = `<i class="fa-solid ${icon} mr-2 text-base"></i><span>${message}</span>`;
             container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+            requestAnimationFrame(() => toast.classList.remove('translate-y-[-10px]', 'opacity-0'));
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-x-full');
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
@@ -320,11 +414,25 @@
             document.getElementById('evaluation-section').classList.add('hidden');
             document.getElementById('attendance-section').classList.add('hidden');
             
-            document.getElementById('tab-evaluation').classList.remove('border-hu-purple', 'text-hu-purple');
-            document.getElementById('tab-attendance').classList.remove('border-hu-purple', 'text-hu-purple');
+            const tabEval = document.getElementById('tab-evaluation');
+            const tabAtt = document.getElementById('tab-attendance');
+            if (tabEval && tabAtt) {
+                tabEval.classList.remove('border-hu-purple', 'text-hu-purple');
+                tabAtt.classList.remove('border-hu-purple', 'text-hu-purple');
+                document.getElementById(`tab-${tabId}`).classList.add('border-hu-purple', 'text-hu-purple');
+            }
+
+            const mEval = document.getElementById('mNavEvaluation');
+            const mAtt = document.getElementById('mNavAttendance');
+            if (tabId === 'evaluation') {
+                mEval.className = "flex flex-col items-center text-hu-purple focus:outline-none";
+                mAtt.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple relative focus:outline-none";
+            } else {
+                mEval.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none";
+                mAtt.className = "flex flex-col items-center text-hu-purple relative focus:outline-none";
+            }
 
             document.getElementById(`${tabId}-section`).classList.remove('hidden');
-            document.getElementById(`tab-${tabId}`).classList.add('border-hu-purple', 'text-hu-purple');
 
             if (tabId === 'attendance') {
                 loadAttendanceApprovals();
@@ -342,20 +450,20 @@
                 grid.innerHTML = '';
 
                 if (response.ok) {
-                    const myStudents = await response.json();
+                    cachedStudents = await response.json();
 
-                    if (myStudents.length === 0) {
-                        grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Size atanmış öğrenci bulunmuyor.</p>`;
+                    if (cachedStudents.length === 0) {
+                        grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-6 text-xs">Size atanmış öğrenci bulunmuyor.</p>`;
                         return;
                     }
 
-                    myStudents.forEach(stu => {
+                    cachedStudents.forEach(stu => {
                         const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
                         const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
 
                         const courseBadge = stu.course_code 
-                            ? `<span class="bg-purple-100 text-hu-purple text-[11px] px-2.5 py-1 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
-                            : `<span class="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
+                            ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
+                            : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
 
                         const requiredDays = stu.required_days || 20;
                         const approvedDays = stu.approved_days || 0;
@@ -363,49 +471,64 @@
 
                         let statusBadge = '';
                         if (approvedDays >= requiredDays) {
-                            statusBadge = `<div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                            statusBadge = `<div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
                                             <span><i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i>Staj Tamamlandı</span>
                                             <span class="font-black text-emerald-800">${approvedDays}/${requiredDays} Gün</span>
                                            </div>`;
                         } else {
-                            statusBadge = `<div class="bg-amber-50 text-amber-800 border border-amber-200 text-xs px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
-                                            <span><i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>⚠️ ${missingDays} Gün Telafi Gerekiyor</span>
+                            statusBadge = `<div class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                                            <span><i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>⚠️ ${missingDays} Gün Eksik</span>
                                             <span class="font-black text-amber-900">${approvedDays}/${requiredDays} Gün</span>
                                            </div>`;
                         }
 
                         const pendingNotice = stu.pending_days > 0 
-                            ? `<p class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
+                            ? `<p class="text-[11px] text-amber-600 font-bold mt-1 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
                             : '';
 
+                        const isDeptApproved = (stu.department_approved == 1);
+
+                        let actionBtnHtml = '';
+                        if (isDeptApproved) {
+                            actionBtnHtml = `
+                                <div class="w-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 rounded-xl text-center border border-gray-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-lock mr-1.5 text-gray-400"></i> Bölüm Onayladı (Kilitli)
+                                </div>
+                            `;
+                        } else {
+                            actionBtnHtml = `
+                                <button onclick="openEvaluationModal(${stu.id})" class="w-full min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
+                                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Öğrenciyi Değerlendir'}
+                                </button>
+                            `;
+                        }
+
                         grid.innerHTML += `
-                            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+                            <div class="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3">
                                 <div>
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h3 class="font-bold text-gray-900 text-base">${escapeHtml(stu.name)}</h3>
+                                    <div class="flex justify-between items-start mb-1">
+                                        <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
                                         ${courseBadge}
                                     </div>
-                                    <p class="text-xs text-gray-500 mb-3">No: ${escapeHtml(stu.student_no)}</p>
+                                    <p class="text-xs text-gray-500 mb-2.5">No: ${escapeHtml(stu.student_no)}</p>
 
                                     <div class="space-y-1">
                                         ${statusBadge}
                                         ${pendingNotice}
                                     </div>
 
-                                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100 mt-3 text-xs flex justify-between items-center">
+                                    <div class="bg-gray-50 rounded-xl p-2.5 border border-gray-100 mt-2.5 text-xs flex justify-between items-center">
                                         <span class="text-gray-500 font-medium">Staj Sonu Notu:</span>
                                         <b class="text-hu-purple font-black text-sm">${scoreText}</b>
                                     </div>
                                 </div>
 
-                                <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" onclick="openEvaluationModal(this.dataset.studentId, this.dataset.studentName)" class="w-full bg-hu-purple hover:bg-hu-dark text-white text-xs font-bold py-2.5 rounded-xl transition shadow-sm cursor-pointer">
-                                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Güncelle' : 'Öğrenciyi Değerlendir'}
-                                </button>
+                                ${actionBtnHtml}
                             </div>
                         `;
                     });
                 } else {
-                    grid.innerHTML = `<p class="text-gray-400 italic col-span-full">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
+                    grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-4 text-xs">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
                 }
             } catch (err) {
                 console.error('Öğrenci Verisi Hatası:', err);
@@ -420,7 +543,9 @@
                 });
 
                 const tbody = document.getElementById('attendanceTableBody');
+                const mobileList = document.getElementById('attendanceMobileList');
                 tbody.innerHTML = '';
+                mobileList.innerHTML = '';
 
                 if (response.ok) {
                     const attendances = await response.json();
@@ -431,32 +556,59 @@
                             pendingCount++;
                             const isRetro = rec.is_retroactive == 1;
                             const badge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+                            const timeText = rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-');
+                            const detailText = rec.excuse ? 'Mazeret: ' + escapeHtml(rec.excuse) : escapeHtml(rec.location_info || 'GPS Konumu Alındı');
 
                             tbody.innerHTML += `
                                 <tr>
                                     <td class="px-6 py-4 font-bold text-gray-900">${escapeHtml(rec.student_name)} (${escapeHtml(rec.student_no)})</td>
                                     <td class="px-6 py-4 text-xs font-bold">${formatDisplayDate(rec.date)} ${badge}</td>
-                                    <td class="px-6 py-4 text-xs text-gray-500">${rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-')}</td>
-                                    <td class="px-6 py-4 text-xs">${rec.excuse ? 'Mazeret: ' + escapeHtml(rec.excuse) : escapeHtml(rec.location_info || 'GPS Konumu Alındı')}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500">${timeText}</td>
+                                    <td class="px-6 py-4 text-xs">${detailText}</td>
                                     <td class="px-6 py-4 text-right space-x-2">
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Onayla</button>
                                         <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Reddet</button>
                                     </td>
                                 </tr>
                             `;
+
+                            mobileList.innerHTML += `
+                                <div class="py-3 px-1 space-y-2">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-extrabold text-sm text-gray-900">${escapeHtml(rec.student_name)}</p>
+                                            <p class="text-[11px] text-gray-400">No: ${escapeHtml(rec.student_no)}</p>
+                                        </div>
+                                        <span class="text-xs font-bold text-purple-950">${formatDisplayDate(rec.date)} ${badge}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-600">${timeText} • ${detailText}</p>
+                                    <div class="flex gap-2 pt-1">
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="flex-1 min-h-[38px] bg-emerald-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center">
+                                            <i class="fa-solid fa-check mr-1"></i> Onayla
+                                        </button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="flex-1 min-h-[38px] bg-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center">
+                                            <i class="fa-solid fa-xmark mr-1"></i> Reddet
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
                         }
                     });
 
-                    const badgeElem = document.getElementById('pendingBadge');
+                    const badgeDesktop = document.getElementById('pendingBadgeDesktop');
+                    const badgeMobile = document.getElementById('pendingBadgeMobile');
+                    
                     if (pendingCount > 0) {
-                        badgeElem.innerText = pendingCount;
-                        badgeElem.classList.remove('hidden');
+                        if (badgeDesktop) { badgeDesktop.innerText = pendingCount; badgeDesktop.classList.remove('hidden'); }
+                        if (badgeMobile) { badgeMobile.innerText = pendingCount; badgeMobile.classList.remove('hidden'); }
                     } else {
-                        badgeElem.classList.add('hidden');
+                        if (badgeDesktop) badgeDesktop.classList.add('hidden');
+                        if (badgeMobile) badgeMobile.classList.add('hidden');
                     }
 
                     if (pendingCount === 0) {
                         tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-xs text-gray-400 italic">Onay bekleyen günlük yoklama bulunmuyor.</td></tr>`;
+                        mobileList.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Onay bekleyen günlük yoklama bulunmuyor.</p>`;
                     }
                 }
             } catch (err) {
@@ -508,9 +660,53 @@
             }
         }
 
-        function openEvaluationModal(studentId, studentName) {
-            document.getElementById('evalStudentId').value = studentId;
-            document.getElementById('evalStudentName').innerText = studentName;
+        // NOT FORMUNU AÇMA (VARSA ESKİ NOTLARI KUTULARA DOLDURUR)
+        async function openEvaluationModal(studentId) {
+            const stu = cachedStudents.find(s => s.id === studentId);
+            if (!stu) return;
+
+            document.getElementById('evalStudentId').value = stu.id;
+            document.getElementById('evalStudentName').innerText = `${stu.name} (${stu.student_no || ''})`;
+            
+            // Sıfırla
+            document.getElementById('score_beh').value = '';
+            document.getElementById('score_eval').value = '';
+            document.getElementById('score_int').value = '';
+            document.getElementById('evalNote').value = '';
+            document.getElementById('liveTotalScore').innerText = '0';
+
+            // Eğer öğrencinin zaten notu varsa backend'den detayları çekip kutuları doldur
+            if (stu.total_score !== null && stu.total_score !== undefined) {
+                document.getElementById('evalModalTitle').innerText = 'Notu Düzenle & Güncelle';
+                document.getElementById('saveEvalBtn').innerText = 'Değişiklikleri Kaydet';
+
+                try {
+                    const token = getToken();
+                    const res = await fetch(`${API_URL}/grades/student/${stu.id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const gradeData = await res.json();
+                        let d = gradeData.rubric_details;
+                        if (typeof d === 'string') {
+                            try { d = JSON.parse(d); } catch(e) { d = {}; }
+                        }
+                        d = d || {};
+
+                        document.getElementById('score_beh').value = d.beh !== undefined ? d.beh : '';
+                        document.getElementById('score_eval').value = d.eval !== undefined ? d.eval : '';
+                        document.getElementById('score_int').value = d.int !== undefined ? d.int : '';
+                        document.getElementById('evalNote').value = gradeData.note || '';
+                        calculateTotalScore();
+                    }
+                } catch(e) {
+                    console.error('Eski not detayları çekilemedi:', e);
+                }
+            } else {
+                document.getElementById('evalModalTitle').innerText = 'Yeni Staj Değerlendirmesi';
+                document.getElementById('saveEvalBtn').innerText = 'Notu Kaydet';
+            }
+
             document.getElementById('evaluationModal').classList.remove('hidden');
         }
 
@@ -526,13 +722,33 @@
             document.getElementById('liveTotalScore').innerText = total;
         }
 
-        async function submitEvaluation(e) {
-            if (e && e.preventDefault) e.preventDefault();
+        // MAL SAVAR ONAY MODALINI AÇAR
+        function promptConfirmEvaluation() {
+            const studentName = document.getElementById('evalStudentName').innerText;
+            const total = parseInt(document.getElementById('liveTotalScore').innerText, 10) || 0;
+
+            document.getElementById('confirmPromptText').innerHTML = `
+                <b class="text-gray-900">${escapeHtml(studentName)}</b> için hesaplanan toplam staj notu: <br>
+                <span class="text-2xl font-black text-hu-purple mt-1 inline-block">${total} / 100</span><br>
+                Bu notu kaydetmek istediğinize emin misiniz?
+            `;
+            document.getElementById('confirmEvalModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmEvalModal').classList.add('hidden');
+        }
+
+        // KESİN KAYIT İŞLEMİ
+        async function executeFinalEvaluationSubmit() {
+            closeConfirmModal();
+
             const studentId = document.getElementById('evalStudentId').value;
-            const beh = parseInt(document.getElementById('score_beh').value) || 0;
-            const evalScore = parseInt(document.getElementById('score_eval').value) || 0;
-            const intScore = parseInt(document.getElementById('score_int').value) || 0;
+            const beh = parseInt(document.getElementById('score_beh').value, 10) || 0;
+            const evalScore = parseInt(document.getElementById('score_eval').value, 10) || 0;
+            const intScore = parseInt(document.getElementById('score_int').value, 10) || 0;
             const total = beh + evalScore + intScore;
+            const note = document.getElementById('evalNote').value;
 
             try {
                 const token = getToken();
@@ -543,22 +759,76 @@
                         'Authorization': `Bearer ${token}` 
                     },
                     body: JSON.stringify({
-                        studentId: parseInt(studentId),
+                        studentId: parseInt(studentId, 10),
                         totalScore: total,
                         rubricDetails: { beh, eval: evalScore, int: intScore },
-                        note: document.getElementById('evalNote').value
+                        note: note
                     })
                 });
 
                 if (response.ok) {
-                    showToast("Staj notu ve değerlendirme başarıyla kaydedildi.", "success");
+                    showToast("Staj notu başarıyla kaydedildi/güncellendi.", "success");
                     closeModal();
                     loadSupervisorData();
                 } else {
-                    showToast("Not kaydedilemedi.", "error");
+                    const errData = await response.json().catch(() => ({}));
+                    showToast(errData.message || "Not kaydedilemedi.", "error");
                 }
             } catch (err) {
                 showToast("Sunucu hatası oluştu.", "error");
+            }
+        }
+
+        // HOCANIN KENDİ ÖĞRENCİLERİNİ EXCEL'E AKTARMA FONKSİYONU
+        function exportMyStudentsToExcel() {
+            if (!cachedStudents || cachedStudents.length === 0) {
+                showToast("Dışa aktarılacak öğrenci bulunmuyor.", "error");
+                return;
+            }
+
+            try {
+                const excelRows = cachedStudents.map((stu, index) => {
+                    const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
+                    return {
+                        "Sıra": index + 1,
+                        "Öğrenci Adı Soyadı": stu.name || '',
+                        "Öğrenci No": stu.student_no || '',
+                        "Staj Ders Kodu": stu.course_code || 'ERG',
+                        "Hedef Gün": stu.required_days || 20,
+                        "Onaylanan Gün": stu.approved_days || 0,
+                        "Eksik / Telafi Gün": Math.max(0, (stu.required_days || 20) - (stu.approved_days || 0)),
+                        "Staj Notu (100)": hasGrade ? stu.total_score : 'Girilmedi',
+                        "Bölüm Onay Durumu": stu.department_approved == 1 ? 'Onaylandı' : 'Onay Bekliyor'
+                    };
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(excelRows);
+                
+                // Sütun genişliklerini otomatik ayarla
+                worksheet['!cols'] = [
+                    { wch: 6 },
+                    { wch: 26 },
+                    { wch: 15 },
+                    { wch: 14 },
+                    { wch: 10 },
+                    { wch: 14 },
+                    { wch: 16 },
+                    { wch: 15 },
+                    { wch: 18 }
+                ];
+
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Stajyerlerim");
+
+                const cleanSupName = (currentUser.name || 'supervizor').replace(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ_]/g, '_');
+                const today = new Date().toISOString().split('T')[0];
+                const fileName = `Stajyer_Not_Listesi_${cleanSupName}_${today}.xlsx`;
+
+                XLSX.writeFile(workbook, fileName);
+                showToast("Öğrenci not listeniz Excel olarak indirildi.", "success");
+            } catch (err) {
+                console.error("Excel aktarma hatası:", err);
+                showToast("Excel dosyası oluşturulurken hata oluştu.", "error");
             }
         }
     </script>
