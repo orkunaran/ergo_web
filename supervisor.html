@@ -36,17 +36,17 @@
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-800 pb-12">
 
-    <!-- WEBMASTER MODU / HIZLI PANEL GEÇİŞ BARI -->
+    <!-- HIZLI PANEL GEÇİŞ BARI -->
     <div id="webmasterBar" class="hidden bg-gray-900 text-white px-4 py-2 border-b border-gray-800 text-xs font-medium sticky top-0 z-30">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
-                <span>WEBMASTER MODU: Hızlı Panel Değiştirici</span>
+                <span>Hızlı Panel Değiştirici</span>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
-                <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
+                <a href="admin.html" id="navAdminBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
                 <a href="coordinator.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Staj Koordinatörü</a>
-                <a href="supervisor.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🏥 Süpervizör</a>
+                <a href="supervisor.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🏥 Süpervizör / Danışman</a>
                 <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
             </div>
         </div>
@@ -61,7 +61,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">H.Ü. Ergoterapi</h1>
-                        <p class="text-xs text-purple-200">Saha Süpervizörü Staj Değerlendirme & Takip</p>
+                        <p class="text-xs text-purple-200">Süpervizör & Danışman Değerlendirme Paneli</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -114,7 +114,7 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="myStudentsList">
-                    <!-- JS ile dolacak -->
+                    <!-- JS ile doldurulacak -->
                 </div>
             </div>
         </div>
@@ -146,7 +146,7 @@
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-100 text-sm">
-                            <!-- JS ile dolacak -->
+                            <!-- JS ile doldurulacak -->
                         </tbody>
                     </table>
                 </div>
@@ -248,23 +248,40 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            if (activeUser && activeUser.role) {
-                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            if (!activeUser) {
+                logout();
+                return;
             }
 
-            if (!activeUser || (activeUser.role !== 'supervisor' && activeUser.role !== 'coordinator' && activeUser.role !== 'academic' && activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
+            const email = (activeUser.email || '').toLowerCase().trim();
+            const role = (activeUser.role || '').toLowerCase().trim();
+
+            const isMasterAdmin = (email === 'orkunaran@gmail.com' || role === 'admin' || role === 'webmaster');
+            const isEgeHoca = (email === 'egetmzkn@gmail.com' || role === 'coordinator');
+            const isFacultyOrSupervisor = (role === 'supervisor' || role === 'academic' || role === 'faculty');
+
+            // Erişim İzni Doğrulaması
+            if (!isMasterAdmin && !isEgeHoca && !isFacultyOrSupervisor) {
                 logout();
                 return;
             }
 
             currentUser = activeUser;
-            document.getElementById('supervisorNameDisplay').innerText = currentUser.name;
+            document.getElementById('supervisorNameDisplay').innerText = currentUser.name || 'Süpervizör';
             if (currentUser.email) {
                 document.getElementById('supervisorEmailDisplay').innerText = currentUser.email;
             }
 
-            if (currentUser.role === 'webmaster') {
-                document.getElementById('webmasterBar').classList.remove('hidden');
+            // Hızlı panel değiştirici bar kontrolü
+            const bar = document.getElementById('webmasterBar');
+            if (bar && (isMasterAdmin || isEgeHoca)) {
+                bar.classList.remove('hidden');
+                
+                // Ege Hoca için Admin butonunu gizle
+                if (!isMasterAdmin && isEgeHoca) {
+                    const adminLink = document.getElementById('navAdminBtn');
+                    if (adminLink) adminLink.classList.add('hidden');
+                }
             }
 
             loadSupervisorData();

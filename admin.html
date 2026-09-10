@@ -42,12 +42,12 @@
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2 text-purple-300 font-bold">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
-                <span>WEBMASTER MODU: Hızlı Panel Değiştirici</span>
+                <span>Hızlı Panel Değiştirici</span>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
-                <a href="admin.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🛡️ Admin</a>
+                <a href="admin.html" id="navAdminBtn" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🛡️ Admin</a>
                 <a href="coordinator.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Staj Koordinatörü</a>
-                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör</a>
+                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör / Danışman</a>
                 <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
             </div>
         </div>
@@ -231,7 +231,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Adı (Opsiyonel / Giriş için)</label>
                                 <input type="text" id="coordUsername" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: abaysal" autocomplete="off">
-                                <p class="text-[11px] text-gray-400 mt-0.5">Boş bırakılırsa e-posta ön ekinden otomatik türetilir.</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Boş bırakılırsa e-posta ön ekinden otomatik üretilir.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
@@ -306,6 +306,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Adı (Opsiyonel / Giriş için)</label>
                                 <input type="text" id="supUsername" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-hu-purple focus:border-hu-purple" placeholder="Örn: ayseyilmaz" autocomplete="off">
+                                <p class="text-[11px] text-gray-400 mt-0.5">Boş bırakılırsa e-posta ön ekinden otomatik üretilir.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Geçici Şifre</label>
@@ -520,24 +521,57 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            if (activeUser && activeUser.role) {
-                activeUser.role = activeUser.role.toString().toLowerCase().trim();
+            if (!activeUser) {
+                logout();
+                return;
             }
 
-            if (!activeUser || (activeUser.role !== 'admin' && activeUser.role !== 'webmaster')) {
+            const email = (activeUser.email || '').toLowerCase().trim();
+            const role = (activeUser.role || '').toLowerCase().trim();
+
+            const isMasterAdmin = (email === 'orkunaran@gmail.com' || role === 'admin' || role === 'webmaster');
+            const isEgeHoca = (email === 'egetmzkn@gmail.com' || role === 'coordinator');
+
+            // Sayfaya erişim izni kontrolü (Sadece Admin yetkilileri)
+            if (!isMasterAdmin) {
                 logout();
                 return; 
             }
 
-            document.getElementById('adminNameDisplay').innerText = activeUser.name;
-            if (activeUser.role === 'webmaster') {
-                document.getElementById('webmasterBar').classList.remove('hidden');
-                document.getElementById('adminRoleDisplay').innerText = 'Webmaster';
+            document.getElementById('adminNameDisplay').innerText = activeUser.name || 'Yönetici';
+            
+            // Hızlı panel değiştirici bar kontrolü
+            const webmasterBar = document.getElementById('webmasterBar');
+            if (webmasterBar) {
+                webmasterBar.classList.remove('hidden');
+                document.getElementById('adminRoleDisplay').innerText = isMasterAdmin ? 'Admin' : 'Koordinatör';
             }
+
+            // Dinamik kullanıcı adı ön eki dinleyicileri
+            setupUsernameAutoFill('coordEmail', 'coordUsername');
+            setupUsernameAutoFill('supEmail', 'supUsername');
 
             loadData();
             loadDepartmentAssignments();
         });
+
+        // E-posta yazıldıkça kullanıcı adını otomatik türeten yardımcı fonksiyon
+        function setupUsernameAutoFill(emailInputId, usernameInputId) {
+            const emailInput = document.getElementById(emailInputId);
+            const usernameInput = document.getElementById(usernameInputId);
+            if (!emailInput || !usernameInput) return;
+
+            emailInput.addEventListener('input', (e) => {
+                if (!usernameInput.dataset.manualEdited) {
+                    const prefix = e.target.value.split('@')[0].trim().toLowerCase();
+                    usernameInput.value = prefix;
+                }
+            });
+
+            usernameInput.addEventListener('input', (e) => {
+                usernameInput.dataset.manualEdited = !!e.target.value.trim();
+            });
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');
@@ -771,8 +805,10 @@
             document.getElementById('coordEmail').readOnly = true;
             document.getElementById('coordEmail').classList.add('bg-gray-100');
             
-            // Kullanıcı adı alanını doldur (varsa)
-            document.getElementById('coordUsername').value = coord.username || '';
+            // Kullanıcı adı alanını doldur
+            const usernameInput = document.getElementById('coordUsername');
+            usernameInput.value = coord.username || '';
+            usernameInput.dataset.manualEdited = coord.username ? 'true' : '';
 
             document.getElementById('coordRole').value = (coord.role === 'coordinator') ? 'coordinator' : 'academic';
             
@@ -794,7 +830,10 @@
             emailInput.readOnly = false;
             emailInput.classList.remove('bg-gray-100');
 
-            document.getElementById('coordUsername').value = '';
+            const usernameInput = document.getElementById('coordUsername');
+            usernameInput.value = '';
+            delete usernameInput.dataset.manualEdited;
+
             document.getElementById('coordPassword').value = '1234';
             document.getElementById('coordPasswordLabel').innerText = 'Geçici Şifre';
             document.getElementById('coordPasswordHelp').classList.add('hidden');
@@ -921,8 +960,8 @@
             const role = document.getElementById('coordRole').value;
             const password = document.getElementById('coordPassword').value;
 
-            // Kullanıcı adı boşsa e-postanın ön ekini al
-            const username = usernameInput || email.split('@')[0].toLowerCase();
+            // Boş bırakılırsa e-posta ön ekinden otomatik türet
+            const username = usernameInput || (email.includes('@') ? email.split('@')[0].toLowerCase() : '');
 
             try {
                 const token = getToken();
@@ -954,7 +993,8 @@
             const usernameInput = document.getElementById('supUsername').value.trim().toLowerCase();
             const password = document.getElementById('supPassword').value;
 
-            const username = usernameInput || email.split('@')[0].toLowerCase();
+            // Boş bırakılırsa e-posta ön ekinden otomatik türet
+            const username = usernameInput || (email.includes('@') ? email.split('@')[0].toLowerCase() : '');
 
             try {
                 const token = getToken();
@@ -972,6 +1012,7 @@
                     showToast(data.message || 'Dış süpervizör kaydedildi.', 'success');
                     document.getElementById('addSupervisorForm').reset();
                     document.getElementById('supPassword').value = '1234';
+                    delete document.getElementById('supUsername').dataset.manualEdited;
                     loadData();
                 } else {
                     showToast(data.message || 'Kayıt başarısız.', 'error');
