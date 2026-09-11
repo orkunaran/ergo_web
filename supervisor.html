@@ -43,6 +43,8 @@
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-gray-800 antialiased selection:bg-purple-200">
@@ -115,14 +117,14 @@
         
         <!-- 1. SEKMELER: ÖĞRENCİLERİM & DEĞERLENDİRME -->
         <div id="evaluation-section" class="fade-in space-y-4">
-            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
-                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 sm:mb-6 border-b border-gray-100 pb-3">
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-3">
                     <div>
                         <h2 class="text-base sm:text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
                         <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Staj telafi takibi, dönem sonu notlandırma ve kişisel Excel yedeği.</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="exportMyStudentsToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer active:scale-95">
+                        <button onclick="exportMyStudentsToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer">
                             <i class="fa-solid fa-file-excel mr-1.5 text-sm"></i>Notlarımı Excel Olarak İndir
                         </button>
                         <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 cursor-pointer">
@@ -130,10 +132,46 @@
                         </button>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="myStudentsList">
-                    <!-- JS ile doldurulacak -->
+
+                <!-- HIZLI ARAMA, STAJ ROTASYONU & FİLTRELEME ÇUBUĞU -->
+                <div class="bg-gray-50/80 p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                        <!-- İsim / No Canlı Arama -->
+                        <div class="sm:col-span-7 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" id="supSearchInput" oninput="applySupervisorFilters()" placeholder="Öğrenci adı, soyadı veya numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                        </div>
+
+                        <!-- Staj Grubu / Rotasyon Seçici -->
+                        <div class="sm:col-span-5">
+                            <select id="supRotationSelect" onchange="applySupervisorFilters()" class="w-full text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple font-semibold text-gray-700 shadow-xs">
+                                <option value="all">📅 Tüm Staj Grupları / Tarihler</option>
+                                <option value="g1">1. Staj Grubu (16 Eylül - 16 Ekim)</option>
+                                <option value="g2">2. Staj Grubu (16 Ekim - 16 Kasım)</option>
+                                <option value="g3">3. Staj Grubu (16 Kasım - 16 Aralık)</option>
+                                <option value="other">Diğer / Özel Tarih Aralığı</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Durum Filtre Hapları (Pills) -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                        <button onclick="setSupStatusFilter('all')" id="sup-pill-all" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer">
+                            Tümü (<span id="sup-count-all">0</span>)
+                        </button>
+                        <button onclick="setSupStatusFilter('unscored')" id="sup-pill-unscored" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Notu Girilmeyenler (<span id="sup-count-unscored">0</span>)
+                        </button>
+                        <button onclick="setSupStatusFilter('missing')" id="sup-pill-missing" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Eksik / Telafi Yoklaması Olanlar (<span id="sup-count-missing">0</span>)
+                        </button>
+                        <button onclick="setSupStatusFilter('pendingApproval')" id="sup-pill-pendingApproval" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Bölüm Onayı Bekleyenler (<span id="sup-count-pendingApproval">0</span>)
+                        </button>
+                    </div>
                 </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="myStudentsList"></div>
             </div>
         </div>
 
@@ -168,9 +206,7 @@
                 </div>
 
                 <!-- Mobil Liste / Kart Görünümü -->
-                <div id="attendanceMobileList" class="md:hidden divide-y divide-gray-100">
-                    <!-- JS ile doldurulacak -->
-                </div>
+                <div id="attendanceMobileList" class="md:hidden divide-y divide-gray-100"></div>
             </div>
         </div>
 
@@ -304,7 +340,8 @@
         }
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
-        let cachedStudents = []; // Excel indirme ve düzenleme için hafızada tutulacak liste
+        let cachedStudents = [];
+        let currentSupStatusFilter = 'all';
 
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -361,7 +398,6 @@
             loadAttendanceApprovals();
         });
 
-        // Sayı girişlerinde klavye taşmasını (örneğin 40 yerine 400 yazılmasını) anında düzelten koruma
         function setupClampedInputs() {
             document.querySelectorAll('.score-input').forEach(input => {
                 input.addEventListener('input', (e) => {
@@ -439,6 +475,193 @@
             }
         }
 
+        // DURUM FİLTRE HAPI SEÇİMİ
+        function setSupStatusFilter(filterKey) {
+            currentSupStatusFilter = filterKey;
+            
+            const pills = ['all', 'unscored', 'missing', 'pendingApproval'];
+            pills.forEach(p => {
+                const btn = document.getElementById(`sup-pill-${p}`);
+                if (!btn) return;
+                if (p === filterKey) {
+                    btn.className = "status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer";
+                } else {
+                    btn.className = "status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer";
+                }
+            });
+
+            applySupervisorFilters();
+        }
+
+        // ÖĞRENCİ BAŞLANGIÇ TARİHİNİ ROTASYON GRUBUNA EŞLEŞTİRME
+        function matchRotationGroup(startDateStr, groupKey) {
+            if (groupKey === 'all') return true;
+            if (!startDateStr) return groupKey === 'other';
+
+            const cleanDate = startDateStr.split('T')[0];
+            const parts = cleanDate.split('-');
+            if (parts.length < 3) return groupKey === 'other';
+
+            const month = parseInt(parts[1], 10);
+            const day = parseInt(parts[2], 10);
+
+            // G1: 16 Eylül - 16 Ekim
+            if (groupKey === 'g1') {
+                return (month === 9 && day >= 16) || (month === 10 && day <= 16);
+            }
+            // G2: 16 Ekim - 16 Kasım
+            if (groupKey === 'g2') {
+                return (month === 10 && day > 16) || (month === 11 && day <= 16);
+            }
+            // G3: 16 Kasım - 16 Aralık
+            if (groupKey === 'g3') {
+                return (month === 11 && day > 16) || (month === 12 && day <= 16);
+            }
+            // Diğer
+            if (groupKey === 'other') {
+                const inG1 = (month === 9 && day >= 16) || (month === 10 && day <= 16);
+                const inG2 = (month === 10 && day > 16) || (month === 11 && day <= 16);
+                const inG3 = (month === 11 && day > 16) || (month === 12 && day <= 16);
+                return !inG1 && !inG2 && !inG3;
+            }
+            return true;
+        }
+
+        // FİLTRELERİ UYGULA VE SAYAÇLARI GÜNCELLE
+        function applySupervisorFilters() {
+            const query = (document.getElementById('supSearchInput')?.value || '').toLowerCase().trim();
+            const groupKey = document.getElementById('supRotationSelect')?.value || 'all';
+
+            let cAll = 0, cUnscored = 0, cMissing = 0, cPendingApproval = 0;
+
+            cachedStudents.forEach(stu => {
+                if (!matchRotationGroup(stu.start_date, groupKey)) return;
+
+                cAll++;
+                const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
+                const requiredDays = stu.required_days || 20;
+                const approvedDays = stu.approved_days || 0;
+                const isApproved = (stu.department_approved == 1);
+
+                if (!hasGrade) cUnscored++;
+                if (approvedDays < requiredDays) cMissing++;
+                if (hasGrade && !isApproved) cPendingApproval++;
+            });
+
+            document.getElementById('sup-count-all').innerText = cAll;
+            document.getElementById('sup-count-unscored').innerText = cUnscored;
+            document.getElementById('sup-count-missing').innerText = cMissing;
+            document.getElementById('sup-count-pendingApproval').innerText = cPendingApproval;
+
+            const filtered = cachedStudents.filter(stu => {
+                if (query) {
+                    const name = (stu.name || '').toLowerCase();
+                    const no = (stu.student_no || '').toLowerCase();
+                    if (!name.includes(query) && !no.includes(query)) {
+                        return false;
+                    }
+                }
+
+                if (!matchRotationGroup(stu.start_date, groupKey)) {
+                    return false;
+                }
+
+                const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
+                const requiredDays = stu.required_days || 20;
+                const approvedDays = stu.approved_days || 0;
+                const isApproved = (stu.department_approved == 1);
+
+                if (currentSupStatusFilter === 'unscored') return !hasGrade;
+                if (currentSupStatusFilter === 'missing') return approvedDays < requiredDays;
+                if (currentSupStatusFilter === 'pendingApproval') return hasGrade && !isApproved;
+
+                return true;
+            });
+
+            renderSupervisorCards(filtered);
+        }
+
+        function renderSupervisorCards(students) {
+            const grid = document.getElementById('myStudentsList');
+            grid.innerHTML = '';
+
+            if (students.length === 0) {
+                grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-6 text-xs">Arama ve filtre kriterlerine uygun öğrenci bulunamadı.</p>`;
+                return;
+            }
+
+            students.forEach(stu => {
+                const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
+                const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
+
+                const courseBadge = stu.course_code 
+                    ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
+                    : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
+
+                const requiredDays = stu.required_days || 20;
+                const approvedDays = stu.approved_days || 0;
+                const missingDays = Math.max(0, requiredDays - approvedDays);
+
+                let statusBadge = '';
+                if (approvedDays >= requiredDays) {
+                    statusBadge = `<div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                                    <span><i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i>Staj Tamamlandı</span>
+                                    <span class="font-black text-emerald-800">${approvedDays}/${requiredDays} Gün</span>
+                                   </div>`;
+                } else {
+                    statusBadge = `<div class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                                    <span><i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>⚠️ ${missingDays} Gün Eksik</span>
+                                    <span class="font-black text-amber-900">${approvedDays}/${requiredDays} Gün</span>
+                                   </div>`;
+                }
+
+                const pendingNotice = stu.pending_days > 0 
+                    ? `<p class="text-[11px] text-amber-600 font-bold mt-1 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
+                    : '';
+
+                const isDeptApproved = (stu.department_approved == 1);
+
+                let actionBtnHtml = '';
+                if (isDeptApproved) {
+                    actionBtnHtml = `
+                        <div class="w-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 rounded-xl text-center border border-gray-200 flex items-center justify-center">
+                            <i class="fa-solid fa-lock mr-1.5 text-gray-400"></i> Bölüm Onayladı (Kilitli)
+                        </div>
+                    `;
+                } else {
+                    actionBtnHtml = `
+                        <button onclick="openEvaluationModal(${stu.id})" class="w-full min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Öğrenciyi Değerlendir'}
+                        </button>
+                    `;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
+                                ${courseBadge}
+                            </div>
+                            <p class="text-xs text-gray-500 mb-2.5">No: ${escapeHtml(stu.student_no)}</p>
+
+                            <div class="space-y-1">
+                                ${statusBadge}
+                                ${pendingNotice}
+                            </div>
+
+                            <div class="bg-gray-50 rounded-xl p-2.5 border border-gray-100 mt-2.5 text-xs flex justify-between items-center">
+                                <span class="text-gray-500 font-medium">Staj Sonu Notu:</span>
+                                <b class="text-hu-purple font-black text-sm">${scoreText}</b>
+                            </div>
+                        </div>
+
+                        ${actionBtnHtml}
+                    </div>
+                `;
+            });
+        }
+
         async function loadSupervisorData() {
             try {
                 const token = getToken();
@@ -446,89 +669,11 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const grid = document.getElementById('myStudentsList');
-                grid.innerHTML = '';
-
                 if (response.ok) {
                     cachedStudents = await response.json();
-
-                    if (cachedStudents.length === 0) {
-                        grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-6 text-xs">Size atanmış öğrenci bulunmuyor.</p>`;
-                        return;
-                    }
-
-                    cachedStudents.forEach(stu => {
-                        const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
-                        const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
-
-                        const courseBadge = stu.course_code 
-                            ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
-                            : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
-
-                        const requiredDays = stu.required_days || 20;
-                        const approvedDays = stu.approved_days || 0;
-                        const missingDays = Math.max(0, requiredDays - approvedDays);
-
-                        let statusBadge = '';
-                        if (approvedDays >= requiredDays) {
-                            statusBadge = `<div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
-                                            <span><i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i>Staj Tamamlandı</span>
-                                            <span class="font-black text-emerald-800">${approvedDays}/${requiredDays} Gün</span>
-                                           </div>`;
-                        } else {
-                            statusBadge = `<div class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
-                                            <span><i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>⚠️ ${missingDays} Gün Eksik</span>
-                                            <span class="font-black text-amber-900">${approvedDays}/${requiredDays} Gün</span>
-                                           </div>`;
-                        }
-
-                        const pendingNotice = stu.pending_days > 0 
-                            ? `<p class="text-[11px] text-amber-600 font-bold mt-1 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
-                            : '';
-
-                        const isDeptApproved = (stu.department_approved == 1);
-
-                        let actionBtnHtml = '';
-                        if (isDeptApproved) {
-                            actionBtnHtml = `
-                                <div class="w-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 rounded-xl text-center border border-gray-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-lock mr-1.5 text-gray-400"></i> Bölüm Onayladı (Kilitli)
-                                </div>
-                            `;
-                        } else {
-                            actionBtnHtml = `
-                                <button onclick="openEvaluationModal(${stu.id})" class="w-full min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
-                                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Öğrenciyi Değerlendir'}
-                                </button>
-                            `;
-                        }
-
-                        grid.innerHTML += `
-                            <div class="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3">
-                                <div>
-                                    <div class="flex justify-between items-start mb-1">
-                                        <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
-                                        ${courseBadge}
-                                    </div>
-                                    <p class="text-xs text-gray-500 mb-2.5">No: ${escapeHtml(stu.student_no)}</p>
-
-                                    <div class="space-y-1">
-                                        ${statusBadge}
-                                        ${pendingNotice}
-                                    </div>
-
-                                    <div class="bg-gray-50 rounded-xl p-2.5 border border-gray-100 mt-2.5 text-xs flex justify-between items-center">
-                                        <span class="text-gray-500 font-medium">Staj Sonu Notu:</span>
-                                        <b class="text-hu-purple font-black text-sm">${scoreText}</b>
-                                    </div>
-                                </div>
-
-                                ${actionBtnHtml}
-                            </div>
-                        `;
-                    });
+                    applySupervisorFilters();
                 } else {
-                    grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-4 text-xs">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
+                    document.getElementById('myStudentsList').innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-4 text-xs">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
                 }
             } catch (err) {
                 console.error('Öğrenci Verisi Hatası:', err);
@@ -660,7 +805,6 @@
             }
         }
 
-        // NOT FORMUNU AÇMA (VARSA ESKİ NOTLARI KUTULARA DOLDURUR)
         async function openEvaluationModal(studentId) {
             const stu = cachedStudents.find(s => s.id === studentId);
             if (!stu) return;
@@ -668,14 +812,12 @@
             document.getElementById('evalStudentId').value = stu.id;
             document.getElementById('evalStudentName').innerText = `${stu.name} (${stu.student_no || ''})`;
             
-            // Sıfırla
             document.getElementById('score_beh').value = '';
             document.getElementById('score_eval').value = '';
             document.getElementById('score_int').value = '';
             document.getElementById('evalNote').value = '';
             document.getElementById('liveTotalScore').innerText = '0';
 
-            // Eğer öğrencinin zaten notu varsa backend'den detayları çekip kutuları doldur
             if (stu.total_score !== null && stu.total_score !== undefined) {
                 document.getElementById('evalModalTitle').innerText = 'Notu Düzenle & Güncelle';
                 document.getElementById('saveEvalBtn').innerText = 'Değişiklikleri Kaydet';
@@ -722,7 +864,6 @@
             document.getElementById('liveTotalScore').innerText = total;
         }
 
-        // MAL SAVAR ONAY MODALINI AÇAR
         function promptConfirmEvaluation() {
             const studentName = document.getElementById('evalStudentName').innerText;
             const total = parseInt(document.getElementById('liveTotalScore').innerText, 10) || 0;
@@ -739,7 +880,6 @@
             document.getElementById('confirmEvalModal').classList.add('hidden');
         }
 
-        // KESİN KAYIT İŞLEMİ
         async function executeFinalEvaluationSubmit() {
             closeConfirmModal();
 
@@ -779,7 +919,6 @@
             }
         }
 
-        // HOCANIN KENDİ ÖĞRENCİLERİNİ EXCEL'E AKTARMA FONKSİYONU
         function exportMyStudentsToExcel() {
             if (!cachedStudents || cachedStudents.length === 0) {
                 showToast("Dışa aktarılacak öğrenci bulunmuyor.", "error");
@@ -804,7 +943,6 @@
 
                 const worksheet = XLSX.utils.json_to_sheet(excelRows);
                 
-                // Sütun genişliklerini otomatik ayarla
                 worksheet['!cols'] = [
                     { wch: 6 },
                     { wch: 26 },

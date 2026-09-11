@@ -160,7 +160,7 @@
                 </div>
 
                 <div class="pt-2 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
-                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer">
+                    <button id="checkInBtn" onclick="handleCheckIn()" class="w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer">
                         <i class="fa-solid fa-location-crosshairs text-lg animate-pulse"></i>
                         <span id="checkInBtnText">YOKLAMA VER</span>
                     </button>
@@ -185,11 +185,51 @@
                 </button>
             </div>
             <div id="attendanceList" class="divide-y divide-gray-100">
-                <!-- JS ile dolacak -->
+                <!-- JS ile doldurulacak -->
             </div>
         </div>
 
     </main>
+
+    <!-- PWA AKILLI YÜKLEME BANNER'I (MOBİL) -->
+    <div id="pwaInstallBanner" class="hidden fixed bottom-16 sm:bottom-4 left-4 right-4 max-w-md mx-auto bg-white/95 backdrop-blur-md border border-purple-200 rounded-3xl p-4 shadow-2xl z-40 fade-in">
+        <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-hu-purple text-white flex items-center justify-center font-bold text-lg shadow-sm flex-shrink-0">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-xs text-gray-900 leading-tight">Uygulama Olarak Kullan</h4>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Yoklamayı tek tıkla vermek için ana ekranınıza ekleyin.</p>
+                </div>
+            </div>
+            <button onclick="dismissPwaBanner()" class="text-gray-400 hover:text-gray-600 p-1.5 cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+        
+        <div class="mt-3 flex gap-2">
+            <button id="pwaInstallBtn" onclick="triggerPwaInstall()" class="flex-1 min-h-[38px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-download mr-1.5 text-xs"></i> Ana Ekrana Ekle
+            </button>
+            <button onclick="dismissPwaBanner()" class="px-3 min-h-[38px] bg-gray-100 text-gray-600 text-xs font-semibold rounded-xl cursor-pointer">
+                Daha Sonra
+            </button>
+        </div>
+
+        <!-- iOS SAFARI YOL GÖSTERİCİ İPUCU KUTUSU (VARSAYILAN GİZLİ) -->
+        <div id="iosInstallGuide" class="hidden mt-3 p-3 bg-purple-50 rounded-2xl border border-purple-100 text-[11px] text-gray-700 space-y-1.5">
+            <div class="flex items-center font-bold text-hu-purple">
+                <i class="fa-brands fa-apple text-sm mr-1.5"></i> iPhone / iPad Kurulumu:
+            </div>
+            <p class="flex items-center">
+                1. Safari alt çubuğundaki <i class="fa-solid fa-arrow-up-from-bracket mx-1.5 text-blue-600"></i> <b>Paylaş</b> butonuna dokunun.
+            </p>
+            <p class="flex items-center">
+                2. Menüyü aşağı kaydırıp <i class="fa-regular fa-square-plus mx-1.5 text-gray-800"></i> <b>"Ana Ekrana Ekle"</b>yi seçin.
+            </p>
+        </div>
+    </div>
 
     <!-- SABİT MOBİL ALT MENÜ (BOTTOM APP BAR) -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-30 px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-lg">
@@ -259,6 +299,7 @@
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
         let currentInternshipType = 'internal';
+        let deferredPrompt = null;
 
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -275,6 +316,13 @@
             }
             return dateStr;
         }
+
+        // PWA Kurulum Olayı Dinleyicisi (Android Chrome)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            checkAndShowPwaBanner('android');
+        });
 
         document.addEventListener("DOMContentLoaded", () => {
             let activeUser = JSON.parse(localStorage.getItem('activeUser'));
@@ -298,7 +346,57 @@
 
             startClock();
             loadAttendanceData();
+
+            // iOS Safari PWA Kontrolü
+            const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isIos && !isStandalone) {
+                checkAndShowPwaBanner('ios');
+            }
         });
+
+        function checkAndShowPwaBanner(platform) {
+            const isDismissed = localStorage.getItem('pwa_banner_dismissed');
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (isStandalone || isDismissed) return;
+
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner) banner.classList.remove('hidden');
+
+            if (platform === 'ios') {
+                const installBtn = document.getElementById('pwaInstallBtn');
+                if (installBtn) {
+                    installBtn.innerHTML = '<i class="fa-brands fa-apple mr-1.5 text-xs"></i> Nasıl Eklenir?';
+                }
+            }
+        }
+
+        function triggerPwaInstall() {
+            const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+
+            if (isIos) {
+                const guide = document.getElementById('iosInstallGuide');
+                if (guide) guide.classList.toggle('hidden');
+                return;
+            }
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        dismissPwaBanner();
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        function dismissPwaBanner() {
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner) banner.classList.add('hidden');
+            localStorage.setItem('pwa_banner_dismissed', 'true');
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');
@@ -350,7 +448,6 @@
                     const data = await response.json();
                     currentInternshipType = data.internship_type || 'internal';
 
-                    // 1. Staj Türü ve Üst Kart Bilgileri
                     const isInternal = currentInternshipType === 'internal';
                     const typeBadge = document.getElementById('internshipTypeBadge');
                     if (isInternal) {
@@ -386,7 +483,6 @@
                     const endFormatted = formatDisplayDate(data.end_date || currentUser.endDate);
                     document.getElementById('internshipDatesDisplay').innerText = `${startFormatted} - ${endFormatted}`;
 
-                    // 2. İlerleme Hesabı
                     const requiredDays = data.required_days || currentUser.requiredDays || 20;
                     const approvedAttendances = (data.attendances || []).filter(a => a.status === 'approved');
                     
@@ -406,7 +502,6 @@
                         alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
                     }
 
-                    // 3. Buton Durumu ve Oturum Kontrolü
                     const attendance = data.attendances || [];
                     document.getElementById('attendanceCountBadge').innerText = `${attendance.length} Kayıt`;
 
@@ -463,7 +558,6 @@
                         }
                     }
 
-                    // 4. Yoklama Geçmişi Listesi (Mobil Kart Formatında)
                     if (attendance.length === 0) {
                         listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
                         return;
