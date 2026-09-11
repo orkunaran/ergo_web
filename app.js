@@ -115,7 +115,7 @@ const authorizeRoles = (...allowedRoles) => {
 };
 
 const requireOwnIdOrPrivileged = (req, res, next) => {
-    const privilegedRoles = ['admin', 'webmaster', 'coordinator', 'academic'];
+    const privilegedRoles = ['admin', 'webmaster', 'coordinator'];
     if (privilegedRoles.includes(req.user.role)) {
         return next();
     }
@@ -142,7 +142,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
         if (loginType === 'staff') {
             query = `SELECT * FROM users 
                      WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) 
-                       AND role IN ('admin', 'coordinator', 'academic', 'supervisor')`;
+                       AND role IN ('admin', 'coordinator', 'supervisor')`;
             const [rows] = await db.execute(query, [queryParam, queryParam]);
 
             if (rows.length === 0) {
@@ -200,39 +200,34 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 });
 
-// [2] SÜPERVİZÖRE ATANAN ÖĞRENCİLER (Bireysel VEYA Departman Ortaklığı)
-app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator', 'academic'), requireOwnIdOrPrivileged, async (req, res) => {
+// [2] SÜPERVİZÖRE ATANAN ÖĞRENCİLER (GÜVENLİ VIEW BAĞLANTISI)
+app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
         
+        // Doğrudan SQL View'dan çekilir: Hoca sadece sorumlu olduğu ünitedeki öğrencileri görür
         const [students] = await db.execute(`
-            SELECT DISTINCT
-                u.id, 
-                u.name, 
-                u.student_no, 
-                g.total_score,
-                i.course_code,
-                i.course_name,
-                i.internship_type,
-                i.start_date,
-                i.end_date,
-                COALESCE(i.required_days, 20) as required_days,
-                (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.status = 'approved') as approved_days,
-                (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.status = 'pending') as pending_days
-            FROM users u
-            LEFT JOIN grades g ON u.id = g.student_id
-            LEFT JOIN internships i ON u.id = i.student_id
-            LEFT JOIN department_supervisors ds_m ON i.morning_dept_id = ds_m.department_id
-            LEFT JOIN department_supervisors ds_a ON i.afternoon_dept_id = ds_a.department_id
-            WHERE u.role = 'student' 
-              AND (
-                  u.supervisor_id = ? 
-                  OR i.supervisor_id = ? 
-                  OR ds_m.supervisor_id = ? 
-                  OR ds_a.supervisor_id = ?
-              )
-            ORDER BY u.name ASC
-        `, [supervisorId, supervisorId, supervisorId, supervisorId]);
+            SELECT 
+                id, 
+                name, 
+                student_no, 
+                course_code,
+                internship_type,
+                start_date,
+                end_date,
+                required_days,
+                my_department_name,
+                session_type,
+                total_score,
+                rubric_details,
+                eval_note,
+                approved_days,
+                pending_days,
+                department_approved
+            FROM supervisor_my_students_view
+            WHERE supervisor_id = ?
+            ORDER BY name ASC
+        `, [supervisorId]);
 
         res.json(students);
     } catch (error) {
@@ -241,23 +236,24 @@ app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supe
     }
 });
 
-// [3] SÜPERVİZÖRÜN ÖĞRENCİLERİNE AİT YOKLAMALAR
-app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator', 'academic'), requireOwnIdOrPrivileged, async (req, res) => {
+// [3] SÜPERVİZÖRÜN ÖĞRENCİLERİNE AİT YOKLAMALAR (VIEW KORUMALI)
+app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
+        
         const [attendances] = await db.execute(`
-            SELECT DISTINCT a.*, u.name as student_name, u.student_no, i.internship_type
+            SELECT 
+                a.*, 
+                v.name as student_name, 
+                v.student_no, 
+                v.internship_type,
+                v.my_department_name,
+                v.session_type
             FROM attendances a
-            JOIN users u ON a.student_id = u.id
-            LEFT JOIN internships i ON u.id = i.student_id
-            LEFT JOIN department_supervisors ds_m ON i.morning_dept_id = ds_m.department_id
-            LEFT JOIN department_supervisors ds_a ON i.afternoon_dept_id = ds_a.department_id
-            WHERE u.supervisor_id = ? 
-               OR i.supervisor_id = ?
-               OR ds_m.supervisor_id = ? 
-               OR ds_a.supervisor_id = ?
+            JOIN supervisor_my_students_view v ON a.student_id = v.id
+            WHERE v.supervisor_id = ?
             ORDER BY a.id DESC
-        `, [supervisorId, supervisorId, supervisorId, supervisorId]);
+        `, [supervisorId]);
 
         res.json(attendances);
     } catch (error) {
@@ -295,25 +291,19 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
     }
 });
 
-// [5] TÜM BEKLEYEN YOKLAMALARI TOPLU ONAYLAMA (PostgreSQL Uyumlu)
+// [5] TÜM BEKLEYEN YOKLAMALARI TOPLU ONAYLAMA (VIEW KORUMALI)
 app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
+        
         await db.execute(`
             UPDATE attendances
             SET status = 'approved'
             WHERE student_id IN (
-                SELECT DISTINCT u.id FROM users u
-                LEFT JOIN internships i ON u.id = i.student_id
-                LEFT JOIN department_supervisors ds_m ON i.morning_dept_id = ds_m.department_id
-                LEFT JOIN department_supervisors ds_a ON i.afternoon_dept_id = ds_a.department_id
-                WHERE u.supervisor_id = ? 
-                   OR i.supervisor_id = ?
-                   OR ds_m.supervisor_id = ? 
-                   OR ds_a.supervisor_id = ?
+                SELECT id FROM supervisor_my_students_view WHERE supervisor_id = ?
             )
             AND status = 'pending'
-        `, [supervisorId, supervisorId, supervisorId, supervisorId]);
+        `, [supervisorId]);
 
         await createAuditLog(req.user.id, 'BULK_ATTENDANCE_APPROVE', null, null, { supervisorId }, req.ip);
 
@@ -324,7 +314,7 @@ app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('
     }
 });
 
-// [6] GÜNLÜK YOKLAMA (Öğrenci Check-in: Çift / Tek Yoklama ve Gün-Saat Kontrolü)
+// [6] GÜNLÜK YOKLAMA (Öğrenci Check-in)
 app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { locationInfo } = req.body || {};
@@ -409,14 +399,12 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
         const [studentRows] = await db.execute(`
             SELECT u.id, u.name, u.student_no, 
                    s.name as supervisor_name,
-                   adv.name as advisor_name,
                    i.course_code, i.course_name, i.internship_type, i.start_date, i.end_date,
                    COALESCE(i.required_days, 20) as required_days,
                    dept_m.name as morning_dept_name,
                    dept_a.name as afternoon_dept_name
             FROM users u
             LEFT JOIN users s ON u.supervisor_id = s.id
-            LEFT JOIN users adv ON u.advisor_id = adv.id
             LEFT JOIN internships i ON u.id = i.student_id
             LEFT JOIN departments dept_m ON i.morning_dept_id = dept_m.id
             LEFT JOIN departments dept_a ON i.afternoon_dept_id = dept_a.id
@@ -438,29 +426,17 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
     }
 });
 
-// [9] STAJ KOORDİNATÖRÜ & AKADEMİK DANIŞMAN: ÖĞRENCİ LİSTESİ
-app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
+// [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER LİSTESİ
+app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {
-        const userId = req.user.id;
-        const userRole = req.user.role;
-
-        let filterSql = '';
-        let params = [];
-        if (userRole === 'academic') {
-            filterSql = 'AND (u.advisor_id = ? OR u.supervisor_id = ?)';
-            params = [userId, userId];
-        }
-
         const [rows] = await db.execute(`
             SELECT 
                 u.id, 
                 u.name, 
                 u.student_no, 
                 u.supervisor_id,
-                u.advisor_id,
                 u.department_approved,
                 sup.name as supervisor_name,
-                adv.name as advisor_name,
                 i.course_code,
                 i.internship_type,
                 COALESCE(i.required_days, 20) as required_days,
@@ -469,12 +445,11 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
                 (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.is_retroactive = 1) as retroactive_count
             FROM users u
             LEFT JOIN users sup ON u.supervisor_id = sup.id
-            LEFT JOIN users adv ON u.advisor_id = adv.id
             LEFT JOIN internships i ON u.id = i.student_id
             LEFT JOIN grades g ON u.id = g.student_id
-            WHERE u.role = 'student' ${filterSql}
+            WHERE u.role = 'student'
             ORDER BY u.name ASC
-        `, params);
+        `);
 
         res.json(rows);
     } catch (error) {
@@ -483,8 +458,8 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
     }
 });
 
-// [10] STAJ KOORDİNATÖRÜ / DANIŞMAN: ÖĞRENCİ YOKLAMA DETAYI
-app.get('/api/coordinator/attendances/:studentId', authenticateToken, authorizeRoles('coordinator', 'academic', 'admin'), async (req, res) => {
+// [10] STAJ KOORDİNATÖRÜ: ÖĞRENCİ YOKLAMA DETAYI
+app.get('/api/coordinator/attendances/:studentId', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
             SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
@@ -511,7 +486,7 @@ app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('
     }
 });
 
-// [12] ADMIN: ÖĞRENCİ, DANIŞMAN VE STAJ KAYDI / GÜNCELLEMESİ (UPSERT)
+// [12] ADMIN: ÖĞRENCİ VE STAJ KAYDI / GÜNCELLEMESİ (UPSERT)
 app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};
 
@@ -532,20 +507,20 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 if (stu.password && stu.password.trim() !== '') {
                     const newHash = await bcrypt.hash(stu.password.trim(), 10);
                     await connection.execute(
-                        'UPDATE users SET name = ?, supervisor_id = ?, advisor_id = ?, password_hash = ? WHERE id = ?',
-                        [stu.name, stu.supervisorId || null, stu.advisorId || null, newHash, studentId]
+                        'UPDATE users SET name = ?, supervisor_id = ?, password_hash = ? WHERE id = ?',
+                        [stu.name, stu.supervisorId || null, newHash, studentId]
                     );
                 } else {
                     await connection.execute(
-                        'UPDATE users SET name = ?, supervisor_id = ?, advisor_id = ? WHERE id = ?',
-                        [stu.name, stu.supervisorId || null, stu.advisorId || null, studentId]
+                        'UPDATE users SET name = ?, supervisor_id = ? WHERE id = ?',
+                        [stu.name, stu.supervisorId || null, studentId]
                     );
                 }
             } else {
                 const defaultHash = await bcrypt.hash(stu.password || '1234', 10);
                 const [insertRes] = await connection.execute(
-                    "INSERT INTO users (name, student_no, password_hash, role, supervisor_id, advisor_id) VALUES (?, ?, ?, 'student', ?, ?) RETURNING id",
-                    [stu.name, stu.studentNo, defaultHash, stu.supervisorId || null, stu.advisorId || null]
+                    "INSERT INTO users (name, student_no, password_hash, role, supervisor_id) VALUES (?, ?, ?, 'student', ?) RETURNING id",
+                    [stu.name, stu.studentNo, defaultHash, stu.supervisorId || null]
                 );
                 studentId = insertRes[0].id;
             }
@@ -596,7 +571,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
     }
 });
 
-// [13] ADMIN: SÜPERVİZÖR / PERSONEL KAYDI VE GÜNCELLEMESİ (Username Desteğiyle)
+// [13] ADMIN: PERSONEL (SÜPERVİZÖR) KAYDI VE GÜNCELLEMESİ
 app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { name, email, username, password, role } = req.body || {};
 
@@ -608,7 +583,7 @@ app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin
     const requesterIsAdmin = req.user.role === 'admin' || req.user.role === 'webmaster';
     const requestedRole = role || 'supervisor';
 
-    const PRIVILEGED_ROLES = ['admin', 'webmaster', 'coordinator', 'academic'];
+    const PRIVILEGED_ROLES = ['admin', 'webmaster', 'coordinator'];
     if (!requesterIsAdmin && PRIVILEGED_ROLES.includes(requestedRole)) {
         await createAuditLog(req.user.id, 'UNAUTHORIZED_ROLE_ESCALATION_ATTEMPT', null, null, { attemptedRole: requestedRole, targetEmail: email }, req.ip);
         return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Sadece yönetici üst yetki tanımlayabilir.' });
@@ -649,13 +624,13 @@ app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin
     }
 });
 
-// [14] ADMIN: SÜPERVİZÖR VE DANIŞMAN LİSTESİ (Username Kolonuyla)
+// [14] ADMIN: PERSONEL LİSTESİ
 app.get('/api/admin/supervisors', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
             SELECT id, name, email, username, role, created_at 
             FROM users 
-            WHERE role IN ('supervisor', 'coordinator', 'academic') 
+            WHERE role IN ('supervisor', 'coordinator') 
             ORDER BY name ASC
         `);
         res.json(rows);
@@ -672,7 +647,7 @@ app.get('/api/admin/departments', authenticateToken, authorizeRoles('admin', 'we
         const [assignments] = await db.execute(`
             SELECT ds.department_id, u.id as user_id, u.name as user_name, u.email 
             FROM department_supervisors ds
-            JOIN users u ON ds.supervisor_id = u.id
+            JOIN users u ON COALESCE(ds.supervisor_id, ds.user_id) = u.id
             ORDER BY u.name ASC
         `);
 
@@ -688,7 +663,7 @@ app.get('/api/admin/departments', authenticateToken, authorizeRoles('admin', 'we
     }
 });
 
-// [14.2] DEPARTMANA HOCA / ASİSTAN ATA
+// [14.2] DEPARTMANA HOCA ATA
 app.post('/api/admin/departments/assign', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { departmentId, supervisorId } = req.body || {};
     if (!departmentId || !supervisorId) {
@@ -697,10 +672,10 @@ app.post('/api/admin/departments/assign', authenticateToken, authorizeRoles('adm
 
     try {
         await db.execute(
-            `INSERT INTO department_supervisors (department_id, supervisor_id) 
-             VALUES (?, ?) 
-             ON CONFLICT (department_id, supervisor_id) DO NOTHING`,
-            [departmentId, supervisorId]
+            `INSERT INTO department_supervisors (department_id, supervisor_id, user_id) 
+             VALUES (?, ?, ?) 
+             ON CONFLICT (department_id, user_id) DO UPDATE SET supervisor_id = EXCLUDED.supervisor_id`,
+            [departmentId, supervisorId, supervisorId]
         );
         res.json({ message: 'Hoca departmana başarıyla atandı.' });
     } catch (error) {
@@ -714,8 +689,8 @@ app.delete('/api/admin/departments/remove', authenticateToken, authorizeRoles('a
     const { departmentId, supervisorId } = req.body || {};
     try {
         await db.execute(
-            'DELETE FROM department_supervisors WHERE department_id = ? AND supervisor_id = ?',
-            [departmentId, supervisorId]
+            'DELETE FROM department_supervisors WHERE department_id = ? AND (supervisor_id = ? OR user_id = ?)',
+            [departmentId, supervisorId, supervisorId]
         );
         res.json({ message: 'Hoca departmandan çıkarıldı.' });
     } catch (error) {
@@ -724,29 +699,22 @@ app.delete('/api/admin/departments/remove', authenticateToken, authorizeRoles('a
     }
 });
 
-// [15] NOT GİRİŞİ / DÜZENLEME (Departman Ortaklığı Koruması)
-app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'academic', 'admin'), async (req, res) => {
+// [15] NOT GİRİŞİ / DÜZENLEME (ÜNİTE KİLİDİ & VIEW DOĞRULAMASI)
+app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const evaluatorId = req.user.id;
     const { studentId, totalScore, rubricDetails, note } = req.body || {};
 
     try {
-        if (req.user.role === 'supervisor' || req.user.role === 'academic') {
+        // Hoca ise: Sadece sorumlu olduğu ünitedeki öğrenciye not verebilir!
+        if (req.user.role === 'supervisor') {
             const [permCheck] = await db.execute(`
-                SELECT u.id FROM users u
-                LEFT JOIN internships i ON u.id = i.student_id
-                LEFT JOIN department_supervisors ds_m ON i.morning_dept_id = ds_m.department_id
-                LEFT JOIN department_supervisors ds_a ON i.afternoon_dept_id = ds_a.department_id
-                WHERE u.id = ? AND (
-                    u.supervisor_id = ? 
-                    OR i.supervisor_id = ? 
-                    OR ds_m.supervisor_id = ? 
-                    OR ds_a.supervisor_id = ?
-                )
-            `, [studentId, evaluatorId, evaluatorId, evaluatorId, evaluatorId]);
+                SELECT id FROM supervisor_my_students_view 
+                WHERE id = ? AND supervisor_id = ?
+            `, [studentId, evaluatorId]);
 
             if (permCheck.length === 0) {
                 await createAuditLog(evaluatorId, 'UNAUTHORIZED_GRADE_ATTEMPT', studentId, null, { attemptedScore: totalScore }, req.ip);
-                return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Bu öğrencinin bağlı olduğu departmanda veya stajda değerlendirme yetkiniz bulunmamaktadır!' });
+                return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Bu öğrencinin bağlı olduğu ünitede değerlendirme yetkiniz bulunmamaktadır!' });
             }
         }
 
@@ -785,7 +753,7 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
     }
 });
 
-// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME
+// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME (ÜNİTE KİLİDİ KORUMALI)
 app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) => {
     try {
         const studentId = req.params.studentId;
@@ -796,20 +764,11 @@ app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) =>
             return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Sadece kendi notunuzu görüntüleyebilirsiniz.' });
         }
 
-        if (currentUserRole === 'supervisor' || currentUserRole === 'academic') {
+        if (currentUserRole === 'supervisor') {
             const [ownership] = await db.execute(`
-                SELECT u.id FROM users u
-                LEFT JOIN internships i ON u.id = i.student_id
-                LEFT JOIN department_supervisors ds_m ON i.morning_dept_id = ds_m.department_id
-                LEFT JOIN department_supervisors ds_a ON i.afternoon_dept_id = ds_a.department_id
-                WHERE u.id = ? AND (
-                    u.supervisor_id = ? 
-                    OR u.advisor_id = ?
-                    OR i.supervisor_id = ? 
-                    OR ds_m.supervisor_id = ? 
-                    OR ds_a.supervisor_id = ?
-                )
-            `, [studentId, currentUserId, currentUserId, currentUserId, currentUserId, currentUserId]);
+                SELECT id FROM supervisor_my_students_view 
+                WHERE id = ? AND supervisor_id = ?
+            `, [studentId, currentUserId]);
 
             if (ownership.length === 0) {
                 return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Bu öğrencinin notunu görme yetkiniz bulunmamaktadır.' });
