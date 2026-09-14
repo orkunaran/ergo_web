@@ -428,7 +428,8 @@
         }
 
         function toggleRole() {
-            window.location.href = 'supervisor.html';
+            // Admin veya Koordinatörün Süpervizör Paneline doğrudan ve pürüzsüz geçişini sağla
+            window.location.replace('supervisor.html');
         }
 
         function showToast(message, type = 'success') {
