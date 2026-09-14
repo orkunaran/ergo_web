@@ -67,7 +67,7 @@ const loginLimiter = rateLimit({
     legacyHeaders: false
 });
 
-// --- 3. YARDIMCI FONKSİYONLAR ---
+// --- 3. YARDIMCI VE SENKRONİZASYON FONKSİYONLARI ---
 
 function slugifyName(name) {
     if (!name) return 'kullanici';
@@ -103,6 +103,44 @@ async function createAuditLog(userId, action, targetStudentId, oldValue, newValu
         console.error('Audit Log Hatası:', err.message);
     }
 }
+
+// Resmi ve Dini Bayramları Otomatik Çeken Fonksiyon (Nager.Date Açık API)
+async function syncPublicHolidays(years = [2026, 2027]) {
+    try {
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS public_holidays (
+                id SERIAL PRIMARY KEY,
+                holiday_date DATE UNIQUE NOT NULL,
+                description VARCHAR(255) NOT NULL
+            )
+        `);
+
+        for (const year of years) {
+            try {
+                const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/TR`);
+                if (!response.ok) continue;
+
+                const holidays = await response.json();
+                for (const h of holidays) {
+                    await db.execute(
+                        `INSERT INTO public_holidays (holiday_date, description) 
+                         VALUES (?, ?) 
+                         ON CONFLICT (holiday_date) DO UPDATE SET description = EXCLUDED.description`,
+                        [h.date, h.localName]
+                    );
+                }
+                console.log(`✅ ${year} yılı resmi/dini tatilleri başarıyla senkronize edildi.`);
+            } catch (fetchErr) {
+                console.warn(`${year} yılı tatilleri internetten çekilemedi (Offline mod devrede):`, fetchErr.message);
+            }
+        }
+    } catch (err) {
+        console.error('Tatil tablosu başlatma hatası:', err.message);
+    }
+}
+
+// Sunucu başladığında arka planda tatilleri kontrol et ve güncelle
+syncPublicHolidays([2026, 2027]);
 
 // --- 4. GÜVENLİK MIDDLEWARE'LERİ ---
 const authenticateToken = (req, res, next) => {
@@ -331,6 +369,13 @@ app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
     }
 });
 
+// [1.4] ADMIN: TATİLLERİ MANUEL TETİKLEME
+app.post('/api/admin/sync-holidays', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
+    const currentYear = new Date().getFullYear();
+    await syncPublicHolidays([currentYear, currentYear + 1]);
+    res.json({ message: `${currentYear} ve ${currentYear + 1} yılları resmi ve dini bayramları başarıyla güncellendi.` });
+});
+
 // [2] SÜPERVİZÖRÜN KENDİ ÜNİTESİNDEKİ ÖĞRENCİLER
 app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
@@ -447,7 +492,7 @@ app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('
     }
 });
 
-// [6] GÜNLÜK YOKLAMA (Öğrenci Check-in)
+// [6] GÜNLÜK YOKLAMA (Öğrenci Check-in - Dini/Resmi Tatil Korumalı)
 app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { locationInfo } = req.body || {};
@@ -459,6 +504,17 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
     const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
     try {
+        // 1. Resmi ve Dini Tatil Kontrolü
+        const [holidayRows] = await db.execute(
+            'SELECT description FROM public_holidays WHERE holiday_date = ?',
+            [dateStr]
+        );
+        if (holidayRows.length > 0) {
+            return res.status(400).json({ 
+                message: `Bugün resmi tatildir (${holidayRows[0].description}). Yoklama alınmamaktadır.` 
+            });
+        }
+
         const [internshipRows] = await db.execute('SELECT internship_type FROM internships WHERE student_id = ?', [studentId]);
         const isInternal = internshipRows.some(r => r.internship_type === 'internal');
 
@@ -576,7 +632,7 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
     }
 });
 
-// [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR
+// [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR (LEFT JOIN Desteği)
 app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
@@ -586,10 +642,12 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
                 u.student_no, 
                 u.department_approved,
                 i.id as internship_id,
-                i.course_code,
-                i.course_name,
-                i.internship_type,
+                COALESCE(i.course_code, 'Atanmadı') as course_code,
+                COALESCE(i.course_name, 'Mesleki Uygulama') as course_name,
+                COALESCE(i.internship_type, 'internal') as internship_type,
                 COALESCE(i.required_days, 20) as required_days,
+                i.start_date,
+                i.end_date,
                 dept_m.name as morning_dept_name,
                 dept_a.name as afternoon_dept_name,
                 sup.name as supervisor_name,
@@ -597,7 +655,7 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
                 (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.status = 'approved') as approved_attendance_count,
                 (SELECT COUNT(*) FROM attendances a WHERE a.student_id = u.id AND a.is_retroactive = 1) as retroactive_count
             FROM users u
-            JOIN internships i ON u.id = i.student_id
+            LEFT JOIN internships i ON u.id = i.student_id
             LEFT JOIN departments dept_m ON i.morning_dept_id = dept_m.id
             LEFT JOIN departments dept_a ON i.afternoon_dept_id = dept_a.id
             LEFT JOIN users sup ON i.supervisor_id = sup.id
@@ -641,7 +699,7 @@ app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('
     }
 });
 
-// [12] ADMIN: ÖĞRENCİ VE ÇOKLU STAJ DÖNEMİ / ROTASYONU KAYDI (TEK SEFERDE TÜM STAJLAR)
+// [12] ADMIN: ÖĞRENCİ VE ÇOKLU STAJ DÖNEMİ / ROTASYONU KAYDI
 app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};
 
@@ -670,7 +728,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
 
             const stuUsername = (stu.username && stu.username.trim() !== '') ? stu.username.trim().toLowerCase() : stu.studentNo;
 
-            // 1. Öğrenciyi users tablosunda tekilleştir (Mükerrer hesap açılmaz)
+            // 1. Kullanıcı tekilleştirme
             let [existing] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
             let studentId;
 
@@ -697,11 +755,11 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 studentId = insertRes[0].id;
             }
 
-            // 2. Öğrencinin birden fazla stajını / rotasyonunu dizi (array) veya tekil olarak destekle
+            // 2. Çoklu rotasyon / dönem desteği
             const internshipsArray = Array.isArray(stu.internships) ? stu.internships : [stu];
 
             for (const item of internshipsArray) {
-                const courseCode = (item.courseCode || stu.courseCode || 'ERG401').trim();
+                const courseCode = (item.courseCode || stu.courseCode || 'Staj 1').trim();
                 const courseName = item.courseName || stu.courseName || 'Mesleki Uygulama';
                 const internshipType = item.internshipType || stu.internshipType || 'internal';
                 const morningDept = item.morningDeptId || stu.morningDeptId || null;
@@ -742,7 +800,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
         }
 
         await connection.commit();
-        res.json({ message: 'Öğrenciler ve tüm staj dönemleri başarıyla eşleştirildi.' });
+        res.json({ message: 'Öğrenciler ve tüm staj dönemleri başarıyla kaydedildi.' });
     } catch (err) {
         await connection.rollback();
         console.error('Öğrenci Kayıt Hatası:', err);
@@ -835,7 +893,7 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
             const internshipsArray = Array.isArray(stu.internships) ? stu.internships : [stu];
 
             for (const item of internshipsArray) {
-                const courseCode = (item.courseCode || stu.courseCode || 'ERG431').trim();
+                const courseCode = (item.courseCode || stu.courseCode || 'Staj 1').trim();
                 const startDate = item.startDate || stu.startDate || '2026-09-14';
                 const endDate = item.endDate || stu.endDate || '2026-10-18';
                 const requiredDays = item.requiredDays || stu.requiredDays || 20;
