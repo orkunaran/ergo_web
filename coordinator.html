@@ -288,7 +288,7 @@
         </div>
     </div>
 
-    <!-- HESAP & PROFİL AYARLARI MODALI (E-POSTA VE ŞİFRE) -->
+    <!-- HESAP & PROFİL AYARLARI MODALI (KULLANICI ADI, E-POSTA VE ŞİFRE) -->
     <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 py-6">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeProfileModal()"></div>
@@ -303,23 +303,30 @@
                     </button>
                 </div>
 
-                <!-- 1. BÖLÜM: E-POSTA GÜNCELLEME -->
-                <form onsubmit="event.preventDefault(); handleUpdateEmail(); return false;" class="space-y-3 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                <!-- BİLGİ GÜNCELLEME FORMU (Kullanıcı Adı ve E-posta) -->
+                <form onsubmit="event.preventDefault(); handleUpdateProfile(); return false;" class="space-y-3 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
+                            <span>Kullanıcı Adı</span>
+                            <span class="text-[10px] text-hu-purple font-normal">Giriş için kullanılabilir</span>
+                        </label>
+                        <input type="text" id="profileUsername" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple font-mono" placeholder="kullaniciadi">
+                    </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
                             <span>E-posta Adresi</span>
-                            <span class="text-[10px] text-hu-purple font-normal">Giriş ve bildirimler için</span>
+                            <span class="text-[10px] text-hu-purple font-normal">Bildirimler için</span>
                         </label>
                         <input type="email" id="profileEmail" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="adiniz@hacettepe.edu.tr">
                     </div>
                     <div class="flex justify-end">
-                        <button type="submit" id="emailSubmitBtn" class="px-4 py-2 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
-                            E-postayı Kaydet
+                        <button type="submit" id="profileSubmitBtn" class="px-4 py-2 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
+                            Bilgileri Kaydet
                         </button>
                     </div>
                 </form>
 
-                <!-- 2. BÖLÜM: ŞİFRE DEĞİŞTİRME -->
+                <!-- ŞİFRE DEĞİŞTİRME FORMU -->
                 <form onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3 border-t border-gray-100 pt-3">
                     <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center">
                         <i class="fa-solid fa-key mr-1.5 text-hu-purple"></i>Şifre Değiştir
@@ -964,12 +971,18 @@
             }
         }
 
-        // --- HESAP & PROFİL AYARLARI (E-POSTA VE ŞİFRE) ---
+        // --- HESAP & PROFİL AYARLARI (KULLANICI ADI, E-POSTA VE ŞİFRE) ---
         function openProfileModal() {
             const active = JSON.parse(localStorage.getItem('activeUser') || '{}');
+            
+            const usernameInput = document.getElementById('profileUsername');
+            if (usernameInput) {
+                usernameInput.value = active.username || '';
+            }
+
             const emailInput = document.getElementById('profileEmail');
             if (emailInput) {
-                emailInput.value = active.email || '';
+                emailInput.value = (active.email && !active.email.endsWith('@ergo.local')) ? active.email : '';
             }
             
             document.getElementById('pwCurrent').value = '';
@@ -983,7 +996,6 @@
             document.getElementById('profileModal').classList.add('hidden');
         }
 
-        // Geriye dönük uyumluluk için
         function openPasswordModal() {
             openProfileModal();
         }
@@ -992,10 +1004,11 @@
             closeProfileModal();
         }
 
-        async function handleUpdateEmail() {
+        async function handleUpdateProfile() {
             const email = document.getElementById('profileEmail').value.trim();
+            const username = document.getElementById('profileUsername') ? document.getElementById('profileUsername').value.trim() : null;
             const token = getToken();
-            const btn = document.getElementById('emailSubmitBtn');
+            const btn = document.getElementById('profileSubmitBtn');
 
             btn.disabled = true;
             btn.innerText = 'Kaydediliyor...';
@@ -1007,7 +1020,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ email, username })
                 });
 
                 const data = await res.json();
@@ -1016,15 +1029,16 @@
                     
                     const active = JSON.parse(localStorage.getItem('activeUser') || '{}');
                     active.email = data.email;
+                    if (data.username) active.username = data.username;
                     localStorage.setItem('activeUser', JSON.stringify(active));
                 } else {
-                    showToast(data.message || 'E-posta güncellenemedi.', 'error');
+                    showToast(data.message || 'Profil güncellenemedi.', 'error');
                 }
             } catch (err) {
                 showToast('Sunucu bağlantı hatası oluştu.', 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'E-postayı Kaydet';
+                btn.innerText = 'Bilgileri Kaydet';
             }
         }
 
@@ -1056,7 +1070,7 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
+                    showToast(data.message, 'success');
                     closeProfileModal();
                 } else {
                     showToast(data.message || 'Şifre değiştirilemedi.', 'error');

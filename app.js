@@ -275,9 +275,9 @@ app.post('/api/admin/users/:id/reset-password', authenticateToken, authorizeRole
     }
 });
 
-// [1.3] KULLANICI KENDİ E-POSTASINI GÜNCELLEME (Tüm Roller İçin)
+// [1.3] KULLANICI KENDİ PROFİLİNİ GÜNCELLEME (E-posta ve Kullanıcı Adı)
 app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
-    const { email } = req.body || {};
+    const { email, username } = req.body || {};
     const userId = req.user.id;
 
     if (!email || !email.trim()) {
@@ -285,31 +285,53 @@ app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = username ? username.trim().toLowerCase() : null;
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
         return res.status(400).json({ message: 'Lütfen geçerli formatta bir e-posta adresi yazın.' });
     }
 
     try {
-        const [existing] = await db.execute(
+        // E-posta başka kullanıcıda var mı kontrolü
+        const [existingEmail] = await db.execute(
             'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?',
             [cleanEmail, userId]
         );
-
-        if (existing.length > 0) {
+        if (existingEmail.length > 0) {
             return res.status(400).json({ message: 'Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.' });
         }
 
-        const [userRows] = await db.execute('SELECT email FROM users WHERE id = ?', [userId]);
-        const oldEmail = userRows[0]?.email;
+        // Kullanıcı adı başka kullanıcıda var mı kontrolü
+        if (cleanUsername) {
+            const [existingUsername] = await db.execute(
+                'SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?',
+                [cleanUsername, userId]
+            );
+            if (existingUsername.length > 0) {
+                return res.status(400).json({ message: 'Bu kullanıcı adı başka bir personel tarafından kullanılıyor.' });
+            }
+        }
 
-        await db.execute('UPDATE users SET email = ? WHERE id = ?', [cleanEmail, userId]);
-        await createAuditLog(userId, 'EMAIL_UPDATE', userId, { email: oldEmail }, { email: cleanEmail }, req.ip);
+        const [userRows] = await db.execute('SELECT email, username FROM users WHERE id = ?', [userId]);
+        const oldData = userRows[0] || {};
 
-        res.json({ message: 'E-posta adresiniz başarıyla güncellendi.', email: cleanEmail });
+        if (cleanUsername) {
+            await db.execute('UPDATE users SET email = ?, username = ? WHERE id = ?', [cleanEmail, cleanUsername, userId]);
+        } else {
+            await db.execute('UPDATE users SET email = ? WHERE id = ?', [cleanEmail, userId]);
+        }
+
+        await createAuditLog(userId, 'PROFILE_UPDATE', userId, oldData, { email: cleanEmail, username: cleanUsername }, req.ip);
+
+        res.json({ 
+            message: 'Profil bilgileriniz başarıyla güncellendi.', 
+            email: cleanEmail, 
+            username: cleanUsername 
+        });
     } catch (error) {
-        console.error('E-posta Güncelleme Hatası:', error);
-        res.status(500).json({ message: 'E-posta güncellenirken sunucu hatası oluştu.' });
+        console.error('Profil Güncelleme Hatası:', error);
+        res.status(500).json({ message: 'Profil güncellenirken sunucu hatası oluştu.' });
     }
 });
 
