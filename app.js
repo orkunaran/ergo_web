@@ -632,6 +632,26 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
     }
 });
 
+
+// --- DİNAMİK STAJ DÖNEMLERİ VE TARİHLERİ LİSTESİ ---
+app.get('/api/internships/periods', authenticateToken, async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT DISTINCT 
+                course_code,
+                TO_CHAR(start_date, 'YYYY-MM-DD') as start_date,
+                TO_CHAR(end_date, 'YYYY-MM-DD') as end_date
+            FROM internships
+            WHERE start_date IS NOT NULL AND end_date IS NOT NULL
+            ORDER BY start_date ASC
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error('Dönem listesi çekilemedi:', error);
+        res.status(500).json({ message: 'Staj dönemleri getirilemedi.' });
+    }
+});
+
 // [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR (LEFT JOIN Desteği)
 app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {

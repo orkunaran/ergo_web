@@ -147,14 +147,10 @@
                             <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Öğrenci adı, no, ders kodu veya ünite ile ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
-                        <!-- Staj Grubu / Rotasyon Seçici -->
+                        <!-- SQL'den Beslenen Dinamik Staj Grubu / Rotasyon Seçici -->
                         <div class="sm:col-span-5">
                             <select id="rotationSelect" onchange="applyFilters()" class="w-full text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple font-semibold text-gray-700 shadow-xs">
                                 <option value="all">📅 Tüm Staj Grupları / Tarihler</option>
-                                <option value="g1">1. Staj Grubu (16 Eylül - 16 Ekim)</option>
-                                <option value="g2">2. Staj Grubu (16 Ekim - 16 Kasım)</option>
-                                <option value="g3">3. Staj Grubu (16 Kasım - 16 Aralık)</option>
-                                <option value="other">Diğer / Özel Tarih Aralığı</option>
                             </select>
                         </div>
                     </div>
@@ -288,7 +284,7 @@
         </div>
     </div>
 
-    <!-- HESAP & PROFİL AYARLARI MODALI (KULLANICI ADI, E-POSTA VE ŞİFRE) -->
+    <!-- HESAP & PROFİL AYARLARI MODALI -->
     <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 py-6">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeProfileModal()"></div>
@@ -303,7 +299,6 @@
                     </button>
                 </div>
 
-                <!-- BİLGİ GÜNCELLEME FORMU (Kullanıcı Adı ve E-posta) -->
                 <form onsubmit="event.preventDefault(); handleUpdateProfile(); return false;" class="space-y-3 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
@@ -326,7 +321,6 @@
                     </div>
                 </form>
 
-                <!-- ŞİFRE DEĞİŞTİRME FORMU -->
                 <form onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3 border-t border-gray-100 pt-3">
                     <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center">
                         <i class="fa-solid fa-key mr-1.5 text-hu-purple"></i>Şifre Değiştir
@@ -423,6 +417,7 @@
             }
 
             loadDepartmentData();
+            loadInternshipPeriods();
         });
 
         function logout() {
@@ -495,43 +490,48 @@
             applyFilters();
         }
 
-        function matchRotationGroup(startDateStr, groupKey) {
-            if (groupKey === 'all') return true;
-            if (!startDateStr) return groupKey === 'other';
+        // --- SQL'DEN DİNAMİK STAJ DÖNEMLERİNİ VE TARİHLERİNİ ÇEK ---
+        async function loadInternshipPeriods() {
+            try {
+                const token = getToken();
+                const res = await fetch(`${API_URL}/internships/periods`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
 
-            const cleanDate = startDateStr.split('T')[0];
-            const parts = cleanDate.split('-');
-            if (parts.length < 3) return groupKey === 'other';
+                const periods = await res.json();
+                const select = document.getElementById('rotationSelect');
+                if (!select) return;
 
-            const month = parseInt(parts[1], 10);
-            const day = parseInt(parts[2], 10);
+                select.innerHTML = '<option value="all">📅 Tüm Staj Grupları / Tarihler</option>';
 
-            if (groupKey === 'g1') {
-                return (month === 9 && day >= 16) || (month === 10 && day <= 16);
+                periods.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.course_code; // "Staj 1", "Staj 2", vb.
+
+                    let dateLabel = '';
+                    if (p.start_date && p.end_date) {
+                        const startD = new Date(p.start_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+                        const endD = new Date(p.end_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+                        dateLabel = ` (${startD} - ${endD})`;
+                    }
+
+                    opt.textContent = `${p.course_code}${dateLabel}`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Dönem listesi yüklenemedi:', err);
             }
-            if (groupKey === 'g2') {
-                return (month === 10 && day > 16) || (month === 11 && day <= 16);
-            }
-            if (groupKey === 'g3') {
-                return (month === 11 && day > 16) || (month === 12 && day <= 16);
-            }
-            if (groupKey === 'other') {
-                const inG1 = (month === 9 && day >= 16) || (month === 10 && day <= 16);
-                const inG2 = (month === 10 && day > 16) || (month === 11 && day <= 16);
-                const inG3 = (month === 11 && day > 16) || (month === 12 && day <= 16);
-                return !inG1 && !inG2 && !inG3;
-            }
-            return true;
         }
 
         function applyFilters() {
             const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-            const groupKey = document.getElementById('rotationSelect')?.value || 'all';
+            const selectedCourseCode = document.getElementById('rotationSelect')?.value || 'all';
 
             let cAll = 0, cUnscored = 0, cMissing = 0, cPendingApproval = 0;
 
             cachedDepartmentStudents.forEach(stu => {
-                if (!matchRotationGroup(stu.start_date, groupKey)) return;
+                if (selectedCourseCode !== 'all' && stu.course_code !== selectedCourseCode) return;
 
                 cAll++;
                 const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
@@ -564,7 +564,7 @@
                     }
                 }
 
-                if (!matchRotationGroup(stu.start_date, groupKey)) {
+                if (selectedCourseCode !== 'all' && stu.course_code !== selectedCourseCode) {
                     return false;
                 }
 
@@ -598,7 +598,7 @@
             students.forEach(stu => {
                 const isInternal = (stu.internship_type === 'internal');
                 
-                const courseBadge = `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code || 'ERG')}</span>`;
+                const courseBadge = `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code || 'Atanmadı')}</span>`;
                 const modelBadge = isInternal 
                     ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Okul İçi</span>`
                     : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Dış Staj</span>`;
@@ -971,7 +971,7 @@
             }
         }
 
-        // --- HESAP & PROFİL AYARLARI (KULLANICI ADI, E-POSTA VE ŞİFRE) ---
+        // --- HESAP & PROFİL AYARLARI ---
         function openProfileModal() {
             const active = JSON.parse(localStorage.getItem('activeUser') || '{}');
             
@@ -1070,7 +1070,7 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showToast(data.message, 'success');
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
                     closeProfileModal();
                 } else {
                     showToast(data.message || 'Şifre değiştirilemedi.', 'error');

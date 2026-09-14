@@ -75,7 +75,6 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <!-- HESAP AYARLARI BUTONU (E-POSTA & ŞİFRE) -->
                 <button onclick="openProfileModal()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border border-purple-800/80 flex items-center cursor-pointer">
                     <i class="fa-solid fa-user-gear sm:mr-1.5"></i> <span class="hidden sm:inline">Hesap Ayarları</span>
                 </button>
@@ -89,6 +88,19 @@
     <div id="toastContainer" class="fixed top-16 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none max-w-sm sm:w-full mx-auto"></div>
 
     <main class="flex-grow max-w-4xl mx-auto px-4 py-5 w-full space-y-5">
+
+        <!-- DİNAMİK STAJ DÖNEMİ / ROTASYON SEÇİCİ KUTUSU -->
+        <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-week text-hu-purple text-sm"></i>
+                <label for="studentInternshipSelect" class="text-xs font-bold text-gray-700">Görüntülenen Staj Dönemi:</label>
+            </div>
+            <div class="w-full sm:w-auto">
+                <select id="studentInternshipSelect" onchange="onInternshipSelected()" class="w-full sm:w-auto bg-gray-50 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3.5 py-2 focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                    <option value="">Staj Dönemleri Yükleniyor...</option>
+                </select>
+            </div>
+        </div>
 
         <!-- AKTİF STAJ DERSİ VE SORUMLU / DEPARTMAN KARTLARI -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -120,7 +132,7 @@
                     </div>
                     <div class="overflow-hidden">
                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" id="supervisorTitleDisplay">Staj Departmanları</p>
-                        <p class="text-xs font-bold text-gray-800 truncate" id="supervisorNameDisplay">Yükleniyor...</p>
+                        <div class="text-xs font-bold text-gray-800 truncate" id="supervisorNameDisplay">Yükleniyor...</div>
                         <p class="text-[10px] text-purple-700 font-semibold truncate mt-0.5" id="advisorNameDisplay"></p>
                     </div>
                 </div>
@@ -197,7 +209,7 @@
 
     </main>
 
-    <!-- PWA AKILLI YÜKLEME BANNER'I (MOBİL) -->
+    <!-- PWA AKILLI YÜKLEME BANNER'I -->
     <div id="pwaInstallBanner" class="hidden fixed bottom-16 sm:bottom-4 left-4 right-4 max-w-md mx-auto bg-white/95 backdrop-blur-md border border-purple-200 rounded-3xl p-4 shadow-2xl z-40 fade-in">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
@@ -223,7 +235,6 @@
             </button>
         </div>
 
-        <!-- iOS SAFARI YOL GÖSTERİCİ İPUCU KUTUSU -->
         <div id="iosInstallGuide" class="hidden mt-3 p-3 bg-purple-50 rounded-2xl border border-purple-100 text-[11px] text-gray-700 space-y-1.5">
             <div class="flex items-center font-bold text-hu-purple">
                 <i class="fa-brands fa-apple text-sm mr-1.5"></i> iPhone / iPad Kurulumu:
@@ -292,7 +303,7 @@
         </div>
     </div>
 
-    <!-- HESAP & PROFİL AYARLARI MODALI (E-POSTA VE ŞİFRE GÜNCELLEME) -->
+    <!-- HESAP & PROFİL AYARLARI MODALI -->
     <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 py-6">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeProfileModal()"></div>
@@ -307,22 +318,6 @@
                     </button>
                 </div>
 
-                <!-- 1. BÖLÜM: E-POSTA GÜNCELLEME -->
-                <form onsubmit="event.preventDefault(); handleUpdateEmail(); return false;" class="space-y-3 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
-                            <span>E-posta Adresi</span>
-                            <span class="text-[10px] text-hu-purple font-normal">Sistem bildirimleri ve giriş için</span>
-                        </label>
-                        <input type="email" id="profileEmail" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="ogrenci@hacettepe.edu.tr">
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" id="emailSubmitBtn" class="px-4 py-2 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
-                            E-postayı Kaydet
-                        </button>
-                    </div>
-                </form>
-                <!-- 1. BÖLÜM: PROFİL BİLGİLERİ (E-POSTA VE KULLANICI ADI) -->
                 <form onsubmit="event.preventDefault(); handleUpdateProfile(); return false;" class="space-y-3 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
@@ -345,7 +340,6 @@
                     </div>
                 </form>
 
-                <!-- 2. BÖLÜM: ŞİFRE DEĞİŞTİRME -->
                 <form onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3 border-t border-gray-100 pt-3">
                     <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center">
                         <i class="fa-solid fa-key mr-1.5 text-hu-purple"></i>Şifre Değiştir
@@ -362,7 +356,6 @@
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Yeni Şifre (Tekrar)</label>
                         <input type="password" id="pwConfirm" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="Yeni şifrenizi tekrar girin">
                     </div>
-
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" onclick="closeProfileModal()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
                             Kapat
@@ -389,6 +382,7 @@
         const API_URL = `${window.location.origin}/api`;
         let currentUser = null;
         let currentInternshipType = 'internal';
+        let studentDataGlobal = null;
         let deferredPrompt = null;
 
         function getToken() {
@@ -530,172 +524,240 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const listContainer = document.getElementById('attendanceList');
-
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Gelen e-posta bilgisini currentUser nesnesine eşitle
-                    if (data.email) {
-                        currentUser.email = data.email;
-                        localStorage.setItem('activeUser', JSON.stringify(currentUser));
-                    }
-
-                    currentInternshipType = data.internship_type || 'internal';
-
-                    const isInternal = currentInternshipType === 'internal';
-                    const typeBadge = document.getElementById('internshipTypeBadge');
-                    if (isInternal) {
-                        typeBadge.innerText = 'Okul İçi (Çift Yoklama)';
-                        typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200';
-                        document.getElementById('supervisorTitleDisplay').innerText = 'Staj Departmanları';
-                        
-                        const mDept = data.morning_dept_name || 'Atanmadı';
-                        const aDept = data.afternoon_dept_name || 'Atanmadı';
-                        document.getElementById('supervisorNameDisplay').innerHTML = `
-                            <div class="text-[11px] leading-tight">
-                                <span class="font-semibold text-gray-500">Sabah:</span> ${escapeHtml(mDept)}<br>
-                                <span class="font-semibold text-gray-500">Öğle:</span> ${escapeHtml(aDept)}
-                            </div>
-                        `;
-                    } else {
-                        typeBadge.innerText = 'Dış Kurum Stajı';
-                        typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200';
-                        document.getElementById('supervisorTitleDisplay').innerText = 'Saha Süpervizörü';
-                        document.getElementById('supervisorNameDisplay').innerText = data.supervisor_name || 'Atanmadı';
-                    }
-
-                    if (data.advisor_name) {
-                        document.getElementById('advisorNameDisplay').innerText = `Akademik Danışman: ${data.advisor_name}`;
-                    }
-
-                    if (data.course_code) {
-                        document.getElementById('courseCodeDisplay').innerText = data.course_code;
-                        document.getElementById('courseNameDisplay').innerText = data.course_name || 'Mesleki Uygulama';
-                    }
-
-                    const startFormatted = formatDisplayDate(data.start_date || currentUser.startDate);
-                    const endFormatted = formatDisplayDate(data.end_date || currentUser.endDate);
-                    document.getElementById('internshipDatesDisplay').innerText = `${startFormatted} - ${endFormatted}`;
-
-                    const requiredDays = data.required_days || currentUser.requiredDays || 20;
-                    const approvedAttendances = (data.attendances || []).filter(a => a.status === 'approved');
-                    
-                    let approvedDays = isInternal ? (approvedAttendances.length / 2) : approvedAttendances.length;
-                    const missingDays = Math.max(0, requiredDays - approvedDays);
-                    const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
-
-                    document.getElementById('progressTextDisplay').innerText = `${approvedDays} / ${requiredDays} Gün (%${percent})`;
-                    document.getElementById('progressBar').style.width = `${percent}%`;
-
-                    const alertCard = document.getElementById('attendanceAlertCard');
-                    if (approvedDays >= requiredDays) {
-                        alertCard.className = "p-3 rounded-xl text-xs font-bold flex items-center bg-emerald-50 text-emerald-800 border border-emerald-200";
-                        alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2 flex-shrink-0"></i><span>Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.</span>`;
-                    } else {
-                        alertCard.className = "p-3 rounded-xl text-xs font-medium flex items-center bg-amber-50 text-amber-900 border border-amber-200";
-                        alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Stajınızı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
-                    }
-
-                    const attendance = data.attendances || [];
-                    document.getElementById('attendanceCountBadge').innerText = `${attendance.length} Kayıt`;
-
-                    const now = new Date();
-                    const dayOfWeek = now.getDay();
-                    const currentHour = now.getHours();
-                    const todayIso = now.toISOString().split('T')[0];
-
-                    const checkInBtn = document.getElementById('checkInBtn');
-                    const checkInBtnText = document.getElementById('checkInBtnText');
-                    const checkInSubText = document.getElementById('checkInSubText');
-
-                    if (isInternal) {
-                        const isValidDay = [2, 3, 4, 5].includes(dayOfWeek);
-                        const isWorkingHours = currentHour >= 9 && currentHour < 17;
-                        const currentSession = currentHour < 13 ? 'morning' : 'afternoon';
-                        const sessionName = currentSession === 'morning' ? 'Sabah' : 'Öğleden Sonra';
-
-                        const hasCurrentSessionRecord = attendance.some(a => a.date === todayIso && a.session_type === currentSession);
-
-                        if (!isValidDay) {
-                            checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
-                            checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL (SALI-CUMA)";
-                            checkInSubText.innerText = "Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.";
-                        } else if (!isWorkingHours) {
-                            checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
-                            checkInBtnText.innerText = "STAJ SAATLERİ DIŞINDA (09:00 - 17:00)";
-                            checkInSubText.innerText = "Yoklama staj saatleri (09:00 - 17:00) içerisinde alınabilir.";
-                        } else if (hasCurrentSessionRecord) {
-                            checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
-                            checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI ALINDI`;
-                            checkInSubText.innerText = currentSession === 'morning' 
-                                ? "Sabah oturumu yoklamanız alındı. Saat 13:00'ten sonra öğleden sonra yoklamanızı verebilirsiniz." 
-                                : "Öğleden sonra oturumu yoklamanız alındı. Bugünkü stajınızı tamamladınız.";
-                        } else {
-                            checkInBtn.disabled = false;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
-                            checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI VER`;
-                            checkInSubText.innerText = `${sessionName} stajınız için konumunuzu doğrulayarak katılımınızı bildirebilirsiniz.`;
-                        }
-                    } else {
-                        const hasTodayRecord = attendance.some(a => a.date === todayIso);
-                        if (hasTodayRecord) {
-                            checkInBtn.disabled = true;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
-                            checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
-                        } else {
-                            checkInBtn.disabled = false;
-                            checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
-                            checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
-                        }
-                    }
-
-                    if (attendance.length === 0) {
-                        listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Henüz yoklama kaydınız bulunmuyor.</p>`;
-                        return;
-                    }
-
-                    listContainer.innerHTML = '';
-                    attendance.forEach(item => {
-                        const isRetro = item.is_retroactive == 1;
-                        const statusBadge = item.status === 'approved' 
-                            ? '<span class="font-bold text-emerald-600 text-[11px]"><i class="fa-solid fa-circle-check mr-1"></i>Onaylandı</span>' 
-                            : (item.status === 'rejected' ? '<span class="font-bold text-rose-600 text-[11px]"><i class="fa-solid fa-circle-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500 text-[11px]"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
-
-                        let sessionBadge = '';
-                        if (item.session_type === 'morning') {
-                            sessionBadge = '<span class="bg-blue-50 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-200/60"><i class="fa-solid fa-sun mr-1 text-[8px]"></i>Sabah</span>';
-                        } else if (item.session_type === 'afternoon') {
-                            sessionBadge = '<span class="bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-200/60"><i class="fa-solid fa-cloud-sun mr-1 text-[8px]"></i>Öğle</span>';
-                        } else {
-                            sessionBadge = '<span class="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-gray-200">Tam Gün</span>';
-                        }
-
-                        const retroBadge = isRetro ? '<span class="bg-rose-50 text-rose-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-rose-200/60">Mazeretli</span>' : '';
-
-                        listContainer.innerHTML += `
-                            <div class="py-3 px-1 flex justify-between items-center text-xs">
-                                <div class="space-y-0.5">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="font-bold text-gray-900">${formatDisplayDate(item.date)}</span>
-                                        ${sessionBadge}
-                                        ${retroBadge}
-                                    </div>
-                                    <p class="text-[11px] text-gray-400">${escapeHtml(item.time || '')} • ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Bildirimi')}</p>
-                                </div>
-                                <div class="flex-shrink-0">${statusBadge}</div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Veriler yüklenirken sunucu hatası oluştu.</p>`;
+                if (!response.ok) {
+                    document.getElementById('attendanceList').innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Veriler yüklenirken sunucu hatası oluştu.</p>`;
+                    return;
                 }
+
+                studentDataGlobal = await response.json();
+                
+                if (studentDataGlobal.email) {
+                    currentUser.email = studentDataGlobal.email;
+                    localStorage.setItem('activeUser', JSON.stringify(currentUser));
+                }
+
+                populateInternshipSelect();
+                displaySelectedInternship();
             } catch (err) {
                 console.error('Veri Çekme Hatası:', err);
             }
+        }
+
+        function populateInternshipSelect() {
+            const select = document.getElementById('studentInternshipSelect');
+            if (!select || !studentDataGlobal) return;
+
+            const internships = studentDataGlobal.internships || [];
+            const previousVal = select.value;
+            select.innerHTML = '';
+
+            if (internships.length === 0) {
+                select.innerHTML = '<option value="">Atanmış stajınız bulunmuyor</option>';
+                return;
+            }
+
+            internships.forEach((item, idx) => {
+                const opt = document.createElement('option');
+                opt.value = item.course_code || `staj_${idx}`;
+
+                let dateRangeStr = '';
+                if (item.start_date && item.end_date) {
+                    const startLabel = new Date(item.start_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                    const endLabel = new Date(item.end_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                    dateRangeStr = ` (${startLabel} - ${endLabel})`;
+                }
+
+                opt.textContent = `${item.course_code || 'Staj'}${dateRangeStr} - ${item.course_name || 'Mesleki Uygulama'}`;
+                select.appendChild(opt);
+            });
+
+            if (previousVal && internships.some(i => i.course_code === previousVal)) {
+                select.value = previousVal;
+            } else {
+                select.selectedIndex = 0;
+            }
+        }
+
+        function onInternshipSelected() {
+            displaySelectedInternship();
+        }
+
+        function displaySelectedInternship() {
+            if (!studentDataGlobal) return;
+
+            const select = document.getElementById('studentInternshipSelect');
+            const selectedCode = select ? select.value : '';
+            const internships = studentDataGlobal.internships || [];
+
+            const currentInternship = internships.find(i => i.course_code === selectedCode) || internships[0] || studentDataGlobal;
+
+            currentInternshipType = currentInternship.internship_type || 'internal';
+            const isInternal = currentInternshipType === 'internal';
+
+            const typeBadge = document.getElementById('internshipTypeBadge');
+            if (isInternal) {
+                typeBadge.innerText = 'Okul İçi (Çift Yoklama)';
+                typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200';
+                document.getElementById('supervisorTitleDisplay').innerText = 'Staj Departmanları';
+                
+                const mDept = currentInternship.morning_dept_name || 'Atanmadı';
+                const aDept = currentInternship.afternoon_dept_name || 'Atanmadı';
+                document.getElementById('supervisorNameDisplay').innerHTML = `
+                    <div class="text-[11px] leading-tight">
+                        <span class="font-semibold text-gray-500">Sabah:</span> ${escapeHtml(mDept)}<br>
+                        <span class="font-semibold text-gray-500">Öğle:</span> ${escapeHtml(aDept)}
+                    </div>
+                `;
+            } else {
+                typeBadge.innerText = 'Dış Kurum Stajı';
+                typeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200';
+                document.getElementById('supervisorTitleDisplay').innerText = 'Saha Süpervizörü';
+                document.getElementById('supervisorNameDisplay').innerText = currentInternship.supervisor_name || 'Atanmadı';
+            }
+
+            if (studentDataGlobal.advisor_name) {
+                document.getElementById('advisorNameDisplay').innerText = `Akademik Danışman: ${studentDataGlobal.advisor_name}`;
+            }
+
+            document.getElementById('courseCodeDisplay').innerText = currentInternship.course_code || 'Staj';
+            document.getElementById('courseNameDisplay').innerText = currentInternship.course_name || 'Mesleki Uygulama';
+
+            const startFormatted = formatDisplayDate(currentInternship.start_date);
+            const endFormatted = formatDisplayDate(currentInternship.end_date);
+            document.getElementById('internshipDatesDisplay').innerText = `${startFormatted} - ${endFormatted}`;
+
+            const allAttendances = studentDataGlobal.attendances || [];
+            
+            // Seçilen stajın tarih aralığındaki yoklamaları filtrele
+            let filteredAttendances = allAttendances;
+            if (currentInternship.start_date && currentInternship.end_date) {
+                const sDate = currentInternship.start_date.split('T')[0];
+                const eDate = currentInternship.end_date.split('T')[0];
+                filteredAttendances = allAttendances.filter(a => {
+                    const aDate = a.date.split('T')[0];
+                    return aDate >= sDate && aDate <= eDate;
+                });
+            }
+
+            const requiredDays = currentInternship.required_days || 20;
+            const approvedAttendances = filteredAttendances.filter(a => a.status === 'approved');
+            
+            let approvedDays = isInternal ? (approvedAttendances.length / 2) : approvedAttendances.length;
+            const missingDays = Math.max(0, requiredDays - approvedDays);
+            const percent = Math.min(100, Math.round((approvedDays / requiredDays) * 100));
+
+            document.getElementById('progressTextDisplay').innerText = `${approvedDays} / ${requiredDays} Gün (%${percent})`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+
+            const alertCard = document.getElementById('attendanceAlertCard');
+            if (approvedDays >= requiredDays) {
+                alertCard.className = "p-3 rounded-xl text-xs font-bold flex items-center bg-emerald-50 text-emerald-800 border border-emerald-200";
+                alertCard.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base mr-2 flex-shrink-0"></i><span>Hedeflenen ${requiredDays} günlük staj yoklamanızı başarıyla tamamladınız.</span>`;
+            } else {
+                alertCard.className = "p-3 rounded-xl text-xs font-medium flex items-center bg-amber-50 text-amber-900 border border-amber-200";
+                alertCard.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mr-2 flex-shrink-0"></i><span>Bu stajı tamamlamak için <b>${missingDays} gün eksik yoklamanız (telafi)</b> bulunmaktadır.</span>`;
+            }
+
+            document.getElementById('attendanceCountBadge').innerText = `${filteredAttendances.length} Kayıt`;
+
+            renderCheckInButton(allAttendances, isInternal);
+            renderAttendanceList(filteredAttendances);
+        }
+
+        function renderCheckInButton(attendance, isInternal) {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const currentHour = now.getHours();
+            const todayIso = now.toISOString().split('T')[0];
+
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkInBtnText = document.getElementById('checkInBtnText');
+            const checkInSubText = document.getElementById('checkInSubText');
+
+            if (isInternal) {
+                const isValidDay = [2, 3, 4, 5].includes(dayOfWeek);
+                const isWorkingHours = currentHour >= 9 && currentHour < 17;
+                const currentSession = currentHour < 13 ? 'morning' : 'afternoon';
+                const sessionName = currentSession === 'morning' ? 'Sabah' : 'Öğleden Sonra';
+
+                const hasCurrentSessionRecord = attendance.some(a => a.date === todayIso && a.session_type === currentSession);
+
+                if (!isValidDay) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
+                    checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL (SALI-CUMA)";
+                    checkInSubText.innerText = "Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.";
+                } else if (!isWorkingHours) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
+                    checkInBtnText.innerText = "STAJ SAATLERİ DIŞINDA (09:00 - 17:00)";
+                    checkInSubText.innerText = "Yoklama staj saatleri (09:00 - 17:00) içerisinde alınabilir.";
+                } else if (hasCurrentSessionRecord) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
+                    checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI ALINDI`;
+                    checkInSubText.innerText = currentSession === 'morning' 
+                        ? "Sabah oturumu yoklamanız alındı. Saat 13:00'ten sonra öğleden sonra yoklamanızı verebilirsiniz." 
+                        : "Öğleden sonra oturumu yoklamanız alındı. Bugünkü stajınızı tamamladınız.";
+                } else {
+                    checkInBtn.disabled = false;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
+                    checkInBtnText.innerText = `${sessionName.toUpperCase()} YOKLAMASI VER`;
+                    checkInSubText.innerText = `${sessionName} stajınız için konumunuzu doğrulayarak katılımınızı bildirebilirsiniz.`;
+                }
+            } else {
+                const hasTodayRecord = attendance.some(a => a.date === todayIso);
+                if (hasTodayRecord) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-700/80 text-white/90 font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
+                    checkInBtnText.innerText = "BUGÜNKÜ YOKLAMA ALINDI";
+                } else {
+                    checkInBtn.disabled = false;
+                    checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2.5 cursor-pointer";
+                    checkInBtnText.innerText = "STAJDAYIM / YOKLAMA VER";
+                }
+            }
+        }
+
+        function renderAttendanceList(attendance) {
+            const listContainer = document.getElementById('attendanceList');
+            if (attendance.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Bu staj dönemine ait kayıtlı yoklama bulunmuyor.</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = '';
+            attendance.forEach(item => {
+                const isRetro = item.is_retroactive == 1;
+                const statusBadge = item.status === 'approved' 
+                    ? '<span class="font-bold text-emerald-600 text-[11px]"><i class="fa-solid fa-circle-check mr-1"></i>Onaylandı</span>' 
+                    : (item.status === 'rejected' ? '<span class="font-bold text-rose-600 text-[11px]"><i class="fa-solid fa-circle-xmark mr-1"></i>Reddedildi</span>' : '<span class="font-bold text-amber-500 text-[11px]"><i class="fa-solid fa-clock mr-1"></i>Bekliyor</span>');
+
+                let sessionBadge = '';
+                if (item.session_type === 'morning') {
+                    sessionBadge = '<span class="bg-blue-50 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-200/60"><i class="fa-solid fa-sun mr-1 text-[8px]"></i>Sabah</span>';
+                } else if (item.session_type === 'afternoon') {
+                    sessionBadge = '<span class="bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-200/60"><i class="fa-solid fa-cloud-sun mr-1 text-[8px]"></i>Öğle</span>';
+                } else {
+                    sessionBadge = '<span class="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-gray-200">Tam Gün</span>';
+                }
+
+                const retroBadge = isRetro ? '<span class="bg-rose-50 text-rose-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-rose-200/60">Mazeretli</span>' : '';
+
+                listContainer.innerHTML += `
+                    <div class="py-3 px-1 flex justify-between items-center text-xs">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-bold text-gray-900">${formatDisplayDate(item.date)}</span>
+                                ${sessionBadge}
+                                ${retroBadge}
+                            </div>
+                            <p class="text-[11px] text-gray-400">${escapeHtml(item.time || '')} • ${item.excuse ? 'Mazeret: ' + escapeHtml(item.excuse) : escapeHtml(item.location_info || 'GPS Bildirimi')}</p>
+                        </div>
+                        <div class="flex-shrink-0">${statusBadge}</div>
+                    </div>
+                `;
+            });
         }
 
         async function handleCheckIn() {
@@ -801,8 +863,7 @@
             }
         }
 
-        // --- HESAP & PROFİL AYARLARI (E-POSTA VE ŞİFRE) ---
-        // --- HESAP & PROFİL AYARLARI (KULLANICI ADI, E-POSTA VE ŞİFRE) ---
+        // --- HESAP & PROFİL AYARLARI ---
         function openProfileModal() {
             const active = JSON.parse(localStorage.getItem('activeUser') || '{}');
             
@@ -901,7 +962,7 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showToast(data.message, 'success');
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
                     closeProfileModal();
                 } else {
                     showToast(data.message || 'Şifre değiştirilemedi.', 'error');
