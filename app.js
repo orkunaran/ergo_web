@@ -67,6 +67,31 @@ const loginLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// --- KURUMSAL LOGO & PWA İKON SERVİSİ (/icons/icon-192.png ve /icons/icon-512.png) ---
+const huIconSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="huGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5e2b97" />
+      <stop offset="100%" stop-color="#3b1563" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#huGrad)" />
+  <circle cx="256" cy="256" r="215" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.9" />
+  <circle cx="256" cy="256" r="195" fill="#411b6b" stroke="#d8b4fe" stroke-width="3" stroke-dasharray="10 6" opacity="0.85" />
+  <text x="256" y="210" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="95" font-weight="900" fill="#ffffff" text-anchor="middle">H.Ü.</text>
+  <text x="256" y="275" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="800" fill="#e9d5ff" text-anchor="middle">ERGOTERAPİ</text>
+  <text x="256" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" fill="#c084fc" text-anchor="middle">STAJ PORTALI</text>
+  <text x="256" y="380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="600" fill="#ffffff" opacity="0.8" text-anchor="middle">★ 1967 ★</text>
+</svg>
+`;
+
+app.get(['/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon.svg', '/favicon.ico'], (req, res) => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(huIconSvg);
+});
+
 // --- 3. YARDIMCI VE SENKRONİZASYON FONKSİYONLARI ---
 
 function slugifyName(name) {
