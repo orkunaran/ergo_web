@@ -163,6 +163,25 @@
             </div>
         </div>
 
+        <!-- RESMİ STAJ NOTU VE BÖLÜM ONAY KARTI -->
+        <div id="gradeStatusCard" class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div id="gradeIconContainer" class="w-11 h-11 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 font-bold flex-shrink-0 border border-gray-200">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Staj Başarı Notu</p>
+                    <p class="text-xs font-bold text-gray-800" id="gradeTitleDisplay">Bölüm Onayı Bekleniyor</p>
+                    <p class="text-[11px] text-gray-500" id="gradeSubtitleDisplay">Süpervizör değerlendirmesi sonrası koordinatör onayıyla açıklanır.</p>
+                </div>
+            </div>
+            <div class="text-right flex-shrink-0" id="gradeValueContainer">
+                <span class="text-xs font-bold px-3 py-1.5 rounded-xl bg-gray-100 text-gray-600 inline-block">
+                    <i class="fa-solid fa-lock mr-1 text-[10px]"></i> Kilitli
+                </span>
+            </div>
+        </div>
+
         <!-- YOKLAMA VERME ALANI (HERO ACTION) -->
         <div id="checkInArea" class="bg-gradient-to-br from-hu-purple via-hu-dark to-purple-950 text-white rounded-3xl p-5 sm:p-7 shadow-xl relative overflow-hidden">
             <div class="relative z-10 text-center space-y-3 sm:space-y-4">
@@ -662,6 +681,44 @@
 
             renderCheckInButton(allAttendances, isInternal);
             renderAttendanceList(filteredAttendances);
+
+            const gradeCard = document.getElementById('gradeStatusCard');
+            const gradeTitle = document.getElementById('gradeTitleDisplay');
+            const gradeSubtitle = document.getElementById('gradeSubtitleDisplay');
+            const gradeValueContainer = document.getElementById('gradeValueContainer');
+            const gradeIcon = document.getElementById('gradeIconContainer');
+
+            const isDeptApproved = (studentDataGlobal.department_approved == 1);
+            const hasGrade = (currentInternship.total_score !== null && currentInternship.total_score !== undefined);
+
+            if (isDeptApproved && hasGrade) {
+                gradeTitle.innerText = "Staj Başarı Notu Açıklandı";
+                gradeSubtitle.innerText = "Bölüm koordinatörlüğü tarafından resmi olarak onaylanmıştır.";
+                gradeIcon.className = "w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0 border border-emerald-200";
+                gradeValueContainer.innerHTML = `
+                    <span class="text-sm sm:text-base font-black px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 inline-block shadow-xs">
+                        ${currentInternship.total_score} / 100
+                    </span>
+                `;
+            } else if (isDeptApproved && !hasGrade) {
+                gradeTitle.innerText = "Bölüm Onaylandı (Not İşleniyor)";
+                gradeSubtitle.innerText = "Stajınız onaylandı, sistem not girişi tamamlanıyor.";
+                gradeIcon.className = "w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold flex-shrink-0 border border-blue-200";
+                gradeValueContainer.innerHTML = `
+                    <span class="text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 inline-block">
+                        Onaylandı
+                    </span>
+                `;
+            } else {
+                gradeTitle.innerText = "Staj Başarı Notu (Kapalı)";
+                gradeSubtitle.innerText = "Süpervizör not girse dahi Bölüm Koordinatörü onaylayana kadar kilitlidir.";
+                gradeIcon.className = "w-11 h-11 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center font-bold flex-shrink-0 border border-gray-200";
+                gradeValueContainer.innerHTML = `
+                    <span class="text-xs font-bold px-3 py-1.5 rounded-xl bg-gray-100 text-gray-500 border border-gray-200 inline-block">
+                        <i class="fa-solid fa-lock mr-1 text-[10px]"></i> Onay Bekliyor
+                    </span>
+                `;
+            }
         }
 
         function renderCheckInButton(attendance, isInternal) {

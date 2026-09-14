@@ -580,18 +580,20 @@ app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('stude
     }
 });
 
-// [8] ÖĞRENCİ PANELİ VERİLERİ
+// [8] ÖĞRENCİ PANELİ VERİLERİ (Bölüm Onayı Şartlı Not Güvenliği)
 app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     try {
         const studentId = req.user.id;
 
         const [users] = await db.execute(`
-            SELECT u.id, u.name, u.student_no, u.email, adv.name as advisor_name
+            SELECT u.id, u.name, u.student_no, u.email, u.department_approved, adv.name as advisor_name
             FROM users u
             LEFT JOIN users adv ON u.advisor_id = adv.id
             WHERE u.id = ?
         `, [studentId]);
         const studentData = users[0] || {};
+
+        const isApproved = studentData.department_approved == 1;
 
         const [internships] = await db.execute(`
             SELECT 
@@ -599,9 +601,10 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
                 dept_m.name as morning_dept_name,
                 dept_a.name as afternoon_dept_name,
                 sup.name as supervisor_name,
-                g.total_score,
-                g.rubric_details,
-                g.note as grade_note
+                -- Sadece koordinatör resmi onay vermişse notu döndür
+                CASE WHEN ? = 1 THEN g.total_score ELSE NULL END as total_score,
+                CASE WHEN ? = 1 THEN g.rubric_details ELSE NULL END as rubric_details,
+                CASE WHEN ? = 1 THEN g.note ELSE NULL END as grade_note
             FROM internships i
             LEFT JOIN departments dept_m ON i.morning_dept_id = dept_m.id
             LEFT JOIN departments dept_a ON i.afternoon_dept_id = dept_a.id
@@ -609,7 +612,7 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
             LEFT JOIN grades g ON (g.student_id = i.student_id AND g.course_code = i.course_code)
             WHERE i.student_id = ?
             ORDER BY i.course_code ASC
-        `, [studentId]);
+        `, [isApproved ? 1 : 0, isApproved ? 1 : 0, isApproved ? 1 : 0, studentId]);
 
         const [attendances] = await db.execute(`
             SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
@@ -1142,15 +1145,22 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
     }
 });
 
-// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME
+// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME (Öğrenci sorgusunda onay kontrolü)
 app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) => {
     try {
         const studentId = req.params.studentId;
         const currentUserId = req.user.id;
         const currentUserRole = req.user.role;
 
-        if (currentUserRole === 'student' && String(currentUserId) !== String(studentId)) {
-            return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Sadece kendi notunuzu görüntüleyebilirsiniz.' });
+        if (currentUserRole === 'student') {
+            if (String(currentUserId) !== String(studentId)) {
+                return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Sadece kendi notunuzu görüntüleyebilirsiniz.' });
+            }
+
+            const [uRows] = await db.execute('SELECT department_approved FROM users WHERE id = ?', [studentId]);
+            if (uRows.length === 0 || uRows[0].department_approved != 1) {
+                return res.status(403).json({ message: 'Staj notunuz henüz Bölüm Koordinatörlüğü tarafından resmi olarak onaylanmamıştır.' });
+            }
         }
 
         if (currentUserRole === 'supervisor') {
