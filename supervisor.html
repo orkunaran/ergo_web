@@ -10,7 +10,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/svg+xml" href="/icons/icon-192.png">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <title>Staj Koordinatörü Paneli | Hacettepe Ergoterapi</title>
+    <title>Süpervizör Paneli | Hacettepe Ergoterapi</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -60,8 +60,8 @@
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
                 <a href="admin.html" id="navAdminBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
-                <a href="coordinator.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🎓 Staj Koordinatörü</a>
-                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör Paneli</a>
+                <a href="coordinator.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🎓 Staj Koordinatörü</a>
+                <a href="supervisor.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🏥 Süpervizör Paneli</a>
                 <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
             </div>
         </div>
@@ -73,23 +73,24 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20 shadow-inner flex-shrink-0">
-                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <i class="fa-solid fa-user-doctor"></i>
                     </div>
                     <div>
                         <h1 class="font-extrabold text-sm sm:text-base leading-tight">H.Ü. Ergoterapi</h1>
-                        <p class="text-[11px] text-purple-200">Staj Koordinatör Paneli</p>
+                        <p class="text-[11px] text-purple-200">Süpervizör & Değerlendirme</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <div class="text-right hidden md:block">
-                        <p class="text-sm font-semibold truncate max-w-[150px]" id="coordinatorNameDisplay">Staj Koordinatörü</p>
-                        <p class="text-xs text-purple-200 truncate max-w-[150px]" id="coordinatorRoleDisplay">Bölüm Sorumlusu</p>
+                        <p class="text-sm font-semibold truncate max-w-[150px]" id="supervisorNameDisplay">Süpervizör</p>
+                        <p class="text-xs text-purple-200 truncate max-w-[150px]" id="supervisorEmailDisplay">Eğitmen</p>
                     </div>
-                    
+
                     <button onclick="toggleRole()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
-                        <i class="fa-solid fa-right-left sm:mr-1.5"></i> <span class="hidden sm:inline">Süpervizör Paneli</span>
+                        <i class="fa-solid fa-right-left sm:mr-1.5"></i> <span class="hidden sm:inline">Koordinatör Paneli</span>
                     </button>
 
+                    <!-- HESAP AYARLARI BUTONU -->
                     <button onclick="openProfileModal()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
                         <i class="fa-solid fa-user-gear sm:mr-1.5"></i> <span class="hidden sm:inline">Hesap Ayarları</span>
                     </button>
@@ -105,11 +106,12 @@
         <div class="hidden sm:block bg-white text-gray-600 shadow-sm border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav class="flex space-x-8 -mb-px overflow-x-auto" aria-label="Tabs">
-                    <button onclick="switchTab('department-students')" id="tab-department-students" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center cursor-pointer">
-                        <i class="fa-solid fa-users-rectangle mr-2"></i>Tüm Bölüm Stajyerleri
+                    <button onclick="switchTab('evaluation')" id="tab-evaluation" class="whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-sm border-hu-purple text-hu-purple flex items-center cursor-pointer">
+                        <i class="fa-solid fa-clipboard-list mr-2"></i>Öğrencilerim & Değerlendirme
                     </button>
-                    <button onclick="switchTab('my-supervision')" id="tab-my-supervision" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center cursor-pointer">
-                        <i class="fa-solid fa-user-doctor mr-2"></i>Kendi Danışmanlıklarım
+                    <button onclick="switchTab('attendance')" id="tab-attendance" class="whitespace-nowrap py-3.5 px-1 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors flex items-center relative cursor-pointer">
+                        <i class="fa-solid fa-calendar-check mr-2"></i>Yoklama Onayları
+                        <span id="pendingBadgeDesktop" class="hidden ml-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                     </button>
                 </nav>
             </div>
@@ -120,92 +122,91 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 w-full space-y-5">
         
-        <!-- 1. TÜM BÖLÜM STAJYERLERİ SEKMESİ -->
-        <div id="department-students-section" class="fade-in space-y-4">
+        <!-- 1. SEKMELER: ÖĞRENCİLERİM & DEĞERLENDİRME -->
+        <div id="evaluation-section" class="fade-in space-y-4">
             <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-3">
                     <div>
-                        <h2 class="text-base sm:text-xl font-bold text-gray-900">Bölüm Staj Takip, Yoklama Audit & Final Onayı</h2>
-                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Çoklu ders takibi, ünite bazlı hoca dağılımı ve bölüm resmi staj onayı.</p>
+                        <h2 class="text-base sm:text-xl font-bold text-gray-900">Bana Atanan Öğrenciler</h2>
+                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Staj telafi takibi, dönem sonu notlandırma ve kişisel Excel yedeği.</p>
                     </div>
-                    <div class="flex items-center flex-wrap gap-2">
-                        <button onclick="exportAllDepartmentToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer">
-                            <i class="fa-solid fa-file-excel mr-1.5 text-sm"></i>Tüm Notları Excel Olarak İndir
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportMyStudentsToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer">
+                            <i class="fa-solid fa-file-excel mr-1.5 text-sm"></i>Notlarımı Excel Olarak İndir
                         </button>
-                        <span class="bg-purple-50 text-hu-purple text-[11px] font-bold px-3 py-2 rounded-xl border border-purple-100 hidden sm:inline-block">Resmi Onay Mercii</span>
-                        <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200 cursor-pointer">
+                        <button onclick="loadSupervisorData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 cursor-pointer">
                             <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
                         </button>
                     </div>
                 </div>
 
-                <!-- HIZLI ARAMA, DERS & DURUM FİLTRELEME ÇUBUĞU -->
+                <!-- HIZLI ARAMA, DİNAMİK STAJ ROTASYONU & FİLTRELEME ÇUBUĞU -->
                 <div class="bg-gray-50/80 p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                         <div class="sm:col-span-7 relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Öğrenci adı, no, ders kodu veya ünite ile ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                            <input type="text" id="supSearchInput" oninput="applySupervisorFilters()" placeholder="Öğrenci adı, soyadı veya numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
+                        <!-- SQL'den Beslenen Dinamik Staj Grubu / Rotasyon Seçici -->
                         <div class="sm:col-span-5">
-                            <select id="rotationSelect" onchange="applyFilters()" class="w-full text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple font-semibold text-gray-700 shadow-xs">
+                            <select id="supRotationSelect" onchange="applySupervisorFilters()" class="w-full text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple font-semibold text-gray-700 shadow-xs">
                                 <option value="all">📅 Tüm Staj Grupları / Tarihler</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Durum Filtre Hapları (Pills) -->
+                    <!-- Durum Filtre Hapları -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-                        <button onclick="setStatusFilter('all')" id="pill-all" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer">
-                            Tümü (<span id="count-all">0</span>)
+                        <button onclick="setSupStatusFilter('all')" id="sup-pill-all" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer">
+                            Tümü (<span id="sup-count-all">0</span>)
                         </button>
-                        <button onclick="setStatusFilter('unscored')" id="pill-unscored" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
-                            Notu Girilmeyenler (<span id="count-unscored">0</span>)
+                        <button onclick="setSupStatusFilter('unscored')" id="sup-pill-unscored" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Notu Girilmeyenler (<span id="sup-count-unscored">0</span>)
                         </button>
-                        <button onclick="setStatusFilter('missing')" id="pill-missing" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
-                            Eksik Yoklaması Olanlar (<span id="count-missing">0</span>)
+                        <button onclick="setSupStatusFilter('missing')" id="sup-pill-missing" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Eksik / Telafi Yoklaması Olanlar (<span id="sup-count-missing">0</span>)
                         </button>
-                        <button onclick="setStatusFilter('pendingApproval')" id="pill-pendingApproval" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
-                            Bölüm Onayı Bekleyenler (<span id="count-pendingApproval">0</span>)
+                        <button onclick="setSupStatusFilter('pendingApproval')" id="sup-pill-pendingApproval" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                            Bölüm Onayı Bekleyenler (<span id="sup-count-pendingApproval">0</span>)
                         </button>
                     </div>
                 </div>
                 
-                <!-- Masaüstü Tablosu -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="myStudentsList"></div>
+            </div>
+        </div>
+
+        <!-- 2. SEKMELER: YOKLAMA ONAYLARI -->
+        <div id="attendance-section" class="fade-in hidden space-y-4">
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center gap-2">
+                <button onclick="approveAllPending()" class="w-full sm:w-auto min-h-[44px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-check-double mr-2"></i> Tüm Bekleyenleri Onayla
+                </button>
+                <button onclick="loadAttendanceApprovals()" class="min-h-[44px] text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3.5 py-2.5 rounded-xl border border-gray-200 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
+                </button>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
+                <h2 class="text-sm sm:text-base font-bold text-gray-900 mb-3">Onay Bekleyen Günlük Yoklamalar</h2>
+                
                 <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-semibold">
                             <tr>
-                                <th class="px-5 py-3.5 text-left">Öğrenci Bilgisi</th>
-                                <th class="px-4 py-3.5 text-left">Ders / Model</th>
-                                <th class="px-5 py-3.5 text-left">Ünite Dağılımı / Süpervizör</th>
-                                <th class="px-4 py-3.5 text-left">Yoklama Audit</th>
-                                <th class="px-4 py-3.5 text-left">Staj Notu & Öğrenci Görünürlüğü</th>
-                                <th class="px-5 py-3.5 text-right">Bölüm Onayı / İşlem</th>
+                                <th class="px-6 py-3 text-left">Öğrenci Bilgisi</th>
+                                <th class="px-6 py-3 text-left">Staj Tarihi</th>
+                                <th class="px-6 py-3 text-left">Giriş Zamanı</th>
+                                <th class="px-6 py-3 text-left">Konum / Mazeret</th>
+                                <th class="px-6 py-3 text-right">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody id="departmentStudentsTable" class="bg-white divide-y divide-gray-100 text-sm"></tbody>
+                        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-100 text-sm"></tbody>
                     </table>
                 </div>
 
-                <!-- Mobil Liste / Kart Görünümü -->
-                <div id="departmentStudentsMobileList" class="md:hidden divide-y divide-gray-100"></div>
-            </div>
-        </div>
-
-        <!-- 2. KENDİ DANIŞMANLIKLARIM SEKMESİ -->
-        <div id="my-supervision-section" class="fade-in hidden space-y-4">
-            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
-                <div class="flex justify-between items-center mb-4 sm:mb-6 border-b border-gray-100 pb-3">
-                    <div>
-                        <h2 class="text-base sm:text-xl font-bold text-gray-900">Doğrudan Danışmanlığımdaki Öğrenciler</h2>
-                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Saha süpervizörü olarak doğrudan atandığınız öğrenciler.</p>
-                    </div>
-                    <button onclick="loadDepartmentData()" class="text-xs text-hu-purple font-medium hover:underline flex items-center bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200 cursor-pointer">
-                        <i class="fa-solid fa-rotate-right mr-1"></i>Yenile
-                    </button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="mySupervisedList"></div>
+                <div id="attendanceMobileList" class="md:hidden divide-y divide-gray-100"></div>
             </div>
         </div>
 
@@ -213,71 +214,116 @@
 
     <!-- SABİT MOBİL ALT MENÜ -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-40 px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-lg">
-        <button onclick="switchTab('department-students')" id="mNavDept" class="flex flex-col items-center text-hu-purple focus:outline-none">
-            <i class="fa-solid fa-users-rectangle text-base"></i>
-            <span class="text-[10px] font-bold mt-1">Bölüm Stajyerleri</span>
+        <button onclick="switchTab('evaluation')" id="mNavEvaluation" class="flex flex-col items-center text-hu-purple focus:outline-none">
+            <i class="fa-solid fa-clipboard-list text-base"></i>
+            <span class="text-[10px] font-bold mt-1">Öğrencilerim</span>
         </button>
-        <button onclick="switchTab('my-supervision')" id="mNavSupervision" class="flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none">
-            <i class="fa-solid fa-user-doctor text-base"></i>
-            <span class="text-[10px] font-bold mt-1">Danışmanlığım</span>
+        <button onclick="switchTab('attendance')" id="mNavAttendance" class="flex flex-col items-center text-gray-500 hover:text-hu-purple relative focus:outline-none">
+            <div class="relative">
+                <i class="fa-solid fa-calendar-check text-base"></i>
+                <span id="pendingBadgeMobile" class="hidden absolute -top-1 -right-2 bg-amber-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full">0</span>
+            </div>
+            <span class="text-[10px] font-bold mt-1">Yoklamalar</span>
         </button>
     </nav>
 
-    <!-- YOKLAMA AUDIT MODALI -->
-    <div id="attendanceAuditModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <!-- NOT GİRİŞİ / RUBRİK MODALI -->
+    <div id="evaluationModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-3 sm:px-4 pb-6 text-center">
-            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeAuditModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-6 z-10 relative shadow-2xl overflow-hidden text-left">
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeModal()"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-lg z-10">
+                <div class="bg-hu-purple px-5 py-4 flex justify-between items-center text-white">
                     <div>
-                        <h3 class="font-bold text-base sm:text-lg text-gray-900" id="auditStudentName">Yoklama Audit Raporu</h3>
-                        <p class="text-xs text-purple-700 font-medium" id="auditStudentDetails">-</p>
+                        <h3 class="text-base font-bold" id="evalModalTitle">Staj Değerlendirme Formu</h3>
+                        <p class="text-[11px] text-purple-200">100 Puan Üzerinden Rubrik Notlandırması</p>
                     </div>
-                    <button onclick="closeAuditModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                    <button onclick="closeModal()" class="text-white/80 hover:text-white p-1 cursor-pointer">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
+                
+                <div class="bg-white px-5 pt-4 pb-6 max-h-[75vh] overflow-y-auto space-y-4">
+                    <div class="flex justify-between items-center bg-purple-50 p-3.5 rounded-2xl border border-purple-100">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">Değerlendirilen Öğrenci</p>
+                            <p class="font-extrabold text-gray-900 text-sm sm:text-base" id="evalStudentName">Öğrenci Adı</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] uppercase font-bold text-gray-400">Toplam Puan</p>
+                            <p class="text-2xl font-black text-hu-purple" id="liveTotalScore">0 <span class="text-xs font-normal text-gray-400">/ 100</span></p>
+                        </div>
+                    </div>
 
-                <div class="overflow-x-auto max-h-[60vh] divide-y divide-gray-100" id="auditModalContent">
-                    <table class="min-w-full divide-y divide-gray-200 text-xs">
-                        <thead class="bg-gray-50 text-gray-500 uppercase font-bold sticky top-0">
-                            <tr>
-                                <th class="px-4 py-2.5 text-left">Tarih</th>
-                                <th class="px-4 py-2.5 text-left">Giriş Zamanı</th>
-                                <th class="px-4 py-2.5 text-left">Konum / Mazeret</th>
-                                <th class="px-4 py-2.5 text-right">Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody id="auditTableBody" class="divide-y divide-gray-100"></tbody>
-                    </table>
-                </div>
+                    <form id="evaluationForm" onsubmit="event.preventDefault(); promptConfirmEvaluation(); return false;" class="space-y-3.5">
+                        <input type="hidden" id="evalStudentId">
+                        <input type="hidden" id="evalCourseCode">
 
-                <div class="mt-4 pt-3 border-t text-right">
-                    <button onclick="closeAuditModal()" class="w-full sm:w-auto px-5 py-2.5 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark active:scale-95 cursor-pointer">Kapat</button>
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">1. Mesleki Tutum & Davranış</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 20</span>
+                            </div>
+                            <input type="number" min="0" max="20" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_beh" placeholder="Puan (0-20)">
+                            <p class="text-[10px] text-gray-400">0 ile 20 arasında puan veriniz.</p>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">2. Klinik Mantık & Değerlendirme</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 40</span>
+                            </div>
+                            <input type="number" min="0" max="40" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_eval" placeholder="Puan (0-40)">
+                            <p class="text-[10px] text-gray-400">0 ile 40 arasında puan veriniz.</p>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-xs text-hu-purple uppercase">3. Müdahale & Klinik Beceriler</h4>
+                                <span class="text-[11px] font-bold text-gray-400">Max 40</span>
+                            </div>
+                            <input type="number" min="0" max="40" required class="score-input border border-gray-200 p-2.5 rounded-xl w-full text-xs focus:ring-hu-purple" id="score_int" placeholder="Puan (0-40)">
+                            <p class="text-[10px] text-gray-400">0 ile 40 arasında puan veriniz.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-800 mb-1">Süpervizör Görüşü & Geri Bildirim</label>
+                            <textarea id="evalNote" rows="2" placeholder="Öğrenci hakkındaki kanaat ve görüşlerinizi yazabilirsiniz..." class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:ring-hu-purple"></textarea>
+                        </div>
+
+                        <div class="pt-2 flex justify-end space-x-2">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-gray-100 text-xs font-bold rounded-xl cursor-pointer">İptal</button>
+                            <button type="submit" id="saveEvalBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl transition cursor-pointer">
+                                Notu Kaydet
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- NOT VE RUBRİK DETAY MODALI -->
-    <div id="gradeDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-3 sm:px-4 pb-6 text-center">
-            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeGradeDetailModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 z-10 relative shadow-2xl overflow-hidden max-h-[85vh] flex flex-col text-left">
-                <div class="flex justify-between items-center border-b pb-3 mb-3 flex-shrink-0">
-                    <div>
-                        <h3 class="font-bold text-base sm:text-lg text-gray-900" id="gradeDetailStudentName">Rubrik Değerlendirme Raporu</h3>
-                        <p class="text-xs text-purple-700 font-medium" id="gradeDetailSubTitle">-</p>
-                    </div>
-                    <button onclick="closeGradeDetailModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
+    <!-- ONAY TEYİT MODALI -->
+    <div id="confirmEvalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeConfirmModal()"></div>
+            <div class="bg-white rounded-3xl max-w-sm w-full p-6 z-10 relative shadow-2xl text-center space-y-4">
+                <div class="w-14 h-14 mx-auto rounded-full bg-purple-100 flex items-center justify-center text-hu-purple text-2xl">
+                    <i class="fa-solid fa-clipboard-check"></i>
                 </div>
-
-                <div class="overflow-y-auto pr-1 space-y-3.5 text-xs flex-grow" id="gradeDetailBody"></div>
-
-                <div class="mt-3 pt-3 border-t text-right flex-shrink-0">
-                    <button onclick="closeGradeDetailModal()" class="w-full sm:w-auto px-5 py-2.5 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark active:scale-95 cursor-pointer">Kapat</button>
+                <div>
+                    <h3 class="font-extrabold text-gray-900 text-base">Not Kaydını Onaylıyor musunuz?</h3>
+                    <p class="text-xs text-gray-600 mt-2 leading-relaxed" id="confirmPromptText">
+                        Öğrenciye not veriyorsunuz.
+                    </p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                        Vazgeç / Düzelt
+                    </button>
+                    <button onclick="executeFinalEvaluationSubmit()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer">
+                        Evet, Kaydet
+                    </button>
                 </div>
             </div>
         </div>
@@ -302,7 +348,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1 flex justify-between">
                             <span>Kullanıcı Adı</span>
-                            <span class="text-[10px] text-hu-purple font-normal">Giriş için kullanılabilir</span>
+                            <span class="text-[10px] text-hu-purple font-normal">Sisteme giriş için</span>
                         </label>
                         <input type="text" id="profileUsername" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple font-mono" placeholder="kullaniciadi">
                     </div>
@@ -360,9 +406,9 @@
                 .replace(/'/g, '&#39;');
         }
         const API_URL = `${window.location.origin}/api`;
-        let activeUser = null;
-        let cachedDepartmentStudents = [];
-        let currentStatusFilter = 'all';
+        let currentUser = null;
+        let cachedStudents = [];
+        let currentSupStatusFilter = 'all';
 
         function getToken() {
             return localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -381,43 +427,60 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            activeUser = JSON.parse(localStorage.getItem('activeUser'));
+            const activeUser = JSON.parse(localStorage.getItem('activeUser'));
             if (!activeUser) {
-                logout();
+                window.location.replace('index.html');
                 return;
             }
 
             const email = (activeUser.email || '').toLowerCase().trim();
             const role = (activeUser.role || '').toLowerCase().trim();
 
-            const isMasterAdmin = (email === 'orkunaran@gmail.com' || role === 'admin' || role === 'webmaster');
-            const isEgeHoca = (email === 'egetmzkn@gmail.com' || role === 'coordinator');
+            const allowedRoles = ['admin', 'webmaster', 'coordinator', 'supervisor', 'academic', 'faculty'];
+            const hasAccess = allowedRoles.includes(role) || email.includes('orkun') || email.includes('ege');
 
-            if (!isMasterAdmin && !isEgeHoca && role !== 'coordinator') {
-                logout();
+            if (!hasAccess) {
+                alert('Bu panele erişim yetkiniz bulunmamaktadır.');
+                window.location.replace('index.html');
                 return;
             }
 
-            document.getElementById('coordinatorNameDisplay').innerText = activeUser.name || 'Staj Koordinatörü';
-            
-            if (isMasterAdmin) {
-                document.getElementById('coordinatorRoleDisplay').innerText = 'Sistem Yöneticisi / Koordinatör';
-            } else {
-                document.getElementById('coordinatorRoleDisplay').innerText = 'Bölüm Staj Koordinatörü';
+            currentUser = activeUser;
+            document.getElementById('supervisorNameDisplay').innerText = currentUser.name || 'Süpervizör';
+            if (currentUser.email) {
+                document.getElementById('supervisorEmailDisplay').innerText = currentUser.email;
             }
 
             const bar = document.getElementById('webmasterBar');
-            if (bar && (isMasterAdmin || isEgeHoca)) {
+            if (bar && (role === 'admin' || role === 'webmaster' || role === 'coordinator')) {
                 bar.classList.remove('hidden');
-                if (!isMasterAdmin && isEgeHoca) {
-                    const adminLink = document.getElementById('navAdminBtn');
-                    if (adminLink) adminLink.classList.add('hidden');
-                }
             }
 
-            loadDepartmentData();
+            setupClampedInputs();
+            loadSupervisorData();
+            loadAttendanceApprovals();
             loadInternshipPeriods();
         });
+
+        function setupClampedInputs() {
+            document.querySelectorAll('.score-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const max = parseInt(e.target.max, 10);
+                    const min = parseInt(e.target.min, 10) || 0;
+                    let val = parseInt(e.target.value, 10);
+
+                    if (isNaN(val)) {
+                        calculateTotalScore();
+                        return;
+                    }
+
+                    if (val > max) e.target.value = max;
+                    if (val < min) e.target.value = min;
+
+                    calculateTotalScore();
+                });
+            });
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');
@@ -427,7 +490,7 @@
         }
 
         function toggleRole() {
-            window.location.replace('supervisor.html');
+            window.location.replace('coordinator.html');
         }
 
         function showToast(message, type = 'success') {
@@ -448,36 +511,40 @@
         }
 
         function switchTab(tabId) {
-            document.getElementById('department-students-section').classList.add('hidden');
-            document.getElementById('my-supervision-section').classList.add('hidden');
+            document.getElementById('evaluation-section').classList.add('hidden');
+            document.getElementById('attendance-section').classList.add('hidden');
             
-            const tabDept = document.getElementById('tab-department-students');
-            const tabMySup = document.getElementById('tab-my-supervision');
-            if (tabDept && tabMySup) {
-                tabDept.classList.remove('border-hu-purple', 'text-hu-purple');
-                tabMySup.classList.remove('border-hu-purple', 'text-hu-purple');
+            const tabEval = document.getElementById('tab-evaluation');
+            const tabAtt = document.getElementById('tab-attendance');
+            if (tabEval && tabAtt) {
+                tabEval.classList.remove('border-hu-purple', 'text-hu-purple');
+                tabAtt.classList.remove('border-hu-purple', 'text-hu-purple');
                 document.getElementById(`tab-${tabId}`).classList.add('border-hu-purple', 'text-hu-purple');
             }
 
-            const mNavDept = document.getElementById('mNavDept');
-            const mNavSup = document.getElementById('mNavSupervision');
-            if (tabId === 'department-students') {
-                mNavDept.className = "flex flex-col items-center text-hu-purple focus:outline-none";
-                mNavSup.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none";
+            const mEval = document.getElementById('mNavEvaluation');
+            const mAtt = document.getElementById('mNavAttendance');
+            if (tabId === 'evaluation') {
+                mEval.className = "flex flex-col items-center text-hu-purple focus:outline-none";
+                mAtt.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple relative focus:outline-none";
             } else {
-                mNavDept.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none";
-                mNavSup.className = "flex flex-col items-center text-hu-purple focus:outline-none";
+                mEval.className = "flex flex-col items-center text-gray-500 hover:text-hu-purple focus:outline-none";
+                mAtt.className = "flex flex-col items-center text-hu-purple relative focus:outline-none";
             }
 
             document.getElementById(`${tabId}-section`).classList.remove('hidden');
+
+            if (tabId === 'attendance') {
+                loadAttendanceApprovals();
+            }
         }
 
-        function setStatusFilter(filterKey) {
-            currentStatusFilter = filterKey;
+        function setSupStatusFilter(filterKey) {
+            currentSupStatusFilter = filterKey;
             
             const pills = ['all', 'unscored', 'missing', 'pendingApproval'];
             pills.forEach(p => {
-                const btn = document.getElementById(`pill-${p}`);
+                const btn = document.getElementById(`sup-pill-${p}`);
                 if (!btn) return;
                 if (p === filterKey) {
                     btn.className = "status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer";
@@ -486,7 +553,7 @@
                 }
             });
 
-            applyFilters();
+            applySupervisorFilters();
         }
 
         // --- SQL'DEN DİNAMİK STAJ DÖNEMLERİNİ VE TARİHLERİNİ ÇEK ---
@@ -499,7 +566,7 @@
                 if (!res.ok) return;
 
                 const periods = await res.json();
-                const select = document.getElementById('rotationSelect');
+                const select = document.getElementById('supRotationSelect');
                 if (!select) return;
 
                 select.innerHTML = '<option value="all">📅 Tüm Staj Grupları / Tarihler</option>';
@@ -523,42 +590,36 @@
             }
         }
 
-        function applyFilters() {
-            const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-            const selectedCourseCode = document.getElementById('rotationSelect')?.value || 'all';
+        function applySupervisorFilters() {
+            const query = (document.getElementById('supSearchInput')?.value || '').toLowerCase().trim();
+            const selectedCourseCode = document.getElementById('supRotationSelect')?.value || 'all';
 
             let cAll = 0, cUnscored = 0, cMissing = 0, cPendingApproval = 0;
 
-            cachedDepartmentStudents.forEach(stu => {
+            cachedStudents.forEach(stu => {
                 if (selectedCourseCode !== 'all' && stu.course_code !== selectedCourseCode) return;
 
                 cAll++;
                 const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
                 const requiredDays = stu.required_days || 20;
-                const approvedCount = stu.approved_attendance_count || 0;
+                const approvedDays = stu.approved_days || 0;
                 const isApproved = (stu.department_approved == 1);
 
                 if (!hasGrade) cUnscored++;
-                if (approvedCount < requiredDays) cMissing++;
+                if (approvedDays < requiredDays) cMissing++;
                 if (hasGrade && !isApproved) cPendingApproval++;
             });
 
-            document.getElementById('count-all').innerText = cAll;
-            document.getElementById('count-unscored').innerText = cUnscored;
-            document.getElementById('count-missing').innerText = cMissing;
-            document.getElementById('count-pendingApproval').innerText = cPendingApproval;
+            document.getElementById('sup-count-all').innerText = cAll;
+            document.getElementById('sup-count-unscored').innerText = cUnscored;
+            document.getElementById('sup-count-missing').innerText = cMissing;
+            document.getElementById('sup-count-pendingApproval').innerText = cPendingApproval;
 
-            const filtered = cachedDepartmentStudents.filter(stu => {
+            const filtered = cachedStudents.filter(stu => {
                 if (query) {
                     const name = (stu.name || '').toLowerCase();
                     const no = (stu.student_no || '').toLowerCase();
-                    const code = (stu.course_code || '').toLowerCase();
-                    const sup = (stu.supervisor_name || '').toLowerCase();
-                    const deptM = (stu.morning_dept_name || '').toLowerCase();
-                    const deptA = (stu.afternoon_dept_name || '').toLowerCase();
-
-                    if (!name.includes(query) && !no.includes(query) && !code.includes(query) && 
-                        !sup.includes(query) && !deptM.includes(query) && !deptA.includes(query)) {
+                    if (!name.includes(query) && !no.includes(query)) {
                         return false;
                     }
                 }
@@ -569,420 +630,380 @@
 
                 const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
                 const requiredDays = stu.required_days || 20;
-                const approvedCount = stu.approved_attendance_count || 0;
+                const approvedDays = stu.approved_days || 0;
                 const isApproved = (stu.department_approved == 1);
 
-                if (currentStatusFilter === 'unscored') return !hasGrade;
-                if (currentStatusFilter === 'missing') return approvedCount < requiredDays;
-                if (currentStatusFilter === 'pendingApproval') return hasGrade && !isApproved;
+                if (currentSupStatusFilter === 'unscored') return !hasGrade;
+                if (currentSupStatusFilter === 'missing') return approvedDays < requiredDays;
+                if (currentSupStatusFilter === 'pendingApproval') return hasGrade && !isApproved;
 
                 return true;
             });
 
-            renderStudentTables(filtered);
+            renderSupervisorCards(filtered);
         }
 
-        function renderStudentTables(students) {
-            const tbody = document.getElementById('departmentStudentsTable');
-            const mobileList = document.getElementById('departmentStudentsMobileList');
-            tbody.innerHTML = '';
-            mobileList.innerHTML = '';
+        function renderSupervisorCards(students) {
+            const grid = document.getElementById('myStudentsList');
+            grid.innerHTML = '';
 
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-xs text-gray-400 italic">Kriterlere uygun stajyer bulunamadı.</td></tr>`;
-                mobileList.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Kriterlere uygun stajyer bulunamadı.</p>`;
+                grid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-6 text-xs">Arama ve filtre kriterlerine uygun öğrenci bulunamadı.</p>`;
                 return;
             }
 
             students.forEach(stu => {
-                const isInternal = (stu.internship_type === 'internal');
-                const isDepartmentApproved = stu.department_approved == 1;
-                
-                const courseBadge = `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code || 'Atanmadı')}</span>`;
-                const modelBadge = isInternal 
-                    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Okul İçi</span>`
-                    : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Dış Staj</span>`;
+                const hasGrade = stu.total_score !== null && stu.total_score !== undefined;
+                const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
 
-                let unitDetail = '';
-                if (isInternal) {
-                    unitDetail = `
-                        <div class="text-xs leading-tight">
-                            <span class="text-gray-500 font-semibold">Sabah:</span> ${escapeHtml(stu.morning_dept_name || 'Atanmadı')}<br>
-                            <span class="text-gray-500 font-semibold">Öğle:</span> ${escapeHtml(stu.afternoon_dept_name || 'Atanmadı')}
-                        </div>
-                    `;
-                } else {
-                    unitDetail = `<span class="text-xs text-blue-800 font-bold">${escapeHtml(stu.supervisor_name || 'Saha Süpervizörü')}</span>`;
-                }
+                const courseBadge = stu.course_code 
+                    ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code)}</span>`
+                    : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
 
-                const scoreVal = stu.total_score;
-                const hasGrade = (scoreVal !== null && scoreVal !== undefined);
-
-                // Not & Öğrenci Görünürlük Durumu (Seçenek C Güvencesi)
-                let gradeText = '';
-                if (hasGrade) {
-                    const visibilityBadge = isDepartmentApproved
-                        ? `<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center w-fit mt-1"><i class="fa-solid fa-eye mr-1"></i>Öğrenciye Açık</span>`
-                        : `<span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 flex items-center w-fit mt-1"><i class="fa-solid fa-lock mr-1"></i>Öğrenciye Kilitli</span>`;
-
-                    gradeText = `
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <span class="font-black text-hu-purple text-sm">${scoreVal} / 100</span>
-                                <button onclick="openGradeDetailModal(${stu.id}, '${escapeHtml(stu.course_code || '')}')" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-0.5 rounded-lg font-bold transition flex items-center cursor-pointer">
-                                    <i class="fa-solid fa-list-check mr-1"></i>Rubrik
-                                </button>
-                            </div>
-                            ${visibilityBadge}
-                        </div>
-                    `;
-                } else {
-                    gradeText = `<span class="text-amber-600 text-xs font-semibold">Süpervizör Notu Bekleniyor</span>`;
-                }
-                
-                const approvedCount = stu.approved_attendance_count || 0;
-                const retroCount = stu.retroactive_count || 0;
                 const requiredDays = stu.required_days || 20;
+                const approvedDays = stu.approved_days || 0;
+                const missingDays = Math.max(0, requiredDays - approvedDays);
 
-                const auditButton = `
-                    <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" data-student-no="${escapeHtml(stu.student_no)}" onclick="openAuditModal(this.dataset.studentId, this.dataset.studentName, this.dataset.studentNo)" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center cursor-pointer">
-                        <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> ${approvedCount}/${requiredDays} Gün (${retroCount} Mazeretli)
-                    </button>
-                `;
+                let statusBadge = '';
+                if (approvedDays >= requiredDays) {
+                    statusBadge = `<div class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                                    <span><i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i>Staj Tamamlandı</span>
+                                    <span class="font-black text-emerald-800">${approvedDays}/${requiredDays} Gün</span>
+                                   </div>`;
+                } else {
+                    statusBadge = `<div class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-1.5 rounded-xl font-bold flex items-center justify-between">
+                                    <span><i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>⚠️ ${missingDays} Gün Eksik</span>
+                                    <span class="font-black text-amber-900">${approvedDays}/${requiredDays} Gün</span>
+                                   </div>`;
+                }
 
-                const approveBtn = isDepartmentApproved
-                    ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-extrabold inline-flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i>Bölüm Onayladı</span>`
-                    : `<button onclick="approveStudent(${stu.id})" class="bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs px-3.5 py-1.5 rounded-xl font-bold transition shadow-sm flex items-center ml-auto cursor-pointer"><i class="fa-solid fa-check mr-1.5"></i>Final Onayı Ver</button>`;
+                const pendingNotice = stu.pending_days > 0 
+                    ? `<p class="text-[11px] text-amber-600 font-bold mt-1 flex items-center"><i class="fa-solid fa-clock mr-1"></i>${stu.pending_days} gün onay bekliyor</p>`
+                    : '';
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                            ${escapeHtml(stu.name)} 
-                            <span class="text-xs font-normal text-gray-400 block">${escapeHtml(stu.student_no)}</span>
-                        </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-xs space-y-1">
-                            <div>${courseBadge}</div>
-                            <div>${modelBadge}</div>
-                        </td>
-                        <td class="px-5 py-4 whitespace-nowrap">${unitDetail}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm">${auditButton}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm">${gradeText}</td>
-                        <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}</td>
-                    </tr>
-                `;
+                const isDeptApproved = (stu.department_approved == 1);
 
-                mobileList.innerHTML += `
-                    <div class="py-3.5 px-1 space-y-2.5">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-black text-sm text-gray-900">${escapeHtml(stu.name)}</h4>
-                                <p class="text-[11px] text-gray-400">No: ${escapeHtml(stu.student_no)}</p>
+                let actionBtnHtml = '';
+                if (isDeptApproved) {
+                    actionBtnHtml = `
+                        <div class="w-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 rounded-xl text-center border border-gray-200 flex items-center justify-center">
+                            <i class="fa-solid fa-lock mr-1.5 text-gray-400"></i> Bölüm Onayladı (Kilitli)
+                        </div>
+                    `;
+                } else {
+                    actionBtnHtml = `
+                        <button onclick="openEvaluationModal(${stu.id})" class="w-full min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Öğrenciyi Değerlendir'}
+                        </button>
+                    `;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-white border border-gray-200/90 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
+                                ${courseBadge}
                             </div>
-                            <div class="text-right">
-                                <span class="text-xs font-black text-hu-purple">${hasGrade ? scoreVal + ' / 100' : 'Not Yok'}</span>
-                                <div class="text-[10px] mt-0.5">
-                                    ${isDepartmentApproved ? '<span class="text-emerald-700 font-bold">Öğrenciye Açık</span>' : '<span class="text-amber-700 font-bold">Öğrenciye Kilitli</span>'}
-                                </div>
+                            <p class="text-xs text-gray-500 mb-2.5">No: ${escapeHtml(stu.student_no)}</p>
+
+                            <div class="space-y-1">
+                                ${statusBadge}
+                                ${pendingNotice}
+                            </div>
+
+                            <div class="bg-gray-50 rounded-xl p-2.5 border border-gray-100 mt-2.5 text-xs flex justify-between items-center">
+                                <span class="text-gray-500 font-medium">Staj Sonu Notu:</span>
+                                <b class="text-hu-purple font-black text-sm">${scoreText}</b>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            ${courseBadge}
-                            ${modelBadge}
-                        </div>
-
-                        <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 text-xs">
-                            ${unitDetail}
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2 pt-0.5">
-                            <button data-student-id="${stu.id}" data-student-name="${escapeHtml(stu.name)}" data-student-no="${escapeHtml(stu.student_no)}" onclick="openAuditModal(this.dataset.studentId, this.dataset.studentName, this.dataset.studentNo)" class="text-[11px] bg-purple-50 text-hu-purple font-bold px-2.5 py-1.5 rounded-xl border border-purple-200">
-                                <i class="fa-solid fa-clock-rotate-left mr-1"></i> ${approvedCount}/${requiredDays} Gün
-                            </button>
-                            ${hasGrade ? `
-                            <button onclick="openGradeDetailModal(${stu.id}, '${escapeHtml(stu.course_code || '')}')" class="text-[11px] bg-purple-50 text-hu-purple font-bold px-2.5 py-1.5 rounded-xl border border-purple-200">
-                                <i class="fa-solid fa-list-check mr-1"></i> Rubrik Raporu
-                            </button>
-                            ` : ''}
-                        </div>
-
-                        <div class="pt-1">
-                            ${isDepartmentApproved ? `
-                            <div class="w-full text-center py-2 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200">
-                                <i class="fa-solid fa-circle-check mr-1.5"></i> Bölüm Onayladı (Öğrenci Notunu Görebilir)
-                            </div>
-                            ` : `
-                            <button onclick="approveStudent(${stu.id})" class="w-full min-h-[40px] bg-hu-purple active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm flex items-center justify-center">
-                                <i class="fa-solid fa-check mr-1.5"></i> Final Onayı Ver ve Notu Öğrenciye Aç
-                            </button>
-                            `}
-                        </div>
+                        ${actionBtnHtml}
                     </div>
                 `;
             });
         }
 
-        async function loadDepartmentData() {
+        async function loadSupervisorData() {
             try {
                 const token = getToken();
-                const response = await fetch(`${API_URL}/coordinator/students`, {
+                let response = await fetch(`${API_URL}/supervisors/${currentUser.id}/students`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (!response.ok) {
-                    showToast('Bölüm verileri çekilemedi.', 'error');
-                    return;
-                }
-
-                cachedDepartmentStudents = await response.json();
-                applyFilters();
-
-                const mySupervisedGrid = document.getElementById('mySupervisedList');
-                mySupervisedGrid.innerHTML = '';
-                
-                const myStudents = cachedDepartmentStudents.filter(s => parseInt(s.supervisor_id) === parseInt(activeUser.id));
-                if (myStudents.length === 0) {
-                    mySupervisedGrid.innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-6 text-xs">Bu kategoride doğrudan size atanmış stajyer öğrenci bulunmuyor.</p>`;
-                } else {
-                    myStudents.forEach(stu => {
-                        mySupervisedGrid.innerHTML += `
-                            <div class="border border-gray-200/90 rounded-2xl p-4 sm:p-5 bg-white shadow-sm flex flex-col justify-between space-y-3">
-                                <div>
-                                    <div class="flex justify-between items-start mb-1">
-                                        <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
-                                        <span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black">${escapeHtml(stu.course_code || 'ERG')}</span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mb-2">No: ${escapeHtml(stu.student_no)}</p>
-                                    <p class="text-xs text-gray-600">Staj Notu: <b class="text-hu-purple font-bold">${stu.total_score ? stu.total_score + ' / 100' : 'Girilmedi'}</b></p>
-                                </div>
-                                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                                    <span class="text-[10px] bg-purple-100 text-hu-purple py-0.5 px-2 rounded-md font-bold">Aktif Danışmanlık</span>
-                                    <a href="supervisor.html" class="text-xs text-hu-purple font-bold hover:underline flex items-center cursor-pointer">
-                                        Değerlendir <i class="fa-solid fa-arrow-right ml-1 text-[10px]"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            } catch (err) {
-                console.error('Bölüm Veri Çekme Hatası:', err);
-                showToast('Sunucu bağlantı hatası.', 'error');
-            }
-        }
-
-        function exportAllDepartmentToExcel() {
-            if (!cachedDepartmentStudents || cachedDepartmentStudents.length === 0) {
-                showToast("Dışa aktarılacak öğrenci kaydı bulunmuyor.", "error");
-                return;
-            }
-
-            try {
-                const excelRows = cachedDepartmentStudents.map((stu, index) => {
-                    const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
-                    const isInternal = (stu.internship_type === 'internal');
-
-                    return {
-                        "Sıra": index + 1,
-                        "Öğrenci Adı Soyadı": stu.name || '',
-                        "Öğrenci No": stu.student_no || '',
-                        "Staj Ders Kodu": stu.course_code || 'ERG',
-                        "Staj Türü": isInternal ? 'Bölüm İçi (Çift Yoklama)' : 'Dış Kurum Stajı',
-                        "Sabah Ünitesi": isInternal ? (stu.morning_dept_name || '') : '',
-                        "Öğle Ünitesi": isInternal ? (stu.afternoon_dept_name || '') : '',
-                        "Dış Saha Süpervizörü": !isInternal ? (stu.supervisor_name || '') : '',
-                        "Hedef Gün": stu.required_days || 20,
-                        "Onaylanan Devam (Gün)": stu.approved_attendance_count || 0,
-                        "Mazeretli Bildirim": stu.retroactive_count || 0,
-                        "Nihai Staj Notu (100)": hasGrade ? stu.total_score : 'Not Bekleniyor',
-                        "Bölüm Resmi Onayı": stu.department_approved == 1 ? 'Onaylandı' : 'Onay Bekliyor',
-                        "Öğrenciye Not Görünürlüğü": (hasGrade && stu.department_approved == 1) ? 'Görünür' : 'Kilitli'
-                    };
-                });
-
-                const worksheet = XLSX.utils.json_to_sheet(excelRows);
-
-                worksheet['!cols'] = [
-                    { wch: 6 },
-                    { wch: 25 },
-                    { wch: 15 },
-                    { wch: 15 },
-                    { wch: 24 },
-                    { wch: 22 },
-                    { wch: 22 },
-                    { wch: 25 },
-                    { wch: 11 },
-                    { wch: 20 },
-                    { wch: 18 },
-                    { wch: 20 },
-                    { wch: 20 },
-                    { wch: 24 }
-                ];
-
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Bölüm_Staj_Not_Kütüğü");
-
-                const today = new Date().toISOString().split('T')[0];
-                const fileName = `Hacettepe_Ergoterapi_Staj_Not_Kutugu_${today}.xlsx`;
-
-                XLSX.writeFile(workbook, fileName);
-                showToast("Tüm bölüm not kütüğü başarıyla indirildi.", "success");
-            } catch (err) {
-                console.error("Excel indirme hatası:", err);
-                showToast("Excel dosyası oluşturulurken hata oluştu.", "error");
-            }
-        }
-
-        async function openGradeDetailModal(studentId, courseCode) {
-            try {
-                const token = getToken();
-                const response = await fetch(`${API_URL}/grades/student/${studentId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    showToast('Not detayı bulunamadı.', 'error');
-                    return;
-                }
-
-                const gradesList = await response.json();
-                const data = Array.isArray(gradesList) 
-                    ? (gradesList.find(g => g.course_code === courseCode) || gradesList[0]) 
-                    : gradesList;
-
-                if (!data) {
-                    showToast('Bu derse ait not bulunamadı.', 'error');
-                    return;
-                }
-
-                document.getElementById('gradeDetailStudentName').innerText = `${data.student_name} - Rubrik Raporu`;
-                document.getElementById('gradeDetailSubTitle').innerText = `Ders: ${data.course_code || courseCode} | No: ${data.student_no} | Değerlendiren: ${data.evaluator_name || 'Sorumlu Hoca'}`;
-
-                let d = data.rubric_details;
-                if (typeof d === 'string') {
-                    try { d = JSON.parse(d); } catch(e) { d = {}; }
-                }
-                d = d || {};
-
-                const noteText = data.note ? escapeHtml(data.note) : 'Süpervizör tarafından ek görüş belirtilmedi.';
-
-                const behTotal = (parseInt(d.beh) || 0);
-                const evalTotal = (parseInt(d.eval) || 0);
-                const intTotal = (parseInt(d.int) || 0);
-
-                const bodyHtml = `
-                    <div class="bg-purple-50 p-3.5 rounded-2xl border border-purple-100 flex justify-between items-center mb-2">
-                        <div>
-                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Toplam Staj Notu</span>
-                        </div>
-                        <div class="text-2xl sm:text-3xl font-black text-hu-purple">${data.total_score || 0} <span class="text-xs font-normal text-gray-500">/ 100</span></div>
-                    </div>
-
-                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3">
-                        <p class="font-bold text-amber-900 mb-0.5 flex items-center"><i class="fa-solid fa-comment-dots mr-1.5 text-amber-600"></i>Süpervizör Görüşü:</p>
-                        <p class="text-gray-800 italic leading-relaxed text-[11px]">${noteText}</p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-gray-900 border-b pb-1 text-[11px] uppercase tracking-wide text-gray-500">Rubrik Alt Kırılım Puanları</h4>
-                        <div class="border border-gray-200 rounded-xl p-2.5 bg-white flex justify-between items-center">
-                            <span class="font-semibold text-gray-800">1. Davranış & Tutum (Max 20)</span>
-                            <span class="text-hu-purple font-black text-xs">${behTotal} / 20</span>
-                        </div>
-                        <div class="border border-gray-200 rounded-xl p-2.5 bg-white flex justify-between items-center">
-                            <span class="font-semibold text-gray-800">2. Değerlendirme & Mantık (Max 40)</span>
-                            <span class="text-hu-purple font-black text-xs">${evalTotal} / 40</span>
-                        </div>
-                        <div class="border border-gray-200 rounded-xl p-2.5 bg-white flex justify-between items-center">
-                            <span class="font-semibold text-gray-800">3. Müdahale Becerisi (Max 40)</span>
-                            <span class="text-hu-purple font-black text-xs">${intTotal} / 40</span>
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('gradeDetailBody').innerHTML = bodyHtml;
-                document.getElementById('gradeDetailModal').classList.remove('hidden');
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function closeGradeDetailModal() {
-            document.getElementById('gradeDetailModal').classList.add('hidden');
-        }
-
-        async function openAuditModal(studentId, studentName, studentNo) {
-            document.getElementById('auditStudentName').innerText = `${studentName} - Yoklama Raporu`;
-            document.getElementById('auditStudentDetails').innerText = `Öğrenci No: ${studentNo}`;
-
-            try {
-                const token = getToken();
-                const response = await fetch(`${API_URL}/coordinator/attendances/${studentId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                const tbody = document.getElementById('auditTableBody');
-                tbody.innerHTML = '';
 
                 if (response.ok) {
-                    const att = await response.json();
-                    if (att.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-xs text-gray-400 italic">Kayıtlı yoklama bulunmuyor.</td></tr>`;
-                    } else {
-                        att.forEach(item => {
-                            const subTime = item.time || (item.created_at ? item.created_at.replace('T', ' ').substring(0, 19) : '-');
-                            const isRetro = item.is_retroactive == 1;
-                            const typeText = isRetro 
-                                ? `<span class="text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-200">⚠️ Mazeretli: ${escapeHtml(item.excuse || '')}</span>` 
-                                : `<span class="text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold">${escapeHtml(item.location_info || 'GPS Bildirimi')}</span>`;
+                    cachedStudents = await response.json();
+                    
+                    if (cachedStudents.length === 0 && (currentUser.role === 'admin' || currentUser.role === 'webmaster' || currentUser.role === 'coordinator')) {
+                        const fallbackRes = await fetch(`${API_URL}/coordinator/students`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (fallbackRes.ok) {
+                            cachedStudents = await fallbackRes.json();
+                        }
+                    }
 
-                            const statusBadge = item.status === 'approved' 
-                                ? `<span class="text-emerald-600 font-bold">✓ Onaylandı</span>` 
-                                : (item.status === 'rejected' ? `<span class="text-rose-600 font-bold">✕ Reddedildi</span>` : `<span class="text-amber-600 font-bold">⏱ Bekliyor</span>`);
+                    applySupervisorFilters();
+                } else {
+                    if (currentUser.role === 'admin' || currentUser.role === 'webmaster' || currentUser.role === 'coordinator') {
+                        const fallbackRes = await fetch(`${API_URL}/coordinator/students`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (fallbackRes.ok) {
+                            cachedStudents = await fallbackRes.json();
+                            applySupervisorFilters();
+                            return;
+                        }
+                    }
+                    document.getElementById('myStudentsList').innerHTML = `<p class="text-gray-400 italic col-span-full text-center py-4 text-xs">Öğrenciler yüklenirken sunucu hatası oluştu.</p>`;
+                }
+            } catch (err) {
+                console.error('Öğrenci Verisi Hatası:', err);
+            }
+        }
+
+        async function loadAttendanceApprovals() {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/attendances`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const tbody = document.getElementById('attendanceTableBody');
+                const mobileList = document.getElementById('attendanceMobileList');
+                tbody.innerHTML = '';
+                mobileList.innerHTML = '';
+
+                if (response.ok) {
+                    const attendances = await response.json();
+                    let pendingCount = 0;
+
+                    attendances.forEach(rec => {
+                        if (rec.status === 'pending') {
+                            pendingCount++;
+                            const isRetro = rec.is_retroactive == 1;
+                            const badge = isRetro ? '<span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-1">Mazeretli</span>' : '';
+                            const timeText = rec.time || (rec.created_at ? rec.created_at.substring(11, 16) : '-');
+                            const detailText = rec.excuse ? 'Mazeret: ' + escapeHtml(rec.excuse) : escapeHtml(rec.location_info || 'GPS Konumu Alındı');
 
                             tbody.innerHTML += `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-3 sm:px-4 py-2 font-bold text-gray-800">${formatDisplayDate(item.date)}</td>
-                                    <td class="px-3 sm:px-4 py-2 font-mono text-gray-600">${subTime}</td>
-                                    <td class="px-3 sm:px-4 py-2">${typeText}</td>
-                                    <td class="px-3 sm:px-4 py-2 text-right">${statusBadge}</td>
+                                <tr>
+                                    <td class="px-6 py-4 font-bold text-gray-900">${escapeHtml(rec.student_name)} (${escapeHtml(rec.student_no)})</td>
+                                    <td class="px-6 py-4 text-xs font-bold">${formatDisplayDate(rec.date)} ${badge}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500">${timeText}</td>
+                                    <td class="px-6 py-4 text-xs">${detailText}</td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Onayla</button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">Reddet</button>
+                                    </td>
                                 </tr>
                             `;
-                        });
+
+                            mobileList.innerHTML += `
+                                <div class="py-3 px-1 space-y-2">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-extrabold text-sm text-gray-900">${escapeHtml(rec.student_name)}</p>
+                                            <p class="text-[11px] text-gray-400">No: ${escapeHtml(rec.student_no)}</p>
+                                        </div>
+                                        <span class="text-xs font-bold text-purple-950">${formatDisplayDate(rec.date)} ${badge}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-600">${timeText} • ${detailText}</p>
+                                    <div class="flex gap-2 pt-1">
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'approved')" class="flex-1 min-h-[38px] bg-emerald-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center">
+                                            <i class="fa-solid fa-check mr-1"></i> Onayla
+                                        </button>
+                                        <button onclick="updateAttendanceStatus(${rec.id}, 'rejected')" class="flex-1 min-h-[38px] bg-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center">
+                                            <i class="fa-solid fa-xmark mr-1"></i> Reddet
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    const badgeDesktop = document.getElementById('pendingBadgeDesktop');
+                    const badgeMobile = document.getElementById('pendingBadgeMobile');
+                    
+                    if (pendingCount > 0) {
+                        if (badgeDesktop) { badgeDesktop.innerText = pendingCount; badgeDesktop.classList.remove('hidden'); }
+                        if (badgeMobile) { badgeMobile.innerText = pendingCount; badgeMobile.classList.remove('hidden'); }
+                    } else {
+                        if (badgeDesktop) badgeDesktop.classList.add('hidden');
+                        if (badgeMobile) badgeMobile.classList.add('hidden');
+                    }
+
+                    if (pendingCount === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-xs text-gray-400 italic">Onay bekleyen günlük yoklama bulunmuyor.</td></tr>`;
+                        mobileList.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Onay bekleyen günlük yoklama bulunmuyor.</p>`;
                     }
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Yoklama Listesi Hatası:', err);
             }
-
-            document.getElementById('attendanceAuditModal').classList.remove('hidden');
         }
 
-        function closeAuditModal() {
-            document.getElementById('attendanceAuditModal').classList.add('hidden');
+        async function updateAttendanceStatus(attendanceId, status) {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/attendances/${attendanceId}/status`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    showToast(status === 'approved' ? "Yoklama onaylandı." : "Yoklama reddedildi.");
+                    loadAttendanceApprovals();
+                    loadSupervisorData();
+                } else {
+                    showToast("İşlem gerçekleştirilemedi.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası oluştu.", "error");
+            }
         }
 
-        async function approveStudent(studentId) {
-            if (!confirm('Öğrencinin stajını bölüm adına resmi olarak onaylamak istediğinize emin misiniz? (Bu işlem staj notunu öğrenciye görünür hale getirecektir.)')) {
-                return;
+        async function approveAllPending() {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/supervisors/${currentUser.id}/approve-all`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    showToast("Tüm bekleyen yoklamalar onaylandı.", "success");
+                    loadAttendanceApprovals();
+                    loadSupervisorData();
+                } else {
+                    showToast("İşlem sırasında hata oluştu.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası.", "error");
             }
+        }
+
+        async function openEvaluationModal(studentId) {
+            const stu = cachedStudents.find(s => s.id === studentId);
+            if (!stu) return;
+
+            document.getElementById('evalStudentId').value = stu.id;
+            document.getElementById('evalCourseCode').value = stu.course_code || 'Staj 1';
+            document.getElementById('evalStudentName').innerText = `${stu.name} (${stu.student_no || ''}) - ${stu.course_code || ''}`;
+            
+            document.getElementById('score_beh').value = '';
+            document.getElementById('score_eval').value = '';
+            document.getElementById('score_int').value = '';
+            document.getElementById('evalNote').value = '';
+            document.getElementById('liveTotalScore').innerText = '0';
+
+            if (stu.total_score !== null && stu.total_score !== undefined) {
+                document.getElementById('evalModalTitle').innerText = 'Notu Düzenle & Güncelle';
+                document.getElementById('saveEvalBtn').innerText = 'Değişiklikleri Kaydet';
+
+                try {
+                    const token = getToken();
+                    const res = await fetch(`${API_URL}/grades/student/${stu.id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const gradesList = await res.json();
+                        const gradeData = Array.isArray(gradesList) 
+                            ? (gradesList.find(g => g.course_code === stu.course_code) || gradesList[0]) 
+                            : gradesList;
+
+                        if (gradeData) {
+                            let d = gradeData.rubric_details;
+                            if (typeof d === 'string') {
+                                try { d = JSON.parse(d); } catch(e) { d = {}; }
+                            }
+                            d = d || {};
+
+                            document.getElementById('score_beh').value = d.beh !== undefined ? d.beh : '';
+                            document.getElementById('score_eval').value = d.eval !== undefined ? d.eval : '';
+                            document.getElementById('score_int').value = d.int !== undefined ? d.int : '';
+                            document.getElementById('evalNote').value = gradeData.note || '';
+                            calculateTotalScore();
+                        }
+                    }
+                } catch(e) {
+                    console.error('Eski not detayları çekilemedi:', e);
+                }
+            } else {
+                document.getElementById('evalModalTitle').innerText = 'Yeni Staj Değerlendirmesi';
+                document.getElementById('saveEvalBtn').innerText = 'Notu Kaydet';
+            }
+
+            document.getElementById('evaluationModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('evaluationModal').classList.add('hidden');
+        }
+
+        function calculateTotalScore() {
+            let total = 0;
+            document.querySelectorAll('.score-input').forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            document.getElementById('liveTotalScore').innerText = total;
+        }
+
+        function promptConfirmEvaluation() {
+            const studentName = document.getElementById('evalStudentName').innerText;
+            const total = parseInt(document.getElementById('liveTotalScore').innerText, 10) || 0;
+
+            document.getElementById('confirmPromptText').innerHTML = `
+                <b class="text-gray-900">${escapeHtml(studentName)}</b> için hesaplanan toplam staj notu: <br>
+                <span class="text-2xl font-black text-hu-purple mt-1 inline-block">${total} / 100</span><br>
+                Bu notu kaydetmek istediğinize emin misiniz?
+            `;
+            document.getElementById('confirmEvalModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmEvalModal').classList.add('hidden');
+        }
+
+        async function executeFinalEvaluationSubmit() {
+            closeConfirmModal();
+
+            const studentId = document.getElementById('evalStudentId').value;
+            const courseCode = document.getElementById('evalCourseCode').value;
+            const beh = parseInt(document.getElementById('score_beh').value, 10) || 0;
+            const evalScore = parseInt(document.getElementById('score_eval').value, 10) || 0;
+            const intScore = parseInt(document.getElementById('score_int').value, 10) || 0;
+            const total = beh + evalScore + intScore;
+            const note = document.getElementById('evalNote').value;
 
             try {
                 const token = getToken();
-                const response = await fetch(`${API_URL}/coordinator/approve-student`, {
+                const response = await fetch(`${API_URL}/grades/assign`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}` 
                     },
-                    body: JSON.stringify({ studentId })
+                    body: JSON.stringify({
+                        studentId: parseInt(studentId, 10),
+                        courseCode: courseCode,
+                        totalScore: total,
+                        rubricDetails: { beh, eval: evalScore, int: intScore },
+                        note: note
+                    })
                 });
 
                 if (response.ok) {
-                    showToast("Öğrencinin stajı resmi olarak onaylandı ve notu öğrenciye açıldı.", "success");
-                    loadDepartmentData();
+                    showToast("Staj notu başarıyla kaydedildi/güncellendi.", "success");
+                    closeModal();
+                    loadSupervisorData();
                 } else {
-                    showToast("Onay işlemi başarısız.", "error");
+                    const errData = await response.json().catch(() => ({}));
+                    showToast(errData.message || "Not kaydedilemedi.", "error");
                 }
             } catch (err) {
                 showToast("Sunucu hatası oluştu.", "error");
@@ -1098,6 +1119,57 @@
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Şifreyi Güncelle';
+            }
+        }
+
+        function exportMyStudentsToExcel() {
+            if (!cachedStudents || cachedStudents.length === 0) {
+                showToast("Dışa aktarılacak öğrenci bulunmuyor.", "error");
+                return;
+            }
+
+            try {
+                const excelRows = cachedStudents.map((stu, index) => {
+                    const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
+                    return {
+                        "Sıra": index + 1,
+                        "Öğrenci Adı Soyadı": stu.name || '',
+                        "Öğrenci No": stu.student_no || '',
+                        "Staj Ders Kodu": stu.course_code || 'ERG',
+                        "Hedef Gün": stu.required_days || 20,
+                        "Onaylanan Gün": stu.approved_days || 0,
+                        "Eksik / Telafi Gün": Math.max(0, (stu.required_days || 20) - (stu.approved_days || 0)),
+                        "Staj Notu (100)": hasGrade ? stu.total_score : 'Girilmedi',
+                        "Bölüm Onay Durumu": stu.department_approved == 1 ? 'Onaylandı' : 'Onay Bekliyor'
+                    };
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(excelRows);
+                
+                worksheet['!cols'] = [
+                    { wch: 6 },
+                    { wch: 26 },
+                    { wch: 15 },
+                    { wch: 14 },
+                    { wch: 10 },
+                    { wch: 14 },
+                    { wch: 16 },
+                    { wch: 15 },
+                    { wch: 18 }
+                ];
+
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Stajyerlerim");
+
+                const cleanSupName = (currentUser.name || 'supervizor').replace(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ_]/g, '_');
+                const today = new Date().toISOString().split('T')[0];
+                const fileName = `Stajyer_Not_Listesi_${cleanSupName}_${today}.xlsx`;
+
+                XLSX.writeFile(workbook, fileName);
+                showToast("Öğrenci not listeniz Excel olarak indirildi.", "success");
+            } catch (err) {
+                console.error("Excel aktarma hatası:", err);
+                showToast("Excel dosyası oluşturulurken hata oluştu.", "error");
             }
         }
     </script>
