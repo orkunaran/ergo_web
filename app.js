@@ -201,6 +201,42 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 });
 
+// [1.1] KULLANICI ŞİFRE DEĞİŞTİRME (Tüm Giriş Yapan Kullanıcılar İçin)
+app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
+    const { currentPassword, newPassword } = req.body || {};
+    const userId = req.user.id;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Mevcut şifre ve yeni şifre zorunludur.' });
+    }
+
+    if (newPassword.trim().length < 4) {
+        return res.status(400).json({ message: 'Yeni şifre en az 4 karakter olmalıdır.' });
+    }
+
+    try {
+        const [rows] = await db.execute('SELECT password_hash FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, rows[0].password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Mevcut şifrenizi hatalı girdiniz.' });
+        }
+
+        const newHash = await bcrypt.hash(newPassword.trim(), 10);
+        await db.execute('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, userId]);
+
+        await createAuditLog(userId, 'PASSWORD_CHANGE', userId, null, null, req.ip);
+
+        res.json({ message: 'Şifreniz başarıyla değiştirildi.' });
+    } catch (error) {
+        console.error('Şifre Değiştirme Hatası:', error);
+        res.status(500).json({ message: 'Şifre güncellenirken sunucu hatası oluştu.' });
+    }
+});
+
 // [2] SÜPERVİZÖRÜN KENDİ ÜNİTESİNDEKİ ÖĞRENCİLER (SQL View Bağlantısı)
 app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
@@ -499,7 +535,7 @@ app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('
     }
 });
 
-// [12] ADMIN: ÖĞRENCİ VE ÇOKLU DERS STAJ KAYDI (Excel & Manuel Form)
+// [12] ADMIN: ÖĞRENCİ VE İÇ STAJ (ÜNİTE ODAKLI ÇOKLU DERS) KAYDI
 app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};
 
@@ -538,38 +574,38 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
 
             // 1. Staj / Ders
             if (stu.courseCode || stu.course1Code) {
+                const morningDept = stu.course1MorningDeptId || stu.morningDeptId || null;
+                const afternoonDept = stu.course1AfternoonDeptId || stu.afternoonDeptId || morningDept;
+
                 internshipList.push({
-                    code: stu.course1Code || stu.courseCode,
+                    code: (stu.course1Code || stu.courseCode).trim(),
                     name: stu.course1Name || stu.courseName || 'Mesleki Uygulama I',
                     type: stu.course1Type || stu.internshipType || 'internal',
-                    morningDept: stu.course1MorningDeptId || stu.morningDeptId || null,
-                    afternoonDept: stu.course1AfternoonDeptId || stu.afternoonDeptId || null,
-                    supEmail: stu.course1SupEmail || stu.supervisorEmail || null,
+                    morningDept,
+                    afternoonDept,
+                    supervisorId: stu.supervisorId || stu.course1SupervisorId || null,
                     requiredDays: stu.course1RequiredDays || stu.requiredDays || 20
                 });
             }
 
             // 2. Staj / Ders (Varsa)
             if (stu.course2Code) {
+                const morningDept2 = stu.course2MorningDeptId || null;
+                const afternoonDept2 = stu.course2AfternoonDeptId || morningDept2;
+
                 internshipList.push({
-                    code: stu.course2Code,
+                    code: stu.course2Code.trim(),
                     name: stu.course2Name || 'Mesleki Uygulama II',
                     type: stu.course2Type || 'internal',
-                    morningDept: stu.course2MorningDeptId || null,
-                    afternoonDept: stu.course2AfternoonDeptId || null,
-                    supEmail: stu.course2SupEmail || null,
+                    morningDept: morningDept2,
+                    afternoonDept: afternoonDept2,
+                    supervisorId: stu.course2SupervisorId || null,
                     requiredDays: stu.course2RequiredDays || 20
                 });
             }
 
             // 3. Staj Kayıtlarını internships Tablosuna Yaz
             for (const item of internshipList) {
-                let supervisorId = null;
-                if (item.supEmail && item.supEmail.trim() !== '') {
-                    const [supRows] = await connection.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [item.supEmail.trim()]);
-                    if (supRows.length > 0) supervisorId = supRows[0].id;
-                }
-
                 await connection.execute(`
                     INSERT INTO internships (
                         student_id, course_code, course_name, internship_type, 
@@ -591,7 +627,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                     stu.startDate || '2026-09-01',
                     stu.endDate || '2026-10-01',
                     item.requiredDays,
-                    supervisorId,
+                    item.supervisorId,
                     item.morningDept,
                     item.afternoonDept
                 ]);
@@ -599,10 +635,100 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
         }
 
         await connection.commit();
-        res.json({ message: 'Öğrenci ve ders staj kayıtları başarıyla kaydedildi.' });
+        res.json({ message: 'Öğrenci ve ünite bazlı staj kayıtları başarıyla kaydedildi.' });
     } catch (err) {
         await connection.rollback();
         console.error('Öğrenci Kayıt Hatası:', err);
+        res.status(500).json({ message: 'Kayıt sırasında veritabanı hatası oluştu.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// [12.1] ADMIN: DIŞ STAJ ÖĞRENCİ VE SÜPERVİZÖR TOPLU KAYDI (Otomatik Hesap Açma Destekli)
+app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
+    const { students } = req.body || {};
+
+    if (!Array.isArray(students) || students.length === 0) {
+        return res.status(400).json({ message: 'Geçerli dış staj verisi bulunamadı.' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        for (const stu of students) {
+            // 1. Dış Kurum Süpervizörünü Bul veya Otomatik Hesap Oluştur
+            let supervisorId = null;
+            if (stu.supervisorEmail && stu.supervisorEmail.trim() !== '') {
+                const supEmail = stu.supervisorEmail.trim().toLowerCase();
+                const [existingSup] = await connection.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [supEmail]);
+
+                if (existingSup.length > 0) {
+                    supervisorId = existingSup[0].id;
+                    if (stu.institutionName) {
+                        await connection.execute('UPDATE users SET department = ? WHERE id = ?', [stu.institutionName, supervisorId]);
+                    }
+                } else {
+                    const defaultSupHash = await bcrypt.hash('hu_ergo', 10);
+                    const supUsername = supEmail.split('@')[0];
+                    const [insertSup] = await connection.execute(
+                        `INSERT INTO users (name, email, username, password_hash, role, department) 
+                         VALUES (?, ?, ?, ?, 'supervisor', ?) RETURNING id`,
+                        [stu.supervisorName || 'Dış Süpervizör', supEmail, supUsername, defaultSupHash, stu.institutionName || 'Dış Kurum']
+                    );
+                    supervisorId = insertSup[0].id;
+                }
+            }
+
+            // 2. Öğrenciyi Ekle veya Güncelle
+            let [existingStu] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
+            let studentId;
+
+            if (existingStu.length > 0) {
+                studentId = existingStu[0].id;
+                await connection.execute(
+                    'UPDATE users SET name = ?, email = COALESCE(?, email), supervisor_id = ?, internship_type = ? WHERE id = ?',
+                    [stu.name, stu.studentEmail || null, supervisorId, 'external', studentId]
+                );
+            } else {
+                const stuHash = await bcrypt.hash(stu.password || '1234', 10);
+                const [insertStu] = await connection.execute(
+                    `INSERT INTO users (name, student_no, email, password_hash, role, supervisor_id, internship_type) 
+                     VALUES (?, ?, ?, ?, 'student', ?, 'external') RETURNING id`,
+                    [stu.name, stu.studentNo, stu.studentEmail || null, stuHash, supervisorId]
+                );
+                studentId = insertStu[0].id;
+            }
+
+            // 3. Staj Kaydını internships Tablosuna Dış Staj Olarak Ekle / Güncelle
+            const courseCode = (stu.courseCode || 'ERG 421').trim();
+            await connection.execute(`
+                INSERT INTO internships (
+                    student_id, course_code, course_name, internship_type, 
+                    start_date, end_date, required_days, supervisor_id, morning_dept_id, afternoon_dept_id
+                ) 
+                VALUES (?, ?, ?, 'external', ?, ?, 20, ?, NULL, NULL)
+                ON CONFLICT (student_id, course_code) DO UPDATE SET 
+                    internship_type = 'external',
+                    supervisor_id = EXCLUDED.supervisor_id,
+                    morning_dept_id = NULL,
+                    afternoon_dept_id = NULL
+            `, [
+                studentId,
+                courseCode,
+                'Dış Kurum Mesleki Uygulama',
+                stu.startDate || '2026-09-01',
+                stu.endDate || '2026-10-01',
+                supervisorId
+            ]);
+        }
+
+        await connection.commit();
+        res.json({ message: 'Dış staj öğrencileri ve süpervizör hesapları başarıyla kaydedildi.' });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Dış Staj Kayıt Hatası:', err);
         res.status(500).json({ message: 'Kayıt sırasında veritabanı hatası oluştu.' });
     } finally {
         connection.release();
