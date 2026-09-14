@@ -67,7 +67,25 @@ const loginLimiter = rateLimit({
     legacyHeaders: false
 });
 
-// --- 3. AUDIT LOG YARDIMCISI ---
+// --- 3. YARDIMCI FONKSİYONLAR ---
+
+// İsimdeki unvanları temizleyip standart kullanıcı adı/slug üreten fonksiyon
+function slugifyName(name) {
+    if (!name) return 'kullanici';
+    const clean = String(name)
+        .toLowerCase()
+        .trim()
+        .replace(/^(prof\.|prof|doç\.|doç|dr\.|dr|uzm\.|uzm|fzt\.|fzt|erg\.|erg)\s+/gi, '')
+        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+        .replace(/[^a-z0-9\s]/g, '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .join('.');
+    return clean || 'kullanici';
+}
+
 async function createAuditLog(userId, action, targetStudentId, oldValue, newValue, ip) {
     try {
         await db.execute(
@@ -170,11 +188,12 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
             return res.json({ message: 'Giriş başarılı', token, user });
 
         } else {
+            // Öğrenci: No, Kullanıcı Adı veya E-posta ile giriş yapabilir
             const [rows] = await db.execute(`
                 SELECT * FROM users 
-                WHERE (student_no = ? OR LOWER(username) = LOWER(?)) 
+                WHERE (student_no = ? OR LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)) 
                   AND role = 'student'
-            `, [queryParam, queryParam]);
+            `, [queryParam, queryParam, queryParam]);
 
             if (rows.length === 0) {
                 return res.status(401).json({ message: 'Öğrenci bulunamadı.' });
@@ -201,7 +220,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 });
 
-// [1.1] KULLANICI ŞİFRE DEĞİŞTİRME (Tüm Giriş Yapan Kullanıcılar İçin)
+// [1.1] KULLANICI ŞİFRE DEĞİŞTİRME (Kullanıcının Kendi İşlemi)
 app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body || {};
     const userId = req.user.id;
@@ -234,6 +253,63 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Şifre Değiştirme Hatası:', error);
         res.status(500).json({ message: 'Şifre güncellenirken sunucu hatası oluştu.' });
+    }
+});
+
+// [1.2] ADMIN: KULLANICI ŞİFRESİ SIFIRLAMA (Yönetici Sıfırlaması)
+app.post('/api/admin/users/:id/reset-password', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
+    try {
+        const targetUserId = req.params.id;
+        const { newPassword } = req.body || {};
+
+        const tempPassword = (newPassword && newPassword.trim()) ? newPassword.trim() : 'hu_ergo';
+        const newHash = await bcrypt.hash(tempPassword, 10);
+
+        await db.execute('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, targetUserId]);
+        await createAuditLog(req.user.id, 'ADMIN_PASSWORD_RESET', targetUserId, null, { resetTo: tempPassword }, req.ip);
+
+        res.json({ message: `Şifre başarıyla sıfırlandı. Yeni geçici şifre: ${tempPassword}` });
+    } catch (err) {
+        console.error('Şifre Sıfırlama Hatası:', err);
+        res.status(500).json({ message: 'Şifre sıfırlanamadı.' });
+    }
+});
+
+// [1.3] KULLANICI KENDİ E-POSTASINI GÜNCELLEME (Tüm Roller İçin)
+app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
+    const { email } = req.body || {};
+    const userId = req.user.id;
+
+    if (!email || !email.trim()) {
+        return res.status(400).json({ message: 'Geçerli bir e-posta adresi giriniz.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({ message: 'Lütfen geçerli formatta bir e-posta adresi yazın.' });
+    }
+
+    try {
+        const [existing] = await db.execute(
+            'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?',
+            [cleanEmail, userId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ message: 'Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.' });
+        }
+
+        const [userRows] = await db.execute('SELECT email FROM users WHERE id = ?', [userId]);
+        const oldEmail = userRows[0]?.email;
+
+        await db.execute('UPDATE users SET email = ? WHERE id = ?', [cleanEmail, userId]);
+        await createAuditLog(userId, 'EMAIL_UPDATE', userId, { email: oldEmail }, { email: cleanEmail }, req.ip);
+
+        res.json({ message: 'E-posta adresiniz başarıyla güncellendi.', email: cleanEmail });
+    } catch (error) {
+        console.error('E-posta Güncelleme Hatası:', error);
+        res.status(500).json({ message: 'E-posta güncellenirken sunucu hatası oluştu.' });
     }
 });
 
@@ -436,7 +512,7 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
         const studentId = req.user.id;
 
         const [users] = await db.execute(`
-            SELECT u.id, u.name, u.student_no, adv.name as advisor_name
+            SELECT u.id, u.name, u.student_no, u.email, adv.name as advisor_name
             FROM users u
             LEFT JOIN users adv ON u.advisor_id = adv.id
             WHERE u.id = ?
@@ -465,7 +541,6 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
             SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
         `, [studentId]);
 
-        // Aktif/Birincil staj verilerini doğrudan studentData köküne yayarak frontend'i besle
         const primaryInternship = internships[0] || {};
 
         const responseData = {
@@ -561,7 +636,22 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
         await connection.beginTransaction();
 
         for (const stu of students) {
-            // 1. Öğrenci Kullanıcı Hesabını Ekle / Güncelle
+            const baseSlug = slugifyName(stu.name);
+            let stuEmail = (stu.email && stu.email.trim() !== '') ? stu.email.trim().toLowerCase() : null;
+
+            if (!stuEmail) {
+                stuEmail = `${baseSlug}@ergo.local`;
+                const [coll] = await connection.execute(
+                    'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND student_no != ?', 
+                    [stuEmail, stu.studentNo]
+                );
+                if (coll.length > 0) {
+                    stuEmail = `${baseSlug}.${stu.studentNo}@ergo.local`;
+                }
+            }
+
+            const stuUsername = (stu.username && stu.username.trim() !== '') ? stu.username.trim().toLowerCase() : stu.studentNo;
+
             let [existing] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
             let studentId;
 
@@ -569,20 +659,25 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 studentId = existing[0].id;
                 if (stu.password && stu.password.trim() !== '') {
                     const newHash = await bcrypt.hash(stu.password.trim(), 10);
-                    await connection.execute('UPDATE users SET name = ?, password_hash = ? WHERE id = ?', [stu.name, newHash, studentId]);
+                    await connection.execute(
+                        'UPDATE users SET name = ?, email = COALESCE(email, ?), username = COALESCE(username, ?), password_hash = ? WHERE id = ?',
+                        [stu.name, stuEmail, stuUsername, newHash, studentId]
+                    );
                 } else {
-                    await connection.execute('UPDATE users SET name = ? WHERE id = ?', [stu.name, studentId]);
+                    await connection.execute(
+                        'UPDATE users SET name = ?, email = COALESCE(email, ?), username = COALESCE(username, ?) WHERE id = ?',
+                        [stu.name, stuEmail, stuUsername, studentId]
+                    );
                 }
             } else {
                 const defaultHash = await bcrypt.hash(stu.password || '1234', 10);
                 const [insertRes] = await connection.execute(
-                    "INSERT INTO users (name, student_no, password_hash, role) VALUES (?, ?, ?, 'student') RETURNING id",
-                    [stu.name, stu.studentNo, defaultHash]
+                    "INSERT INTO users (name, student_no, email, username, password_hash, role) VALUES (?, ?, ?, ?, ?, 'student') RETURNING id",
+                    [stu.name, stu.studentNo, stuEmail, stuUsername, defaultHash]
                 );
                 studentId = insertRes[0].id;
             }
 
-            // 2. Çoklu Ders Paketlerini Ayrıştır
             const internshipList = [];
 
             // 1. Staj / Ders
@@ -617,7 +712,6 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 });
             }
 
-            // 3. Staj Kayıtlarını internships Tablosuna Yaz
             for (const item of internshipList) {
                 await connection.execute(`
                     INSERT INTO internships (
@@ -658,7 +752,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
     }
 });
 
-// [12.1] ADMIN: DIŞ STAJ ÖĞRENCİ VE SÜPERVİZÖR TOPLU KAYDI (Otomatik Hesap Açma Destekli)
+// [12.1] ADMIN: DIŞ STAJ ÖĞRENCİ VE SÜPERVİZÖR TOPLU KAYDI
 app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};
 
@@ -671,11 +765,22 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
         await connection.beginTransaction();
 
         for (const stu of students) {
-            // 1. Dış Kurum Süpervizörünü Bul veya Otomatik Hesap Oluştur
             let supervisorId = null;
-            if (stu.supervisorEmail && stu.supervisorEmail.trim() !== '') {
-                const supEmail = stu.supervisorEmail.trim().toLowerCase();
-                const [existingSup] = await connection.execute('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [supEmail]);
+            const hasSupName = stu.supervisorName && stu.supervisorName.trim() !== '';
+            const hasSupEmail = stu.supervisorEmail && stu.supervisorEmail.trim() !== '';
+
+            if (hasSupName || hasSupEmail) {
+                const baseSlug = slugifyName(stu.supervisorName || 'supervizor');
+                const supEmail = hasSupEmail ? stu.supervisorEmail.trim().toLowerCase() : `${baseSlug}@ergo.local`;
+                const supUsername = baseSlug;
+
+                const [existingSup] = await connection.execute(
+                    `SELECT id FROM users 
+                     WHERE LOWER(email) = LOWER(?) 
+                        OR (LOWER(name) = LOWER(?) AND role = 'supervisor')
+                     LIMIT 1`, 
+                    [supEmail, (stu.supervisorName || '').trim()]
+                );
 
                 if (existingSup.length > 0) {
                     supervisorId = existingSup[0].id;
@@ -684,7 +789,6 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
                     }
                 } else {
                     const defaultSupHash = await bcrypt.hash('hu_ergo', 10);
-                    const supUsername = supEmail.split('@')[0];
                     const [insertSup] = await connection.execute(
                         `INSERT INTO users (name, email, username, password_hash, role, department) 
                          VALUES (?, ?, ?, ?, 'supervisor', ?) RETURNING id`,
@@ -694,27 +798,40 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
                 }
             }
 
-            // 2. Öğrenciyi Ekle veya Güncelle
+            const stuBaseSlug = slugifyName(stu.name);
+            let stuEmail = (stu.studentEmail && stu.studentEmail.trim() !== '') ? stu.studentEmail.trim().toLowerCase() : null;
+
+            if (!stuEmail) {
+                stuEmail = `${stuBaseSlug}@ergo.local`;
+                const [coll] = await connection.execute(
+                    'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND student_no != ?', 
+                    [stuEmail, stu.studentNo]
+                );
+                if (coll.length > 0) {
+                    stuEmail = `${stuBaseSlug}.${stu.studentNo}@ergo.local`;
+                }
+            }
+            const stuUsername = stu.studentNo;
+
             let [existingStu] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
             let studentId;
 
             if (existingStu.length > 0) {
                 studentId = existingStu[0].id;
                 await connection.execute(
-                    'UPDATE users SET name = ?, email = COALESCE(?, email), supervisor_id = ?, internship_type = ? WHERE id = ?',
-                    [stu.name, stu.studentEmail || null, supervisorId, 'external', studentId]
+                    'UPDATE users SET name = ?, email = COALESCE(?, email), username = COALESCE(username, ?), supervisor_id = ?, internship_type = ? WHERE id = ?',
+                    [stu.name, stuEmail, stuUsername, supervisorId, 'external', studentId]
                 );
             } else {
                 const stuHash = await bcrypt.hash(stu.password || '1234', 10);
                 const [insertStu] = await connection.execute(
-                    `INSERT INTO users (name, student_no, email, password_hash, role, supervisor_id, internship_type) 
-                     VALUES (?, ?, ?, ?, 'student', ?, 'external') RETURNING id`,
-                    [stu.name, stu.studentNo, stu.studentEmail || null, stuHash, supervisorId]
+                    `INSERT INTO users (name, student_no, email, username, password_hash, role, supervisor_id, internship_type) 
+                     VALUES (?, ?, ?, ?, ?, 'student', ?, 'external') RETURNING id`,
+                    [stu.name, stu.studentNo, stuEmail, stuUsername, stuHash, supervisorId]
                 );
                 studentId = insertStu[0].id;
             }
 
-            // 3. Staj Kaydını internships Tablosuna Dış Staj Olarak Ekle / Güncelle
             const courseCode = (stu.courseCode || 'ERG 421').trim();
             await connection.execute(`
                 INSERT INTO internships (
@@ -748,55 +865,57 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
     }
 });
 
-// [13] ADMIN: PERSONEL (SÜPERVİZÖR) KAYDI VE GÜNCELLEMESİ
+// [13] ADMIN: PERSONEL (SÜPERVİZÖR) KAYDI (E-Postasız Kayıt Destekli)
 app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { name, email, username, password, role } = req.body || {};
 
-    if (!name || !email) {
-        return res.status(400).json({ message: 'İsim ve E-posta alanları zorunludur.' });
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ message: 'Personel adı zorunludur.' });
     }
 
-    const cleanUsername = username ? username.trim().toLowerCase() : null;
+    const baseSlug = slugifyName(name);
+    const cleanUsername = (username && username.trim() !== '') ? username.trim().toLowerCase() : baseSlug;
+    const cleanEmail = (email && email.trim() !== '') ? email.trim().toLowerCase() : `${baseSlug}@ergo.local`;
+
     const requesterIsAdmin = req.user.role === 'admin' || req.user.role === 'webmaster';
     const requestedRole = role || 'supervisor';
 
     const PRIVILEGED_ROLES = ['admin', 'webmaster', 'coordinator'];
     if (!requesterIsAdmin && PRIVILEGED_ROLES.includes(requestedRole)) {
-        await createAuditLog(req.user.id, 'UNAUTHORIZED_ROLE_ESCALATION_ATTEMPT', null, null, { attemptedRole: requestedRole, targetEmail: email }, req.ip);
         return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Sadece yönetici üst yetki tanımlayabilir.' });
     }
     const assignedRole = requesterIsAdmin ? requestedRole : 'supervisor';
 
     try {
-        const [existing] = await db.execute('SELECT id, role FROM users WHERE email = ?', [email]);
+        const [existing] = await db.execute(
+            'SELECT id, role FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) OR (LOWER(name) = LOWER(?) AND role = ?)', 
+            [cleanEmail, cleanUsername, name.trim(), assignedRole]
+        );
 
         if (existing.length > 0) {
             if (password && password.trim() !== '') {
                 const newHash = await bcrypt.hash(password.trim(), 10);
                 await db.execute(
-                    'UPDATE users SET name = ?, username = ?, role = ?, password_hash = ? WHERE id = ?',
-                    [name, cleanUsername, assignedRole, newHash, existing[0].id]
+                    'UPDATE users SET name = ?, username = ?, email = ?, role = ?, password_hash = ? WHERE id = ?',
+                    [name.trim(), cleanUsername, cleanEmail, assignedRole, newHash, existing[0].id]
                 );
             } else {
                 await db.execute(
-                    'UPDATE users SET name = ?, username = ?, role = ? WHERE id = ?',
-                    [name, cleanUsername, assignedRole, existing[0].id]
+                    'UPDATE users SET name = ?, username = ?, email = ?, role = ? WHERE id = ?',
+                    [name.trim(), cleanUsername, cleanEmail, assignedRole, existing[0].id]
                 );
             }
-            res.json({ message: 'Personel bilgileri başarıyla güncellendi.' });
+            res.json({ message: 'Personel bilgileri güncellendi.' });
         } else {
-            const defaultHash = await bcrypt.hash(password || '1234', 10);
+            const defaultHash = await bcrypt.hash(password || 'hu_ergo', 10);
             await db.execute(
                 'INSERT INTO users (name, email, username, password_hash, role) VALUES (?, ?, ?, ?, ?)',
-                [name, email, cleanUsername, defaultHash, assignedRole]
+                [name.trim(), cleanEmail, cleanUsername, defaultHash, assignedRole]
             );
             res.json({ message: 'Yeni personel başarıyla sisteme eklendi.' });
         }
     } catch (err) {
         console.error('Personel Kayıt Hatası:', err);
-        if (err.message && err.message.includes('users_username_key')) {
-            return res.status(400).json({ message: 'Bu kullanıcı adı zaten başka bir personel tarafından kullanılıyor.' });
-        }
         res.status(500).json({ message: 'Personel kaydı sırasında hata oluştu.' });
     }
 });
@@ -886,7 +1005,6 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
     }
 
     try {
-        // Süpervizör ise: Yalnızca kendi ünitesindeki öğrencinin o dersine not verebilir
         if (req.user.role === 'supervisor') {
             const [permCheck] = await db.execute(`
                 SELECT id FROM supervisor_my_students_view 
