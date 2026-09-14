@@ -88,6 +88,11 @@
                         <i class="fa-solid fa-right-left sm:mr-1.5"></i> <span class="hidden sm:inline">Koordinatör Paneli</span>
                     </button>
 
+                    <!-- ŞİFRE DEĞİŞTİRME BUTONU -->
+                    <button onclick="openPasswordModal()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
+                        <i class="fa-solid fa-key sm:mr-1.5"></i> <span class="hidden sm:inline">Şifre Değiştir</span>
+                    </button>
+
                     <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 cursor-pointer">
                         <i class="fa-solid fa-sign-out-alt sm:mr-1"></i><span class="hidden sm:inline">Çıkış</span>
                     </button>
@@ -136,13 +141,11 @@
                 <!-- HIZLI ARAMA, STAJ ROTASYONU & FİLTRELEME ÇUBUĞU -->
                 <div class="bg-gray-50/80 p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                        <!-- İsim / No Canlı Arama -->
                         <div class="sm:col-span-7 relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                             <input type="text" id="supSearchInput" oninput="applySupervisorFilters()" placeholder="Öğrenci adı, soyadı veya numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
-                        <!-- Staj Grubu / Rotasyon Seçici -->
                         <div class="sm:col-span-5">
                             <select id="supRotationSelect" onchange="applySupervisorFilters()" class="w-full text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple font-semibold text-gray-700 shadow-xs">
                                 <option value="all">📅 Tüm Staj Grupları / Tarihler</option>
@@ -154,7 +157,7 @@
                         </div>
                     </div>
 
-                    <!-- Durum Filtre Hapları (Pills) -->
+                    <!-- Durum Filtre Hapları -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
                         <button onclick="setSupStatusFilter('all')" id="sup-pill-all" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-bold transition bg-hu-purple text-white shadow-xs cursor-pointer">
                             Tümü (<span id="sup-count-all">0</span>)
@@ -189,7 +192,6 @@
             <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100">
                 <h2 class="text-sm sm:text-base font-bold text-gray-900 mb-3">Onay Bekleyen Günlük Yoklamalar</h2>
                 
-                <!-- Masaüstü Tablo Görünümü -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-semibold">
@@ -205,7 +207,6 @@
                     </table>
                 </div>
 
-                <!-- Mobil Liste / Kart Görünümü -->
                 <div id="attendanceMobileList" class="md:hidden divide-y divide-gray-100"></div>
             </div>
         </div>
@@ -257,6 +258,7 @@
 
                     <form id="evaluationForm" onsubmit="event.preventDefault(); promptConfirmEvaluation(); return false;" class="space-y-3.5">
                         <input type="hidden" id="evalStudentId">
+                        <input type="hidden" id="evalCourseCode">
 
                         <div class="border border-gray-200 rounded-2xl p-3.5 space-y-1.5">
                             <div class="flex justify-between items-center">
@@ -302,7 +304,7 @@
         </div>
     </div>
 
-    <!-- ONAY TEYİT MODALI (MAL SAVAR GÜVENLİK KONTROLÜ) -->
+    <!-- ONAY TEYİT MODALI -->
     <div id="confirmEvalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeConfirmModal()"></div>
@@ -324,6 +326,47 @@
                         Evet, Kaydet
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ŞİFRE DEĞİŞTİRME MODAL -->
+    <div id="passwordModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closePasswordModal()"></div>
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-key text-hu-purple mr-2"></i>Şifre Değiştir
+                    </h3>
+                    <button onclick="closePasswordModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="changePasswordForm" onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mevcut Şifre</label>
+                        <input type="password" id="pwCurrent" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+                        <input type="password" id="pwNew" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="En az 4 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="pwConfirm" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="Yeni şifrenizi tekrar girin">
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closePasswordModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                            İptal
+                        </button>
+                        <button type="submit" id="pwSubmitBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer">
+                            Şifreyi Güncelle
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -475,7 +518,6 @@
             }
         }
 
-        // DURUM FİLTRE HAPI SEÇİMİ
         function setSupStatusFilter(filterKey) {
             currentSupStatusFilter = filterKey;
             
@@ -493,7 +535,6 @@
             applySupervisorFilters();
         }
 
-        // ÖĞRENCİ BAŞLANGIÇ TARİHİNİ ROTASYON GRUBUNA EŞLEŞTİRME
         function matchRotationGroup(startDateStr, groupKey) {
             if (groupKey === 'all') return true;
             if (!startDateStr) return groupKey === 'other';
@@ -505,19 +546,15 @@
             const month = parseInt(parts[1], 10);
             const day = parseInt(parts[2], 10);
 
-            // G1: 16 Eylül - 16 Ekim
             if (groupKey === 'g1') {
                 return (month === 9 && day >= 16) || (month === 10 && day <= 16);
             }
-            // G2: 16 Ekim - 16 Kasım
             if (groupKey === 'g2') {
                 return (month === 10 && day > 16) || (month === 11 && day <= 16);
             }
-            // G3: 16 Kasım - 16 Aralık
             if (groupKey === 'g3') {
                 return (month === 11 && day > 16) || (month === 12 && day <= 16);
             }
-            // Diğer
             if (groupKey === 'other') {
                 const inG1 = (month === 9 && day >= 16) || (month === 10 && day <= 16);
                 const inG2 = (month === 10 && day > 16) || (month === 11 && day <= 16);
@@ -527,7 +564,6 @@
             return true;
         }
 
-        // FİLTRELERİ UYGULA VE SAYAÇLARI GÜNCELLE
         function applySupervisorFilters() {
             const query = (document.getElementById('supSearchInput')?.value || '').toLowerCase().trim();
             const groupKey = document.getElementById('supRotationSelect')?.value || 'all';
@@ -595,7 +631,7 @@
                 const scoreText = hasGrade ? `${stu.total_score} / 100` : 'Not Girilmedi';
 
                 const courseBadge = stu.course_code 
-                    ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${stu.course_code}</span>`
+                    ? `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code)}</span>`
                     : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded font-medium">Ders Belirtilmedi</span>`;
 
                 const requiredDays = stu.required_days || 20;
@@ -810,7 +846,8 @@
             if (!stu) return;
 
             document.getElementById('evalStudentId').value = stu.id;
-            document.getElementById('evalStudentName').innerText = `${stu.name} (${stu.student_no || ''})`;
+            document.getElementById('evalCourseCode').value = stu.course_code || 'ERG 421';
+            document.getElementById('evalStudentName').innerText = `${stu.name} (${stu.student_no || ''}) - ${stu.course_code || ''}`;
             
             document.getElementById('score_beh').value = '';
             document.getElementById('score_eval').value = '';
@@ -828,18 +865,24 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {
-                        const gradeData = await res.json();
-                        let d = gradeData.rubric_details;
-                        if (typeof d === 'string') {
-                            try { d = JSON.parse(d); } catch(e) { d = {}; }
-                        }
-                        d = d || {};
+                        const gradesList = await res.json();
+                        const gradeData = Array.isArray(gradesList) 
+                            ? (gradesList.find(g => g.course_code === stu.course_code) || gradesList[0]) 
+                            : gradesList;
 
-                        document.getElementById('score_beh').value = d.beh !== undefined ? d.beh : '';
-                        document.getElementById('score_eval').value = d.eval !== undefined ? d.eval : '';
-                        document.getElementById('score_int').value = d.int !== undefined ? d.int : '';
-                        document.getElementById('evalNote').value = gradeData.note || '';
-                        calculateTotalScore();
+                        if (gradeData) {
+                            let d = gradeData.rubric_details;
+                            if (typeof d === 'string') {
+                                try { d = JSON.parse(d); } catch(e) { d = {}; }
+                            }
+                            d = d || {};
+
+                            document.getElementById('score_beh').value = d.beh !== undefined ? d.beh : '';
+                            document.getElementById('score_eval').value = d.eval !== undefined ? d.eval : '';
+                            document.getElementById('score_int').value = d.int !== undefined ? d.int : '';
+                            document.getElementById('evalNote').value = gradeData.note || '';
+                            calculateTotalScore();
+                        }
                     }
                 } catch(e) {
                     console.error('Eski not detayları çekilemedi:', e);
@@ -884,6 +927,7 @@
             closeConfirmModal();
 
             const studentId = document.getElementById('evalStudentId').value;
+            const courseCode = document.getElementById('evalCourseCode').value;
             const beh = parseInt(document.getElementById('score_beh').value, 10) || 0;
             const evalScore = parseInt(document.getElementById('score_eval').value, 10) || 0;
             const intScore = parseInt(document.getElementById('score_int').value, 10) || 0;
@@ -900,6 +944,7 @@
                     },
                     body: JSON.stringify({
                         studentId: parseInt(studentId, 10),
+                        courseCode: courseCode,
                         totalScore: total,
                         rubricDetails: { beh, eval: evalScore, int: intScore },
                         note: note
@@ -916,6 +961,58 @@
                 }
             } catch (err) {
                 showToast("Sunucu hatası oluştu.", "error");
+            }
+        }
+
+        // --- ŞİFRE DEĞİŞTİRME FONKSİYONLARI ---
+        function openPasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('pwCurrent').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('pwCurrent').value;
+            const newPassword = document.getElementById('pwNew').value;
+            const confirmPassword = document.getElementById('pwConfirm').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Yeni şifreler birbiriyle eşleşmiyor!', 'error');
+                return;
+            }
+
+            const token = getToken();
+            const submitBtn = document.getElementById('pwSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Güncelleniyor...';
+
+            try {
+                const res = await fetch(`${API_URL}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.message || 'Şifre değiştirilemedi.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu bağlantı hatası oluştu.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Şifreyi Güncelle';
             }
         }
 

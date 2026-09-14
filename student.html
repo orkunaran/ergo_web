@@ -70,13 +70,19 @@
                     <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-sm sm:text-base leading-tight truncate max-w-[200px] sm:max-w-none" id="studentNameDisplay">Öğrenci Paneli</h1>
+                    <h1 class="font-extrabold text-sm sm:text-base leading-tight truncate max-w-[160px] sm:max-w-none" id="studentNameDisplay">Öğrenci Paneli</h1>
                     <p class="text-[11px] text-purple-200 font-medium" id="studentNoDisplay">No: -</p>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border border-purple-800/80 flex items-center cursor-pointer">
-                <i class="fa-solid fa-sign-out-alt mr-1"></i> Çıkış
-            </button>
+            <div class="flex items-center space-x-2">
+                <!-- ŞİFRE DEĞİŞTİRME BUTONU -->
+                <button onclick="openPasswordModal()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border border-purple-800/80 flex items-center cursor-pointer">
+                    <i class="fa-solid fa-key sm:mr-1"></i> <span class="hidden sm:inline">Şifre Değiştir</span>
+                </button>
+                <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border border-purple-800/80 flex items-center cursor-pointer">
+                    <i class="fa-solid fa-sign-out-alt sm:mr-1"></i> <span class="hidden sm:inline">Çıkış</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -217,7 +223,7 @@
             </button>
         </div>
 
-        <!-- iOS SAFARI YOL GÖSTERİCİ İPUCU KUTUSU (VARSAYILAN GİZLİ) -->
+        <!-- iOS SAFARI YOL GÖSTERİCİ İPUCU KUTUSU -->
         <div id="iosInstallGuide" class="hidden mt-3 p-3 bg-purple-50 rounded-2xl border border-purple-100 text-[11px] text-gray-700 space-y-1.5">
             <div class="flex items-center font-bold text-hu-purple">
                 <i class="fa-brands fa-apple text-sm mr-1.5"></i> iPhone / iPad Kurulumu:
@@ -231,7 +237,7 @@
         </div>
     </div>
 
-    <!-- SABİT MOBİL ALT MENÜ (BOTTOM APP BAR) -->
+    <!-- SABİT MOBİL ALT MENÜ -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-30 px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-lg">
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center text-hu-purple focus:outline-none">
             <i class="fa-solid fa-house text-base"></i>
@@ -286,6 +292,47 @@
         </div>
     </div>
 
+    <!-- ŞİFRE DEĞİŞTİRME MODAL -->
+    <div id="passwordModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closePasswordModal()"></div>
+            <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-key text-hu-purple mr-2"></i>Şifre Değiştir
+                    </h3>
+                    <button onclick="closePasswordModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="changePasswordForm" onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mevcut Şifre</label>
+                        <input type="password" id="pwCurrent" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+                        <input type="password" id="pwNew" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="En az 4 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="pwConfirm" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="Yeni şifrenizi tekrar girin">
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closePasswordModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                            İptal
+                        </button>
+                        <button type="submit" id="pwSubmitBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer">
+                            Şifreyi Güncelle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
@@ -317,7 +364,6 @@
             return dateStr;
         }
 
-        // PWA Kurulum Olayı Dinleyicisi (Android Chrome)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -347,7 +393,6 @@
             startClock();
             loadAttendanceData();
 
-            // iOS Safari PWA Kontrolü
             const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
             if (isIos && !isStandalone) {
@@ -703,6 +748,58 @@
                 }
             } catch (err) {
                 showToast("Sunucu hatası oluştu.", "error");
+            }
+        }
+
+        // --- ŞİFRE DEĞİŞTİRME FONKSİYONLARI ---
+        function openPasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('pwCurrent').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('pwCurrent').value;
+            const newPassword = document.getElementById('pwNew').value;
+            const confirmPassword = document.getElementById('pwConfirm').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Yeni şifreler birbiriyle eşleşmiyor!', 'error');
+                return;
+            }
+
+            const token = getToken();
+            const submitBtn = document.getElementById('pwSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Güncelleniyor...';
+
+            try {
+                const res = await fetch(`${API_URL}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.message || 'Şifre değiştirilemedi.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu bağlantı hatası oluştu.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Şifreyi Güncelle';
             }
         }
     </script>
