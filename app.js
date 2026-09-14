@@ -69,7 +69,6 @@ const loginLimiter = rateLimit({
 
 // --- 3. YARDIMCI FONKSİYONLAR ---
 
-// İsimdeki unvanları temizleyip standart kullanıcı adı/slug üreten fonksiyon
 function slugifyName(name) {
     if (!name) return 'kullanici';
     const clean = String(name)
@@ -188,7 +187,6 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
             return res.json({ message: 'Giriş başarılı', token, user });
 
         } else {
-            // Öğrenci: No, Kullanıcı Adı veya E-posta ile giriş yapabilir
             const [rows] = await db.execute(`
                 SELECT * FROM users 
                 WHERE (student_no = ? OR LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)) 
@@ -220,7 +218,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 });
 
-// [1.1] KULLANICI ŞİFRE DEĞİŞTİRME (Kullanıcının Kendi İşlemi)
+// [1.1] KULLANICI ŞİFRE DEĞİŞTİRME
 app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body || {};
     const userId = req.user.id;
@@ -256,7 +254,7 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     }
 });
 
-// [1.2] ADMIN: KULLANICI ŞİFRESİ SIFIRLAMA (Yönetici Sıfırlaması)
+// [1.2] ADMIN: KULLANICI ŞİFRESİ SIFIRLAMA
 app.post('/api/admin/users/:id/reset-password', authenticateToken, authorizeRoles('admin', 'webmaster'), async (req, res) => {
     try {
         const targetUserId = req.params.id;
@@ -275,7 +273,7 @@ app.post('/api/admin/users/:id/reset-password', authenticateToken, authorizeRole
     }
 });
 
-// [1.3] KULLANICI KENDİ PROFİLİNİ GÜNCELLEME (E-posta ve Kullanıcı Adı)
+// [1.3] KULLANICI KENDİ PROFİLİNİ GÜNCELLEME
 app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
     const { email, username } = req.body || {};
     const userId = req.user.id;
@@ -293,7 +291,6 @@ app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
     }
 
     try {
-        // E-posta başka kullanıcıda var mı kontrolü
         const [existingEmail] = await db.execute(
             'SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?',
             [cleanEmail, userId]
@@ -302,7 +299,6 @@ app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.' });
         }
 
-        // Kullanıcı adı başka kullanıcıda var mı kontrolü
         if (cleanUsername) {
             const [existingUsername] = await db.execute(
                 'SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?',
@@ -335,7 +331,7 @@ app.post('/api/auth/update-profile', authenticateToken, async (req, res) => {
     }
 });
 
-// [2] SÜPERVİZÖRÜN KENDİ ÜNİTESİNDEKİ ÖĞRENCİLER (SQL View Bağlantısı)
+// [2] SÜPERVİZÖRÜN KENDİ ÜNİTESİNDEKİ ÖĞRENCİLER
 app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
@@ -399,7 +395,7 @@ app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('s
     }
 });
 
-// [4] YOKLAMA DURUM GÜNCELLEME (ONAY / RED)
+// [4] YOKLAMA DURUM GÜNCELLEME
 app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const { status } = req.body || {};
     const attendanceId = req.params.id;
@@ -428,7 +424,7 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
     }
 });
 
-// [5] TOPLU YOKLAMA ONAYLAMA (Sadece Kendi Ünitesindeki Öğrenciler)
+// [5] TOPLU YOKLAMA ONAYLAMA
 app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
@@ -528,7 +524,7 @@ app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('stude
     }
 });
 
-// [8] ÖĞRENCİ PANELİ VERİLERİ (Çoklu Ders & Aktif Staj Yayma Desteği)
+// [8] ÖĞRENCİ PANELİ VERİLERİ
 app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     try {
         const studentId = req.user.id;
@@ -580,7 +576,7 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
     }
 });
 
-// [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR LİSTESİ
+// [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR
 app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {
         const [rows] = await db.execute(`
@@ -645,7 +641,7 @@ app.post('/api/coordinator/approve-student', authenticateToken, authorizeRoles('
     }
 });
 
-// [12] ADMIN: ÖĞRENCİ VE İÇ STAJ (ÜNİTE ODAKLI ÇOKLU DERS) KAYDI
+// [12] ADMIN: ÖĞRENCİ VE ÇOKLU STAJ DÖNEMİ / ROTASYONU KAYDI (TEK SEFERDE TÜM STAJLAR)
 app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};
 
@@ -674,6 +670,7 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
 
             const stuUsername = (stu.username && stu.username.trim() !== '') ? stu.username.trim().toLowerCase() : stu.studentNo;
 
+            // 1. Öğrenciyi users tablosunda tekilleştir (Mükerrer hesap açılmaz)
             let [existing] = await connection.execute('SELECT id FROM users WHERE student_no = ?', [stu.studentNo]);
             let studentId;
 
@@ -700,41 +697,20 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                 studentId = insertRes[0].id;
             }
 
-            const internshipList = [];
+            // 2. Öğrencinin birden fazla stajını / rotasyonunu dizi (array) veya tekil olarak destekle
+            const internshipsArray = Array.isArray(stu.internships) ? stu.internships : [stu];
 
-            // 1. Staj / Ders
-            if (stu.courseCode || stu.course1Code) {
-                const morningDept = stu.course1MorningDeptId || stu.morningDeptId || null;
-                const afternoonDept = stu.course1AfternoonDeptId || stu.afternoonDeptId || morningDept;
+            for (const item of internshipsArray) {
+                const courseCode = (item.courseCode || stu.courseCode || 'ERG401').trim();
+                const courseName = item.courseName || stu.courseName || 'Mesleki Uygulama';
+                const internshipType = item.internshipType || stu.internshipType || 'internal';
+                const morningDept = item.morningDeptId || stu.morningDeptId || null;
+                const afternoonDept = item.afternoonDeptId || stu.afternoonDeptId || morningDept;
+                const supervisorId = item.supervisorId || stu.supervisorId || null;
+                const requiredDays = item.requiredDays || stu.requiredDays || 20;
+                const startDate = item.startDate || stu.startDate || '2026-09-14';
+                const endDate = item.endDate || stu.endDate || '2026-10-18';
 
-                internshipList.push({
-                    code: (stu.course1Code || stu.courseCode).trim(),
-                    name: stu.course1Name || stu.courseName || 'Mesleki Uygulama I',
-                    type: stu.course1Type || stu.internshipType || 'internal',
-                    morningDept,
-                    afternoonDept,
-                    supervisorId: stu.supervisorId || stu.course1SupervisorId || null,
-                    requiredDays: stu.course1RequiredDays || stu.requiredDays || 20
-                });
-            }
-
-            // 2. Staj / Ders (Varsa)
-            if (stu.course2Code) {
-                const morningDept2 = stu.course2MorningDeptId || null;
-                const afternoonDept2 = stu.course2AfternoonDeptId || morningDept2;
-
-                internshipList.push({
-                    code: stu.course2Code.trim(),
-                    name: stu.course2Name || 'Mesleki Uygulama II',
-                    type: stu.course2Type || 'internal',
-                    morningDept: morningDept2,
-                    afternoonDept: afternoonDept2,
-                    supervisorId: stu.course2SupervisorId || null,
-                    requiredDays: stu.course2RequiredDays || 20
-                });
-            }
-
-            for (const item of internshipList) {
                 await connection.execute(`
                     INSERT INTO internships (
                         student_id, course_code, course_name, internship_type, 
@@ -744,27 +720,29 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
                     ON CONFLICT (student_id, course_code) DO UPDATE SET 
                         course_name = EXCLUDED.course_name,
                         internship_type = EXCLUDED.internship_type,
+                        start_date = EXCLUDED.start_date,
+                        end_date = EXCLUDED.end_date,
                         required_days = EXCLUDED.required_days,
                         supervisor_id = EXCLUDED.supervisor_id,
                         morning_dept_id = EXCLUDED.morning_dept_id,
                         afternoon_dept_id = EXCLUDED.afternoon_dept_id
                 `, [
                     studentId,
-                    item.code,
-                    item.name,
-                    item.type,
-                    stu.startDate || '2026-09-01',
-                    stu.endDate || '2026-10-01',
-                    item.requiredDays,
-                    item.supervisorId,
-                    item.morningDept,
-                    item.afternoonDept
+                    courseCode,
+                    courseName,
+                    internshipType,
+                    startDate,
+                    endDate,
+                    requiredDays,
+                    supervisorId,
+                    morningDept,
+                    afternoonDept
                 ]);
             }
         }
 
         await connection.commit();
-        res.json({ message: 'Öğrenci ve ünite bazlı staj kayıtları başarıyla kaydedildi.' });
+        res.json({ message: 'Öğrenciler ve tüm staj dönemleri başarıyla eşleştirildi.' });
     } catch (err) {
         await connection.rollback();
         console.error('Öğrenci Kayıt Hatası:', err);
@@ -854,30 +832,42 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
                 studentId = insertStu[0].id;
             }
 
-            const courseCode = (stu.courseCode || 'ERG 421').trim();
-            await connection.execute(`
-                INSERT INTO internships (
-                    student_id, course_code, course_name, internship_type, 
-                    start_date, end_date, required_days, supervisor_id, morning_dept_id, afternoon_dept_id
-                ) 
-                VALUES (?, ?, ?, 'external', ?, ?, 20, ?, NULL, NULL)
-                ON CONFLICT (student_id, course_code) DO UPDATE SET 
-                    internship_type = 'external',
-                    supervisor_id = EXCLUDED.supervisor_id,
-                    morning_dept_id = NULL,
-                    afternoon_dept_id = NULL
-            `, [
-                studentId,
-                courseCode,
-                'Dış Kurum Mesleki Uygulama',
-                stu.startDate || '2026-09-01',
-                stu.endDate || '2026-10-01',
-                supervisorId
-            ]);
+            const internshipsArray = Array.isArray(stu.internships) ? stu.internships : [stu];
+
+            for (const item of internshipsArray) {
+                const courseCode = (item.courseCode || stu.courseCode || 'ERG431').trim();
+                const startDate = item.startDate || stu.startDate || '2026-09-14';
+                const endDate = item.endDate || stu.endDate || '2026-10-18';
+                const requiredDays = item.requiredDays || stu.requiredDays || 20;
+
+                await connection.execute(`
+                    INSERT INTO internships (
+                        student_id, course_code, course_name, internship_type, 
+                        start_date, end_date, required_days, supervisor_id, morning_dept_id, afternoon_dept_id
+                    ) 
+                    VALUES (?, ?, ?, 'external', ?, ?, ?, ?, NULL, NULL)
+                    ON CONFLICT (student_id, course_code) DO UPDATE SET 
+                        internship_type = 'external',
+                        start_date = EXCLUDED.start_date,
+                        end_date = EXCLUDED.end_date,
+                        required_days = EXCLUDED.required_days,
+                        supervisor_id = EXCLUDED.supervisor_id,
+                        morning_dept_id = NULL,
+                        afternoon_dept_id = NULL
+                `, [
+                    studentId,
+                    courseCode,
+                    'Dış Kurum Mesleki Uygulama',
+                    startDate,
+                    endDate,
+                    requiredDays,
+                    supervisorId
+                ]);
+            }
         }
 
         await connection.commit();
-        res.json({ message: 'Dış staj öğrencileri ve süpervizör hesapları başarıyla kaydedildi.' });
+        res.json({ message: 'Dış staj öğrencileri ve tüm rotasyonları başarıyla kaydedildi.' });
     } catch (err) {
         await connection.rollback();
         console.error('Dış Staj Kayıt Hatası:', err);
@@ -887,7 +877,7 @@ app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles(
     }
 });
 
-// [13] ADMIN: PERSONEL (SÜPERVİZÖR) KAYDI (E-Postasız Kayıt Destekli)
+// [13] ADMIN: PERSONEL (SÜPERVİZÖR) KAYDI
 app.post('/api/admin/supervisors/save', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { name, email, username, password, role } = req.body || {};
 
@@ -958,7 +948,7 @@ app.get('/api/admin/supervisors', authenticateToken, authorizeRoles('admin', 'we
     }
 });
 
-// [14.1] TÜM DEPARTMANLARI LİSTELE (Bağlı Sorumlu Hocalarla)
+// [14.1] TÜM DEPARTMANLARI LİSTELE
 app.get('/api/admin/departments', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     try {
         const [depts] = await db.execute('SELECT * FROM departments ORDER BY id ASC');
@@ -1017,7 +1007,7 @@ app.delete('/api/admin/departments/remove', authenticateToken, authorizeRoles('a
     }
 });
 
-// [15] DERS BAZLI NOT GİRİŞİ / DÜZENLEME (Ünite Kilidi Korumalı)
+// [15] DERS BAZLI NOT GİRİŞİ / DÜZENLEME
 app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const evaluatorId = req.user.id;
     const { studentId, courseCode, totalScore, rubricDetails, note } = req.body || {};
@@ -1074,7 +1064,7 @@ app.post('/api/grades/assign', authenticateToken, authorizeRoles('supervisor', '
     }
 });
 
-// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME (Ders Bazlı)
+// [16] ÖĞRENCİ DETAYLI NOTUNU GETİRME
 app.get('/api/grades/student/:studentId', authenticateToken, async (req, res) => {
     try {
         const studentId = req.params.studentId;
