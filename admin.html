@@ -64,13 +64,19 @@
                         <p class="text-xs text-purple-200">Sistem Yönetimi</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-semibold" id="adminNameDisplay">Yönetici</p>
                         <p class="text-xs text-purple-200" id="adminRoleDisplay">Admin</p>
                     </div>
-                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm border border-purple-800 cursor-pointer">
-                        <i class="fa-solid fa-sign-out-alt mr-2"></i>Çıkış
+
+                    <!-- ŞİFRE DEĞİŞTİRME BUTONU -->
+                    <button onclick="openPasswordModal()" class="bg-hu-dark hover:bg-purple-900 active:scale-95 px-3 py-2 rounded-md text-xs font-semibold transition-all border border-purple-800 cursor-pointer flex items-center">
+                        <i class="fa-solid fa-key mr-1.5"></i> Şifre Değiştir
+                    </button>
+
+                    <button onclick="logout()" class="bg-hu-dark hover:bg-purple-900 active:scale-95 px-3 py-2 rounded-md text-xs font-semibold transition-all border border-purple-800 cursor-pointer flex items-center">
+                        <i class="fa-solid fa-sign-out-alt mr-1.5"></i> Çıkış
                     </button>
                 </div>
             </div>
@@ -381,22 +387,44 @@
                         </form>
                     </div>
 
-                    <!-- EXCEL YÜKLEME KARTI -->
+                    <!-- 1. BÖLÜM İÇİ ÇOKLU STAJ EXCEL KARTI (ÜNİTE BAZLI) -->
                     <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Excel ile Çoklu Staj İçe Aktar</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">
+                            <i class="fa-solid fa-hospital-user text-hu-purple mr-2"></i>Bölüm İçi Çoklu Staj İçe Aktar
+                        </h3>
                         <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">
-                            Öğrenci tek satırda her iki stajıyla birlikte aktarılabilir.<br>
+                            Öğrenci başına sabah/öğle klinik ünite ID'lerini giriniz (Hoca otomatik atanır).<br>
                             <b>Sütun Başlıkları:</b><br>
                             <span class="text-purple-700 font-mono text-[10px]">
-                                Ad Soyad | Öğrenci No | Şifre | 1. Ders Kodu | 1. Staj Türü | 1. Sabah Dept ID | 1. Öğle Dept ID | 1. Süpervizör E-posta | 2. Ders Kodu | 2. Staj Türü | 2. Sabah Dept ID | 2. Öğle Dept ID | 2. Süpervizör E-posta
+                                Ad Soyad | Öğrenci No | Şifre | 1. Ders Kodu | 1. Staj Türü | 1. Sabah Ünite ID | 1. Öğle Ünite ID | 2. Ders Kodu | 2. Staj Türü | 2. Sabah Ünite ID | 2. Öğle Ünite ID
                             </span>
                         </p>
-                        <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-28 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-1"></i>
-                            <p class="text-xs text-gray-600 font-semibold">Excel Dosyası Seç (.xlsx)</p>
+                        <label for="excelUpload" class="flex flex-col items-center justify-center w-full h-28 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-purple-50/40 hover:bg-purple-50">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-hu-purple mb-1"></i>
+                            <p class="text-xs text-hu-purple font-semibold">Bölüm İçi Staj Dosyası Seç (.xlsx)</p>
                             <input id="excelUpload" type="file" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)" />
                         </label>
                     </div>
+
+                    <!-- 2. DIŞ STAJ EXCEL KARTI (SÜPERVİZÖR HESABI OTOMATİK AÇMA DESTEKLİ) -->
+                    <div class="bg-white shadow rounded-xl p-6 border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 border-b pb-2">
+                            <i class="fa-solid fa-building-circle-check text-blue-600 mr-2"></i>Dış Kurum Stajı İçe Aktar
+                        </h3>
+                        <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">
+                            Süpervizör sistemde yoksa <b>otomatik hesabı oluşturulur</b> (Varsayılan Şifre: <code>hu_ergo</code>).<br>
+                            <b>Sütun Başlıkları:</b><br>
+                            <span class="text-blue-700 font-mono text-[10px]">
+                                Öğrenci Adı Soyadı | Öğrenci No | Öğrenci E-posta | Şifre | Staj Ders Kodu | Staj Yapacağı Yer Adı | Süpervizör Adı Soyadı | Süpervizör E-posta
+                            </span>
+                        </p>
+                        <label for="excelUploadExternal" class="flex flex-col items-center justify-center w-full h-28 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-blue-50/40 hover:bg-blue-50">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-blue-600 mb-1"></i>
+                            <p class="text-xs text-blue-700 font-semibold">Dış Staj Dosyası Seç (.xlsx)</p>
+                            <input id="excelUploadExternal" type="file" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleExternalExcelUpload(event)" />
+                        </label>
+                    </div>
+
                 </div>
 
                 <!-- SAĞ LİSTE: TÜM ÖĞRENCİ VE ÇOKLU STAJ KAYITLARI -->
@@ -425,6 +453,47 @@
         </div>
 
     </main>
+
+    <!-- ŞİFRE DEĞİŞTİRME MODAL -->
+    <div id="passwordModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closePasswordModal()"></div>
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-key text-hu-purple mr-2"></i>Şifre Değiştir
+                    </h3>
+                    <button onclick="closePasswordModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="changePasswordForm" onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mevcut Şifre</label>
+                        <input type="password" id="pwCurrent" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+                        <input type="password" id="pwNew" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="En az 4 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="pwConfirm" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="Yeni şifrenizi tekrar girin">
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closePasswordModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                            İptal
+                        </button>
+                        <button type="submit" id="pwSubmitBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer">
+                            Şifreyi Güncelle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
         function escapeHtml(str) {
@@ -637,7 +706,6 @@
 
                 populateDepartmentDropdowns(cachedDepartments);
 
-                // Grid
                 const grid = document.getElementById('departmentsGrid');
                 if (grid) {
                     grid.innerHTML = '';
@@ -868,6 +936,7 @@
             reader.readAsArrayBuffer(file);
         }
 
+        // BÖLÜM İÇİ ÇOKLU STAJ EXCEL AYRIŞTIRICI (ÜNİTE ODAKLI)
         async function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -887,20 +956,18 @@
                         const password = r['Şifre'] || '1234';
 
                         // 1. Ders Bilgisi
-                        const c1Code = r['1. Ders Kodu'] || r['Ders 1 Kodu'] || r['Staj Ders Kodu'] || r['Ders Kodu'];
+                        const c1Code = r['1. Ders Kodu'] || r['Ders 1 Kodu'] || r['Staj Ders Kodu'];
                         const c1TypeRaw = (r['1. Staj Türü'] || r['Staj Türü'] || 'internal').toString().toLowerCase();
                         const c1Type = c1TypeRaw.includes('dış') || c1TypeRaw === 'external' ? 'external' : 'internal';
-                        const c1Morning = r['1. Sabah Dept ID'] || r['Sabah Dept ID'];
-                        const c1Afternoon = r['1. Öğle Dept ID'] || r['Öğle Dept ID'];
-                        const c1SupEmail = r['1. Süpervizör E-posta'] || r['Süpervizör E-posta'];
+                        const c1Morning = r['1. Sabah Ünite ID'] || r['1. Sabah Dept ID'] || r['Sabah Dept ID'];
+                        const c1Afternoon = r['1. Öğle Ünite ID'] || r['1. Öğle Dept ID'] || r['Öğle Dept ID'] || c1Morning;
 
                         // 2. Ders Bilgisi (Varsa)
-                        const c2Code = r['2. Ders Kodu'] || r['Ders 2 Kodu'] || r['2. Staj Ders Kodu'];
+                        const c2Code = r['2. Ders Kodu'] || r['Ders 2 Kodu'];
                         const c2TypeRaw = (r['2. Staj Türü'] || 'internal').toString().toLowerCase();
                         const c2Type = c2TypeRaw.includes('dış') || c2TypeRaw === 'external' ? 'external' : 'internal';
-                        const c2Morning = r['2. Sabah Dept ID'];
-                        const c2Afternoon = r['2. Öğle Dept ID'];
-                        const c2SupEmail = r['2. Süpervizör E-posta'];
+                        const c2Morning = r['2. Sabah Ünite ID'] || r['2. Sabah Dept ID'];
+                        const c2Afternoon = r['2. Öğle Ünite ID'] || r['2. Öğle Dept ID'] || c2Morning;
 
                         if (name && studentNo) {
                             payloadStudents.push({
@@ -912,13 +979,11 @@
                                 course1Type: c1Type,
                                 course1MorningDeptId: c1Morning ? parseInt(c1Morning, 10) : null,
                                 course1AfternoonDeptId: c1Afternoon ? parseInt(c1Afternoon, 10) : null,
-                                course1SupEmail: c1SupEmail ? String(c1SupEmail).trim() : null,
 
                                 course2Code: c2Code ? String(c2Code).trim() : null,
                                 course2Type: c2Type,
                                 course2MorningDeptId: c2Morning ? parseInt(c2Morning, 10) : null,
-                                course2AfternoonDeptId: c2Afternoon ? parseInt(c2Afternoon, 10) : null,
-                                course2SupEmail: c2SupEmail ? String(c2SupEmail).trim() : null
+                                course2AfternoonDeptId: c2Afternoon ? parseInt(c2Afternoon, 10) : null
                             });
                         }
                     });
@@ -931,7 +996,7 @@
                             body: JSON.stringify({ students: payloadStudents })
                         });
                         if (res.ok) {
-                            showToast(`${payloadStudents.length} öğrencinin staj kayıtları aktarıldı.`, 'success');
+                            showToast(`${payloadStudents.length} öğrencinin staj kayıtları ünite bazlı aktarıldı.`, 'success');
                             loadData();
                         } else {
                             showToast('Öğrenciler aktarılamadı.', 'error');
@@ -942,6 +1007,118 @@
                 } finally { e.target.value = ''; }
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        // DIŞ KURUM STAJI EXCEL AYRIŞTIRICI (OTOMATİK HESAP AÇMA DESTEKLİ)
+        async function handleExternalExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                    let payloadStudents = [];
+
+                    rows.forEach(r => {
+                        const name = r['Öğrenci Adı Soyadı'] || r['Ad Soyad'] || r['Adı Soyadı'];
+                        const studentNo = r['Öğrenci No'] || r['Ogrenci No'] || r['No'];
+                        const studentEmail = r['Öğrenci E-posta'] || r['Ogrenci Email'] || r['Öğrenci Email'];
+                        const password = r['Şifre'] || '1234';
+                        const courseCode = r['Staj Ders Kodu'] || r['Ders Kodu'] || 'ERG 421';
+                        const institutionName = r['Staj Yapacağı Yer Adı'] || r['Kurum Adı'] || r['Yer Adı'];
+                        const supervisorName = r['Süpervizör Adı Soyadı'] || r['Süpervizör Adı'] || r['Süpervizör'];
+                        const supervisorEmail = r['Süpervizör E-posta'] || r['Süpervizör Email'];
+
+                        if (name && studentNo) {
+                            payloadStudents.push({
+                                name: String(name).trim(),
+                                studentNo: String(studentNo).trim(),
+                                studentEmail: studentEmail ? String(studentEmail).trim() : null,
+                                password: String(password).trim(),
+                                courseCode: String(courseCode).trim(),
+                                institutionName: institutionName ? String(institutionName).trim() : null,
+                                supervisorName: supervisorName ? String(supervisorName).trim() : null,
+                                supervisorEmail: supervisorEmail ? String(supervisorEmail).trim() : null
+                            });
+                        }
+                    });
+
+                    if (payloadStudents.length > 0) {
+                        const token = getToken();
+                        const res = await fetch(`${API_URL}/admin/students/save-external`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ students: payloadStudents })
+                        });
+                        const result = await res.json();
+                        if (res.ok) {
+                            showToast(`${payloadStudents.length} dış staj öğrencisi ve süpervizörleri aktarıldı.`, 'success');
+                            loadData();
+                        } else {
+                            showToast(result.message || 'Aktarım başarısız.', 'error');
+                        }
+                    }
+                } catch(err) {
+                    showToast('Dış staj Excel dosyası işlenirken hata oluştu.', 'error');
+                } finally { e.target.value = ''; }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ŞİFRE DEĞİŞTİRME FONKSİYONLARI
+        function openPasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('pwCurrent').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('pwCurrent').value;
+            const newPassword = document.getElementById('pwNew').value;
+            const confirmPassword = document.getElementById('pwConfirm').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Yeni şifreler birbiriyle eşleşmiyor!', 'error');
+                return;
+            }
+
+            const token = getToken();
+            const submitBtn = document.getElementById('pwSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Güncelleniyor...';
+
+            try {
+                const res = await fetch(`${API_URL}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.message || 'Şifre değiştirilemedi.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu bağlantı hatası oluştu.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Şifreyi Güncelle';
+            }
         }
     </script>
 </body>

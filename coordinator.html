@@ -43,6 +43,8 @@
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-gray-800 antialiased selection:bg-purple-200">
@@ -57,7 +59,7 @@
             <div class="flex flex-wrap items-center gap-1.5">
                 <a href="admin.html" id="navAdminBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🛡️ Admin</a>
                 <a href="coordinator.html" class="bg-hu-purple text-white px-2.5 py-1 rounded font-bold hover:opacity-90">🎓 Staj Koordinatörü</a>
-                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör / Danışman</a>
+                <a href="supervisor.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">🏥 Süpervizör Paneli</a>
                 <a href="student.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-2.5 py-1 rounded">👨‍🎓 Öğrenci</a>
             </div>
         </div>
@@ -84,6 +86,11 @@
                     
                     <button onclick="toggleRole()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
                         <i class="fa-solid fa-right-left sm:mr-1.5"></i> <span class="hidden sm:inline">Süpervizör Paneli</span>
+                    </button>
+
+                    <!-- ŞİFRE DEĞİŞTİRME BUTONU -->
+                    <button onclick="openPasswordModal()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 flex items-center cursor-pointer">
+                        <i class="fa-solid fa-key sm:mr-1.5"></i> <span class="hidden sm:inline">Şifre Değiştir</span>
                     </button>
 
                     <button onclick="logout()" class="bg-hu-dark/80 hover:bg-purple-900 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all border border-purple-800/80 cursor-pointer">
@@ -118,7 +125,7 @@
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-3">
                     <div>
                         <h2 class="text-base sm:text-xl font-bold text-gray-900">Bölüm Staj Takip, Yoklama Audit & Final Onayı</h2>
-                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Süpervizör notları, yoklama zaman damgaları ve bölüm resmi onayı.</p>
+                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">Çoklu ders takibi, ünite bazlı hoca dağılımı ve bölüm resmi staj onayı.</p>
                     </div>
                     <div class="flex items-center flex-wrap gap-2">
                         <button onclick="exportAllDepartmentToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-3 py-2 rounded-xl shadow-sm transition flex items-center cursor-pointer">
@@ -131,13 +138,13 @@
                     </div>
                 </div>
 
-                <!-- HIZLI ARAMA, STAJ ROTASYONU & FİLTRELEME ÇUBUĞU -->
+                <!-- HIZLI ARAMA, DERS & DURUM FİLTRELEME ÇUBUĞU -->
                 <div class="bg-gray-50/80 p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                         <!-- İsim / No Canlı Arama -->
                         <div class="sm:col-span-7 relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Öğrenci adı, soyadı veya okul numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Öğrenci adı, no, ders kodu veya ünite ile ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
                         <!-- Staj Grubu / Rotasyon Seçici -->
@@ -161,7 +168,7 @@
                             Notu Girilmeyenler (<span id="count-unscored">0</span>)
                         </button>
                         <button onclick="setStatusFilter('missing')" id="pill-missing" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
-                            Eksik / Telafi Yoklaması Olanlar (<span id="count-missing">0</span>)
+                            Eksik Yoklaması Olanlar (<span id="count-missing">0</span>)
                         </button>
                         <button onclick="setStatusFilter('pendingApproval')" id="pill-pendingApproval" class="status-pill whitespace-nowrap px-3 py-1.5 rounded-xl font-medium transition bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer">
                             Bölüm Onayı Bekleyenler (<span id="count-pendingApproval">0</span>)
@@ -174,11 +181,12 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-semibold">
                             <tr>
-                                <th class="px-6 py-3.5 text-left">Öğrenci Adı / No</th>
-                                <th class="px-6 py-3.5 text-left">Atanan Süpervizör / Danışman</th>
-                                <th class="px-6 py-3.5 text-left">Yoklama Audit Log</th>
-                                <th class="px-6 py-3.5 text-left">Staj Notu</th>
-                                <th class="px-6 py-3.5 text-right">Bölüm Onayı / İşlem</th>
+                                <th class="px-5 py-3.5 text-left">Öğrenci Bilgisi</th>
+                                <th class="px-4 py-3.5 text-left">Ders / Model</th>
+                                <th class="px-5 py-3.5 text-left">Ünite Dağılımı / Süpervizör</th>
+                                <th class="px-4 py-3.5 text-left">Yoklama Audit</th>
+                                <th class="px-4 py-3.5 text-left">Staj Notu</th>
+                                <th class="px-5 py-3.5 text-right">Bölüm Onayı / İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="departmentStudentsTable" class="bg-white divide-y divide-gray-100 text-sm"></tbody>
@@ -276,6 +284,47 @@
                 <div class="mt-3 pt-3 border-t text-right flex-shrink-0">
                     <button onclick="closeGradeDetailModal()" class="w-full sm:w-auto px-5 py-2.5 bg-hu-purple text-white text-xs font-bold rounded-xl hover:bg-hu-dark active:scale-95 cursor-pointer">Kapat</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ŞİFRE DEĞİŞTİRME MODALI -->
+    <div id="passwordModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closePasswordModal()"></div>
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-key text-hu-purple mr-2"></i>Şifre Değiştir
+                    </h3>
+                    <button onclick="closePasswordModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="changePasswordForm" onsubmit="event.preventDefault(); handleChangePassword(); return false;" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mevcut Şifre</label>
+                        <input type="password" id="pwCurrent" required class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+                        <input type="password" id="pwNew" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="En az 4 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="pwConfirm" required minlength="4" class="w-full text-xs px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple" placeholder="Yeni şifrenizi tekrar girin">
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closePasswordModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                            İptal
+                        </button>
+                        <button type="submit" id="pwSubmitBtn" class="px-5 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer">
+                            Şifreyi Güncelle
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -402,7 +451,6 @@
             document.getElementById(`${tabId}-section`).classList.remove('hidden');
         }
 
-        // DURUM FİLTRE HAPI SEÇİMİ
         function setStatusFilter(filterKey) {
             currentStatusFilter = filterKey;
             
@@ -420,7 +468,6 @@
             applyFilters();
         }
 
-        // ÖĞRENCİ TARİHİNİ ROTASYON GRUBUNA EŞLEŞTİRME
         function matchRotationGroup(startDateStr, groupKey) {
             if (groupKey === 'all') return true;
             if (!startDateStr) return groupKey === 'other';
@@ -432,19 +479,15 @@
             const month = parseInt(parts[1], 10);
             const day = parseInt(parts[2], 10);
 
-            // G1: 16 Eylül - 16 Ekim
             if (groupKey === 'g1') {
                 return (month === 9 && day >= 16) || (month === 10 && day <= 16);
             }
-            // G2: 16 Ekim - 16 Kasım
             if (groupKey === 'g2') {
                 return (month === 10 && day > 16) || (month === 11 && day <= 16);
             }
-            // G3: 16 Kasım - 16 Aralık
             if (groupKey === 'g3') {
                 return (month === 11 && day > 16) || (month === 12 && day <= 16);
             }
-            // Diğer
             if (groupKey === 'other') {
                 const inG1 = (month === 9 && day >= 16) || (month === 10 && day <= 16);
                 const inG2 = (month === 10 && day > 16) || (month === 11 && day <= 16);
@@ -454,16 +497,13 @@
             return true;
         }
 
-        // CANLI FİLTRE VE ARAMA UYGULAYICI
         function applyFilters() {
             const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
             const groupKey = document.getElementById('rotationSelect')?.value || 'all';
 
-            // İstatistik sayaçlarını güncelle
             let cAll = 0, cUnscored = 0, cMissing = 0, cPendingApproval = 0;
 
             cachedDepartmentStudents.forEach(stu => {
-                // Rotasyon grubuna uyuyor mu?
                 if (!matchRotationGroup(stu.start_date, groupKey)) return;
 
                 cAll++;
@@ -482,24 +522,25 @@
             document.getElementById('count-missing').innerText = cMissing;
             document.getElementById('count-pendingApproval').innerText = cPendingApproval;
 
-            // Filtrelenmiş listeyi hazırla
             const filtered = cachedDepartmentStudents.filter(stu => {
-                // 1. Arama Metni
                 if (query) {
                     const name = (stu.name || '').toLowerCase();
                     const no = (stu.student_no || '').toLowerCase();
+                    const code = (stu.course_code || '').toLowerCase();
                     const sup = (stu.supervisor_name || '').toLowerCase();
-                    if (!name.includes(query) && !no.includes(query) && !sup.includes(query)) {
+                    const deptM = (stu.morning_dept_name || '').toLowerCase();
+                    const deptA = (stu.afternoon_dept_name || '').toLowerCase();
+
+                    if (!name.includes(query) && !no.includes(query) && !code.includes(query) && 
+                        !sup.includes(query) && !deptM.includes(query) && !deptA.includes(query)) {
                         return false;
                     }
                 }
 
-                // 2. Rotasyon / Staj Grubu
                 if (!matchRotationGroup(stu.start_date, groupKey)) {
                     return false;
                 }
 
-                // 3. Durum Filtre Hapı
                 const hasGrade = (stu.total_score !== null && stu.total_score !== undefined);
                 const requiredDays = stu.required_days || 20;
                 const approvedCount = stu.approved_attendance_count || 0;
@@ -522,20 +563,39 @@
             mobileList.innerHTML = '';
 
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-xs text-gray-400 italic">Kriterlere uygun stajyer bulunamadı.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-xs text-gray-400 italic">Kriterlere uygun stajyer bulunamadı.</td></tr>`;
                 mobileList.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Kriterlere uygun stajyer bulunamadı.</p>`;
                 return;
             }
 
             students.forEach(stu => {
-                const supName = stu.supervisor_name ? escapeHtml(stu.supervisor_name) : '<span class="text-rose-500 font-bold">Atanmamış</span>';
+                const isInternal = (stu.internship_type === 'internal');
                 
+                // Ders Kodu & Staj Modeli
+                const courseBadge = `<span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black border border-purple-200">${escapeHtml(stu.course_code || 'ERG')}</span>`;
+                const modelBadge = isInternal 
+                    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Okul İçi</span>`
+                    : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Dış Staj</span>`;
+
+                // Ünite / Süpervizör Bilgisi
+                let unitDetail = '';
+                if (isInternal) {
+                    unitDetail = `
+                        <div class="text-xs leading-tight">
+                            <span class="text-gray-500 font-semibold">Sabah:</span> ${escapeHtml(stu.morning_dept_name || 'Atanmadı')}<br>
+                            <span class="text-gray-500 font-semibold">Öğle:</span> ${escapeHtml(stu.afternoon_dept_name || 'Atanmadı')}
+                        </div>
+                    `;
+                } else {
+                    unitDetail = `<span class="text-xs text-blue-800 font-bold">${escapeHtml(stu.supervisor_name || 'Saha Süpervizörü')}</span>`;
+                }
+
                 const scoreVal = stu.total_score;
                 const hasGrade = (scoreVal !== null && scoreVal !== undefined);
                 const gradeText = hasGrade 
                     ? `<div class="flex items-center space-x-2">
                         <span class="font-black text-hu-purple text-sm">${scoreVal} / 100</span>
-                        <button onclick="openGradeDetailModal(${stu.id})" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-1 rounded-lg font-bold transition flex items-center cursor-pointer">
+                        <button onclick="openGradeDetailModal(${stu.id}, '${escapeHtml(stu.course_code || '')}')" class="text-[11px] bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2 py-1 rounded-lg font-bold transition flex items-center cursor-pointer">
                             <i class="fa-solid fa-eye mr-1"></i>Rubrik
                         </button>
                        </div>` 
@@ -559,11 +619,18 @@
                 // 1. Masaüstü Tablo Satırı
                 tbody.innerHTML += `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${escapeHtml(stu.name)} <span class="text-xs font-normal text-gray-400">(${escapeHtml(stu.student_no)})</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${supName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${auditButton}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${gradeText}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}</td>
+                        <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                            ${escapeHtml(stu.name)} 
+                            <span class="text-xs font-normal text-gray-400 block">${escapeHtml(stu.student_no)}</span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-xs space-y-1">
+                            <div>${courseBadge}</div>
+                            <div>${modelBadge}</div>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">${unitDetail}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm">${auditButton}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm">${gradeText}</td>
+                        <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}</td>
                     </tr>
                 `;
 
@@ -573,11 +640,20 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h4 class="font-black text-sm text-gray-900">${escapeHtml(stu.name)}</h4>
-                                <p class="text-[11px] text-gray-400">No: ${escapeHtml(stu.student_no)} • Eğitmen: ${supName}</p>
+                                <p class="text-[11px] text-gray-400">No: ${escapeHtml(stu.student_no)}</p>
                             </div>
                             <div class="text-right">
                                 <span class="text-xs font-black text-hu-purple">${hasGrade ? scoreVal + ' / 100' : 'Not Yok'}</span>
                             </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${courseBadge}
+                            ${modelBadge}
+                        </div>
+
+                        <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 text-xs">
+                            ${unitDetail}
                         </div>
 
                         <div class="flex items-center justify-between gap-2 pt-0.5">
@@ -585,8 +661,8 @@
                                 <i class="fa-solid fa-clock-rotate-left mr-1"></i> ${approvedCount}/${requiredDays} Gün
                             </button>
                             ${hasGrade ? `
-                            <button onclick="openGradeDetailModal(${stu.id})" class="text-[11px] bg-purple-50 text-hu-purple font-bold px-2.5 py-1.5 rounded-xl border border-purple-200">
-                                <i class="fa-solid fa-eye mr-1"></i> Rubrik
+                            <button onclick="openGradeDetailModal(${stu.id}, '${escapeHtml(stu.course_code || '')}')" class="text-[11px] bg-purple-50 text-hu-purple font-bold px-2.5 py-1.5 rounded-xl border border-purple-200">
+                                <i class="fa-solid fa-eye mr-1"></i> Rubrik Detayı
                             </button>
                             ` : ''}
                         </div>
@@ -622,7 +698,7 @@
                 cachedDepartmentStudents = await response.json();
                 applyFilters();
 
-                // Kendi Danışmanlığındaki Öğrenciler Sekmesini Doldur
+                // Kendi Danışmanlığındaki Öğrenciler Sekmesi
                 const mySupervisedGrid = document.getElementById('mySupervisedList');
                 mySupervisedGrid.innerHTML = '';
                 
@@ -634,7 +710,10 @@
                         mySupervisedGrid.innerHTML += `
                             <div class="border border-gray-200/90 rounded-2xl p-4 sm:p-5 bg-white shadow-sm flex flex-col justify-between space-y-3">
                                 <div>
-                                    <h3 class="font-extrabold text-gray-900 text-sm sm:text-base mb-0.5">${escapeHtml(stu.name)}</h3>
+                                    <div class="flex justify-between items-start mb-1">
+                                        <h3 class="font-extrabold text-gray-900 text-sm sm:text-base">${escapeHtml(stu.name)}</h3>
+                                        <span class="bg-purple-100 text-hu-purple text-[10px] px-2 py-0.5 rounded-full font-black">${escapeHtml(stu.course_code || 'ERG')}</span>
+                                    </div>
                                     <p class="text-xs text-gray-500 mb-2">No: ${escapeHtml(stu.student_no)}</p>
                                     <p class="text-xs text-gray-600">Staj Notu: <b class="text-hu-purple font-bold">${stu.total_score ? stu.total_score + ' / 100' : 'Girilmedi'}</b></p>
                                 </div>
@@ -654,7 +733,7 @@
             }
         }
 
-        // TÜM BÖLÜM STAJYERLERİNİ VE NOTLARINI TEK TIKLA EXCEL'E DÖKME
+        // TÜM BÖLÜM STAJYERLERİNİ VE NOTLARINI DERS BAZLI EXCEL'E DÖKME
         function exportAllDepartmentToExcel() {
             if (!cachedDepartmentStudents || cachedDepartmentStudents.length === 0) {
                 showToast("Dışa aktarılacak öğrenci kaydı bulunmuyor.", "error");
@@ -670,10 +749,11 @@
                         "Sıra": index + 1,
                         "Öğrenci Adı Soyadı": stu.name || '',
                         "Öğrenci No": stu.student_no || '',
-                        "Staj Türü": isInternal ? 'Hacettepe İçi (Çift Yoklama)' : 'Dış Kurum Stajı',
-                        "Staj Dersi": stu.course_code || 'ERG',
-                        "Sorumlu Eğitmen / Süpervizör": stu.supervisor_name || 'Bölüm Departmanları',
-                        "Akademik Danışman": stu.advisor_name || '',
+                        "Staj Ders Kodu": stu.course_code || 'ERG',
+                        "Staj Türü": isInternal ? 'Bölüm İçi (Çift Yoklama)' : 'Dış Kurum Stajı',
+                        "Sabah Ünitesi": isInternal ? (stu.morning_dept_name || '') : '',
+                        "Öğle Ünitesi": isInternal ? (stu.afternoon_dept_name || '') : '',
+                        "Dış Saha Süpervizörü": !isInternal ? (stu.supervisor_name || '') : '',
                         "Hedef Gün": stu.required_days || 20,
                         "Onaylanan Devam (Gün)": stu.approved_attendance_count || 0,
                         "Mazeretli Bildirim": stu.retroactive_count || 0,
@@ -688,10 +768,11 @@
                     { wch: 6 },
                     { wch: 25 },
                     { wch: 15 },
-                    { wch: 26 },
-                    { wch: 12 },
-                    { wch: 26 },
+                    { wch: 15 },
                     { wch: 24 },
+                    { wch: 22 },
+                    { wch: 22 },
+                    { wch: 25 },
                     { wch: 11 },
                     { wch: 20 },
                     { wch: 18 },
@@ -713,7 +794,7 @@
             }
         }
 
-        async function openGradeDetailModal(studentId) {
+        async function openGradeDetailModal(studentId, courseCode) {
             try {
                 const token = getToken();
                 const response = await fetch(`${API_URL}/grades/student/${studentId}`, {
@@ -725,9 +806,18 @@
                     return;
                 }
 
-                const data = await response.json();
+                const gradesList = await response.json();
+                const data = Array.isArray(gradesList) 
+                    ? (gradesList.find(g => g.course_code === courseCode) || gradesList[0]) 
+                    : gradesList;
+
+                if (!data) {
+                    showToast('Bu derse ait not bulunamadı.', 'error');
+                    return;
+                }
+
                 document.getElementById('gradeDetailStudentName').innerText = `${data.student_name} - Rubrik Raporu`;
-                document.getElementById('gradeDetailSubTitle').innerText = `No: ${data.student_no} | Eğitmen: ${data.evaluator_name || 'Saha Süpervizörü'}`;
+                document.getElementById('gradeDetailSubTitle').innerText = `Ders: ${data.course_code || courseCode} | No: ${data.student_no} | Değerlendiren: ${data.evaluator_name || 'Sorumlu Hoca'}`;
 
                 let d = data.rubric_details;
                 if (typeof d === 'string') {
@@ -735,7 +825,7 @@
                 }
                 d = d || {};
 
-                const noteText = data.note ? escapeHtml(data.note) : 'Süpervizör tarafından ek görüş eklenmedi.';
+                const noteText = data.note ? escapeHtml(data.note) : 'Süpervizör tarafından ek görüş belirtilmedi.';
 
                 const behTotal = (parseInt(d.beh) || 0);
                 const evalTotal = (parseInt(d.eval) || 0);
@@ -750,7 +840,7 @@
                     </div>
 
                     <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3">
-                        <p class="font-bold text-amber-900 mb-0.5 flex items-center"><i class="fa-solid fa-comment-dots mr-1.5 text-amber-600"></i>Süpervizör Notu:</p>
+                        <p class="font-bold text-amber-900 mb-0.5 flex items-center"><i class="fa-solid fa-comment-dots mr-1.5 text-amber-600"></i>Süpervizör Görüşü:</p>
                         <p class="text-gray-800 italic leading-relaxed text-[11px]">${noteText}</p>
                     </div>
 
@@ -857,6 +947,58 @@
                 }
             } catch (err) {
                 showToast("Sunucu hatası oluştu.", "error");
+            }
+        }
+
+        // --- ŞİFRE DEĞİŞTİRME FONKSİYONLARI ---
+        function openPasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('pwCurrent').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('pwCurrent').value;
+            const newPassword = document.getElementById('pwNew').value;
+            const confirmPassword = document.getElementById('pwConfirm').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Yeni şifreler birbiriyle eşleşmiyor!', 'error');
+                return;
+            }
+
+            const token = getToken();
+            const submitBtn = document.getElementById('pwSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Güncelleniyor...';
+
+            try {
+                const res = await fetch(`${API_URL}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message || 'Şifreniz güncellendi.', 'success');
+                    closePasswordModal();
+                } else {
+                    showToast(data.message || 'Şifre değiştirilemedi.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu bağlantı hatası oluştu.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Şifreyi Güncelle';
             }
         }
     </script>

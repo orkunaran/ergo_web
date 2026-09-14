@@ -430,12 +430,17 @@ app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('stude
     }
 });
 
-// [8] ÖĞRENCİ PANELİ VERİLERİ (Çoklu Ders Destekli)
+// [8] ÖĞRENCİ PANELİ VERİLERİ (Çoklu Ders & Aktif Staj Yayma Desteği)
 app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     try {
         const studentId = req.user.id;
 
-        const [users] = await db.execute('SELECT id, name, student_no FROM users WHERE id = ?', [studentId]);
+        const [users] = await db.execute(`
+            SELECT u.id, u.name, u.student_no, adv.name as advisor_name
+            FROM users u
+            LEFT JOIN users adv ON u.advisor_id = adv.id
+            WHERE u.id = ?
+        `, [studentId]);
         const studentData = users[0] || {};
 
         const [internships] = await db.execute(`
@@ -453,17 +458,25 @@ app.get('/api/student/data', authenticateToken, authorizeRoles('student', 'admin
             LEFT JOIN users sup ON i.supervisor_id = sup.id
             LEFT JOIN grades g ON (g.student_id = i.student_id AND g.course_code = i.course_code)
             WHERE i.student_id = ?
+            ORDER BY i.course_code ASC
         `, [studentId]);
 
         const [attendances] = await db.execute(`
             SELECT * FROM attendances WHERE student_id = ? ORDER BY id DESC
         `, [studentId]);
 
-        studentData.internships = internships;
-        studentData.attendances = attendances;
-        studentData.approved_days = attendances.filter(a => a.status === 'approved').length;
+        // Aktif/Birincil staj verilerini doğrudan studentData köküne yayarak frontend'i besle
+        const primaryInternship = internships[0] || {};
 
-        res.json(studentData);
+        const responseData = {
+            ...studentData,
+            ...primaryInternship,
+            internships,
+            attendances,
+            approved_days: attendances.filter(a => a.status === 'approved').length
+        };
+
+        res.json(responseData);
     } catch (error) {
         console.error('Öğrenci Veri Hatası:', error);
         res.status(500).json({ message: 'Öğrenci verileri çekilemedi.' });
