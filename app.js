@@ -439,6 +439,9 @@ app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supe
 });
 
 // [3] SÜPERVİZÖRÜN SORUMLU OLDUĞU ÖĞRENCİLERİN YOKLAMALARI
+// NOT: Burada supervisor_active_attendance_view kullanılır (supervisor_my_students_view DEĞİL).
+// Bu, süpervizöre yoklama onayı ekranında SADECE bugün aktif olan rotasyon
+// dönemindeki öğrencileri gösterir; geçmiş/gelecek dönem yoklamaları karışmaz.
 app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
@@ -453,7 +456,7 @@ app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('s
                 v.my_department_name,
                 v.session_type
             FROM attendances a
-            JOIN supervisor_my_students_view v ON a.student_id = v.id
+            JOIN supervisor_active_attendance_view v ON a.student_id = v.id
             WHERE v.supervisor_id = ?
             ORDER BY a.id DESC
         `, [supervisorId]);
@@ -495,6 +498,9 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
 });
 
 // [5] TOPLU YOKLAMA ONAYLAMA
+// NOT: supervisor_active_attendance_view kullanılır — "Tüm Bekleyenleri Onayla"
+// butonu SADECE bugün aktif olan rotasyon dönemindeki öğrencilerin bekleyen
+// yoklamalarını onaylar; geçmiş/gelecek dönem kayıtlarına dokunmaz.
 app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
@@ -503,7 +509,7 @@ app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('
             UPDATE attendances
             SET status = 'approved'
             WHERE student_id IN (
-                SELECT DISTINCT id FROM supervisor_my_students_view WHERE supervisor_id = ?
+                SELECT DISTINCT id FROM supervisor_active_attendance_view WHERE supervisor_id = ?
             )
             AND status = 'pending'
         `, [supervisorId]);
