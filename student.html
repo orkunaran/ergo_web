@@ -724,10 +724,15 @@
         }
 
         function renderCheckInButton(attendance, isInternal) {
+            // ÖNEMLİ: Gün/saat tarayıcının yerel saat dilimini kullanır (doğrudur),
+            // ancak toISOString() HER ZAMAN UTC tarihini verir. Gece yarısına yakın
+            // saatlerde (TR 00:00-02:59) bu, backend'in kaydettiği TR tarihinden farklı
+            // bir gün olabilir. Bu yüzden bugünün tarihi de TR saat dilimine göre
+            // (yerel getFullYear/getMonth/getDate ile) hesaplanır.
             const now = new Date();
             const dayOfWeek = now.getDay();
             const currentHour = now.getHours();
-            const todayIso = now.toISOString().split('T')[0];
+            const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
             const checkInBtn = document.getElementById('checkInBtn');
             const checkInBtnText = document.getElementById('checkInBtnText');

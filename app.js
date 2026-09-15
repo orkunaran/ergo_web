@@ -521,12 +521,25 @@ app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('
 app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
     const studentId = req.user.id;
     const { locationInfo } = req.body || {};
-    
+
+    // ÖNEMLİ: Sunucu UTC saat diliminde çalışabildiği için, gün/saat/oturum
+    // hesaplamaları HER ZAMAN Türkiye saatine (Europe/Istanbul) göre yapılır.
+    // new Date().getHours()/getDay() sunucunun kendi saat dilimini kullanır ve
+    // sunucu UTC'de ise yanlış oturum (morning/afternoon) hesaplanmasına yol açar.
     const now = new Date();
-    const dayOfWeek = now.getDay();
-    const currentHour = now.getHours();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const trFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Istanbul',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        weekday: 'short', hour12: false
+    });
+    const trParts = Object.fromEntries(trFormatter.formatToParts(now).map(p => [p.type, p.value]));
+    const weekdayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+    const dayOfWeek = weekdayMap[trParts.weekday];
+    const currentHour = parseInt(trParts.hour, 10) === 24 ? 0 : parseInt(trParts.hour, 10);
+    const dateStr = `${trParts.year}-${trParts.month}-${trParts.day}`;
+    const timeStr = `${trParts.hour}:${trParts.minute}`;
 
     try {
         // 1. Resmi ve Dini Tatil Kontrolü
