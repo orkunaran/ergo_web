@@ -442,6 +442,12 @@ app.get('/api/supervisors/:id/students', authenticateToken, authorizeRoles('supe
 // NOT: Burada supervisor_active_attendance_view kullanılır (supervisor_my_students_view DEĞİL).
 // Bu, süpervizöre yoklama onayı ekranında SADECE bugün aktif olan rotasyon
 // dönemindeki öğrencileri gösterir; geçmiş/gelecek dönem yoklamaları karışmaz.
+// AYRICA: Okul içi (internal) stajlarda sabah ve öğleden sonra departmanları
+// farklı olabildiği için (örn. sabah Geriatri, öğleden sonra Mesleki), bir
+// süpervizör SADECE kendi sorumlu olduğu oturumun (sabah/öğle) yoklamasını
+// görmeli. v.session_type ('Sabah'/'Öğle'/'Tam Gün'/'Dış Staj (Tam Gün)') ile
+// gerçek yoklama kaydının a.session_type'ı ('morning'/'afternoon'/'full_day')
+// karşılaştırılarak bu ayrım yapılır.
 app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('supervisor', 'admin', 'coordinator'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
@@ -458,6 +464,12 @@ app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('s
             FROM attendances a
             JOIN supervisor_active_attendance_view v ON a.student_id = v.id
             WHERE v.supervisor_id = ?
+              AND (
+                    v.session_type = 'Tam Gün'
+                    OR v.session_type = 'Dış Staj (Tam Gün)'
+                    OR (v.session_type = 'Sabah' AND a.session_type = 'morning')
+                    OR (v.session_type = 'Öğle' AND a.session_type = 'afternoon')
+              )
             ORDER BY a.id DESC
         `, [supervisorId]);
 
@@ -465,10 +477,17 @@ app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('s
     } catch (error) {
         console.error('Yoklama Listesi Hatası:', error);
         res.status(500).json({ message: 'Yoklama listesi çekilemedi.' });
+
     }
 });
 
 // [4] YOKLAMA DURUM GÜNCELLEME
+// GÜVENLİK: Süpervizör rolündeki kullanıcılar için, güncellenecek yoklama
+// kaydının gerçekten kendi sorumlu olduğu öğrenci VE oturuma (sabah/öğle) ait
+// olup olmadığı kontrol edilir. supervisor_active_attendance_view üzerinden
+// bu denetim yapılmadan hiçbir supervisor başka bir öğrencinin veya yanlış
+// oturumun (örn. sabah süpervizörünün öğleden sonra kaydını) durumunu
+// değiştiremez. admin/coordinator bu kısıtlamadan muaftır.
 app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const { status } = req.body || {};
     const attendanceId = req.params.id;
@@ -477,6 +496,24 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
         const [oldRows] = await db.execute('SELECT * FROM attendances WHERE id = ?', [attendanceId]);
         if (oldRows.length === 0) {
             return res.status(404).json({ message: 'Yoklama kaydı bulunamadı.' });
+        }
+
+        if (req.user.role === 'supervisor') {
+            const [permCheck] = await db.execute(`
+                SELECT 1 FROM supervisor_active_attendance_view v
+                WHERE v.id = ? AND v.supervisor_id = ?
+                  AND (
+                        v.session_type = 'Tam Gün'
+                        OR v.session_type = 'Dış Staj (Tam Gün)'
+                        OR (v.session_type = 'Sabah' AND ? = 'morning')
+                        OR (v.session_type = 'Öğle' AND ? = 'afternoon')
+                  )
+            `, [oldRows[0].student_id, req.user.id, oldRows[0].session_type, oldRows[0].session_type]);
+
+            if (permCheck.length === 0) {
+                await createAuditLog(req.user.id, 'UNAUTHORIZED_ATTENDANCE_ATTEMPT', oldRows[0].student_id, null, { attendanceId, attemptedStatus: status }, req.ip);
+                return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Bu yoklama kaydını onaylama/reddetme yetkiniz bulunmamaktadır.' });
+            }
         }
 
         await db.execute('UPDATE attendances SET status = ? WHERE id = ?', [status, attendanceId]);
@@ -501,17 +538,28 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
 // NOT: supervisor_active_attendance_view kullanılır — "Tüm Bekleyenleri Onayla"
 // butonu SADECE bugün aktif olan rotasyon dönemindeki öğrencilerin bekleyen
 // yoklamalarını onaylar; geçmiş/gelecek dönem kayıtlarına dokunmaz.
+// AYRICA: sabah/öğle oturumu ayrımı (bkz. [3] numaralı endpoint'teki not)
+// burada da uygulanır; süpervizör sadece kendi sorumlu olduğu oturumun
+// bekleyen kayıtlarını toplu onaylayabilir.
 app.post('/api/supervisors/:id/approve-all', authenticateToken, authorizeRoles('supervisor', 'admin'), requireOwnIdOrPrivileged, async (req, res) => {
     try {
         const supervisorId = parseInt(req.params.id, 10);
         
         await db.execute(`
-            UPDATE attendances
+            UPDATE attendances a
             SET status = 'approved'
-            WHERE student_id IN (
-                SELECT DISTINCT id FROM supervisor_active_attendance_view WHERE supervisor_id = ?
-            )
-            AND status = 'pending'
+            WHERE a.status = 'pending'
+              AND EXISTS (
+                SELECT 1 FROM supervisor_active_attendance_view v
+                WHERE v.id = a.student_id
+                  AND v.supervisor_id = ?
+                  AND (
+                        v.session_type = 'Tam Gün'
+                        OR v.session_type = 'Dış Staj (Tam Gün)'
+                        OR (v.session_type = 'Sabah' AND a.session_type = 'morning')
+                        OR (v.session_type = 'Öğle' AND a.session_type = 'afternoon')
+                  )
+              )
         `, [supervisorId]);
 
         await createAuditLog(req.user.id, 'BULK_ATTENDANCE_APPROVE', null, null, { supervisorId }, req.ip);
