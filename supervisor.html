@@ -145,7 +145,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                         <div class="sm:col-span-7 relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="supSearchInput" oninput="applySupervisorFilters()" placeholder="Öğrenci adı, soyadı veya numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                            <input type="text" id="supSearchInput" oninput="debouncedApplySupervisorFilters()" placeholder="Öğrenci adı, soyadı veya numarasıyla ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
                         <!-- SQL'den Beslenen Dinamik Staj Grubu / Rotasyon Seçici -->
@@ -641,6 +641,15 @@
             } catch (err) {
                 console.error('Dönem listesi yüklenemedi:', err);
             }
+        }
+
+        // PERFORMANS: Arama kutusunda her tuş vuruşunda anında filtreleme
+        // yapmak yerine, kullanıcı yazmayı ~250ms süreyle durdurduktan sonra
+        // çalıştırılır (debounce).
+        let _applySupFiltersTimeout = null;
+        function debouncedApplySupervisorFilters() {
+            clearTimeout(_applySupFiltersTimeout);
+            _applySupFiltersTimeout = setTimeout(applySupervisorFilters, 250);
         }
 
         function applySupervisorFilters() {

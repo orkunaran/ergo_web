@@ -144,7 +144,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                         <div class="sm:col-span-7 relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Öğrenci adı, no, ders kodu veya ünite ile ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
+                            <input type="text" id="searchInput" oninput="debouncedApplyFilters()" placeholder="Öğrenci adı, no, ders kodu veya ünite ile ara..." class="w-full text-xs pl-9 pr-3.5 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-hu-purple focus:border-hu-purple shadow-xs">
                         </div>
 
                         <div class="sm:col-span-5">
@@ -601,6 +601,17 @@
             }
         }
 
+        // PERFORMANS: Arama kutusunda her tuş vuruşunda anında filtreleme
+        // yapmak yerine, kullanıcı yazmayı ~250ms süreyle durdurduktan sonra
+        // çalıştırılır (debounce). Önceden her karakterde ~400 satırlık listeyi
+        // iki kez tarayıp tüm tabloyu yeniden çiziyordu; bu da hızlı yazarken
+        // gözle görülür bir gecikmeye sebep oluyordu.
+        let _applyFiltersTimeout = null;
+        function debouncedApplyFilters() {
+            clearTimeout(_applyFiltersTimeout);
+            _applyFiltersTimeout = setTimeout(applyFilters, 250);
+        }
+
         function applyFilters() {
             const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
             const selectedCourseCode = document.getElementById('rotationSelect')?.value || 'all';
@@ -663,14 +674,18 @@
         function renderStudentTables(students) {
             const tbody = document.getElementById('departmentStudentsTable');
             const mobileList = document.getElementById('departmentStudentsMobileList');
-            tbody.innerHTML = '';
-            mobileList.innerHTML = '';
 
             if (students.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-xs text-gray-400 italic">Kriterlere uygun stajyer bulunamadı.</td></tr>`;
                 mobileList.innerHTML = `<p class="text-xs text-gray-400 p-4 italic text-center">Kriterlere uygun stajyer bulunamadı.</p>`;
                 return;
             }
+
+            // PERFORMANS: innerHTML += ile her satırda tüm tabloyu yeniden
+            // parse edip yeniden çizmek yerine (O(n²) maliyet), tüm satırlar
+            // bir diziye biriktirilip SONUNDA tek seferde innerHTML'e atanır.
+            const tbodyParts = [];
+            const mobileParts = [];
 
             students.forEach(stu => {
                 const isInternal = (stu.internship_type === 'internal');
@@ -736,7 +751,7 @@
                     ? `<button onclick="openEditInternshipModal(${stu.internship_id})" title="Kurum/Süpervizör/Departman Düzelt" class="bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ml-1"><i class="fa-solid fa-pen"></i></button>`
                     : '';
 
-                tbody.innerHTML += `
+                tbodyParts.push(`
                     <tr>
                         <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                             ${escapeHtml(stu.name)} 
@@ -751,9 +766,9 @@
                         <td class="px-4 py-4 whitespace-nowrap text-sm">${gradeText}</td>
                         <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">${approveBtn}${editBtn}</td>
                     </tr>
-                `;
+                `);
 
-                mobileList.innerHTML += `
+                mobileParts.push(`
                     <div class="py-3.5 px-1 space-y-2.5">
                         <div class="flex justify-between items-start">
                             <div>
@@ -805,8 +820,11 @@
                             ` : ''}
                         </div>
                     </div>
-                `;
+                `);
             });
+
+            tbody.innerHTML = tbodyParts.join('');
+            mobileList.innerHTML = mobileParts.join('');
         }
 
         async function loadDepartmentData() {
