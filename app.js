@@ -851,12 +851,11 @@ app.get('/api/internships/periods', authenticateToken, async (req, res) => {
 // [9] STAJ KOORDİNATÖRÜ: TÜM ÖĞRENCİLER VE TÜM STAJLAR (LEFT JOIN Desteği)
 app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordinator', 'admin'), async (req, res) => {
     try {
-        // DÜZELTME: approved_attendance_count ve retroactive_count eskiden
-        // öğrencinin TÜM ZAMANLAR boyunca (her rotasyon dönemi dahil) toplam
-        // yoklama sayısını veriyordu; bu yüzden bir öğrencinin 4 farklı
-        // rotasyonu (Staj 1,2,3,4...) aynı ekranda hepsinde AYNI toplam sayıyı
-        // gösteriyordu. Artık her satır SADECE o rotasyonun kendi start_date -
-        // end_date aralığındaki yoklamaları sayar.
+        // PERFORMANS DÜZELTMESİ: Önceki sorgu her satır için 2 ayrı correlated
+        // subquery (attendances tablosunda tam tarama) çalıştırıyordu — yaklaşık
+        // 400 satır x 2 = binlerce tekrar eden tarama demekti, bu yüzden sayfa
+        // çok yavaş açılıyordu. Artık attendances tablosu tek seferde LEFT JOIN
+        // edilip GROUP BY ile gruplanıyor; PostgreSQL tabloyu bir kez okuyor.
         const [rows] = await db.execute(`
             SELECT 
                 u.id, 
@@ -876,26 +875,25 @@ app.get('/api/coordinator/students', authenticateToken, authorizeRoles('coordina
                 g.total_score,
                 CASE 
                     WHEN COALESCE(i.internship_type, 'internal') = 'internal' THEN
-                        ROUND((SELECT COUNT(*) FROM attendances a 
-                            WHERE a.student_id = u.id AND a.status = 'approved'
-                              AND (i.start_date IS NULL OR a.date::date BETWEEN i.start_date AND i.end_date)
-                        )::numeric / 2.0, 1)
+                        ROUND(COALESCE(att.approved_count, 0)::numeric / 2.0, 1)
                     ELSE
-                        (SELECT COUNT(*) FROM attendances a 
-                            WHERE a.student_id = u.id AND a.status = 'approved'
-                              AND (i.start_date IS NULL OR a.date::date BETWEEN i.start_date AND i.end_date)
-                        )::numeric
+                        COALESCE(att.approved_count, 0)::numeric
                 END as approved_attendance_count,
-                (SELECT COUNT(*) FROM attendances a 
-                    WHERE a.student_id = u.id AND a.is_retroactive = 1
-                      AND (i.start_date IS NULL OR a.date::date BETWEEN i.start_date AND i.end_date)
-                ) as retroactive_count
+                COALESCE(att.retroactive_count, 0) as retroactive_count
             FROM users u
             LEFT JOIN internships i ON u.id = i.student_id
             LEFT JOIN departments dept_m ON i.morning_dept_id = dept_m.id
             LEFT JOIN departments dept_a ON i.afternoon_dept_id = dept_a.id
             LEFT JOIN users sup ON i.supervisor_id = sup.id
             LEFT JOIN grades g ON (g.student_id = u.id AND g.course_code = i.course_code)
+            LEFT JOIN LATERAL (
+                SELECT
+                    COUNT(*) FILTER (WHERE a.status = 'approved') AS approved_count,
+                    COUNT(*) FILTER (WHERE a.is_retroactive = 1) AS retroactive_count
+                FROM attendances a
+                WHERE a.student_id = u.id
+                  AND (i.start_date IS NULL OR a.date::date BETWEEN i.start_date AND i.end_date)
+            ) att ON true
             WHERE u.role = 'student'
             ORDER BY u.name ASC, i.course_code ASC
         `);
