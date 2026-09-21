@@ -237,6 +237,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
             const isMatch = await bcrypt.compare(password, user.password_hash);
             if (!isMatch) {
+                await createAuditLog(user.id, 'LOGIN_FAILED_WRONG_PASSWORD', user.id, null, { identifier: queryParam }, req.ip);
                 return res.status(401).json({ message: 'Hatalı şifre.' });
             }
 
@@ -245,6 +246,8 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
                 JWT_SECRET,
                 { expiresIn: '10h' }
             );
+
+            await createAuditLog(user.id, 'LOGIN_SUCCESS', user.id, null, { role: user.role }, req.ip);
 
             delete user.password_hash;
             return res.json({ message: 'Giriş başarılı', token, user });
@@ -263,6 +266,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
             const user = rows[0];
             const isMatch = await bcrypt.compare(password, user.password_hash);
             if (!isMatch) {
+                await createAuditLog(user.id, 'LOGIN_FAILED_WRONG_PASSWORD', user.id, null, { identifier: queryParam }, req.ip);
                 return res.status(401).json({ message: 'Hatalı şifre.' });
             }
 
@@ -271,6 +275,8 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
                 JWT_SECRET,
                 { expiresIn: '10h' }
             );
+
+            await createAuditLog(user.id, 'LOGIN_SUCCESS', user.id, null, { role: 'student' }, req.ip);
 
             delete user.password_hash;
             return res.json({ message: 'Giriş başarılı', token, user });
@@ -482,12 +488,12 @@ app.get('/api/supervisors/:id/attendances', authenticateToken, authorizeRoles('s
 });
 
 // [4] YOKLAMA DURUM GÜNCELLEME
-// GÜVENLİK: Süpervizör rolündeki kullanıcılar için, güncellenecek yoklama
-// kaydının gerçekten kendi sorumlu olduğu öğrenci VE oturuma (sabah/öğle) ait
-// olup olmadığı kontrol edilir. supervisor_active_attendance_view üzerinden
-// bu denetim yapılmadan hiçbir supervisor başka bir öğrencinin veya yanlış
-// oturumun (örn. sabah süpervizörünün öğleden sonra kaydını) durumunu
-// değiştiremez. admin/coordinator bu kısıtlamadan muaftır.
+// GÜVENLİK: Kullanıcı bir departmana süpervizör olarak atanmışsa (rolü admin
+// veya coordinator olsa bile — "Süpervizör Paneli" görünümünde kendi adına
+// işlem yapıyor demektir), güncellenecek yoklama kaydının gerçekten kendi
+// sorumlu olduğu öğrenci VE oturuma (sabah/öğle) ait olup olmadığı kontrol
+// edilir. Yalnızca HİÇBİR departmana atanmamış saf admin/coordinator hesapları
+// bu kısıtlamadan muaftır.
 app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('supervisor', 'coordinator', 'admin'), async (req, res) => {
     const { status } = req.body || {};
     const attendanceId = req.params.id;
@@ -498,7 +504,16 @@ app.put('/api/attendances/:id/status', authenticateToken, authorizeRoles('superv
             return res.status(404).json({ message: 'Yoklama kaydı bulunamadı.' });
         }
 
-        if (req.user.role === 'supervisor') {
+        // Kullanıcının fiilen bir departmana/harici kuruma süpervizör olarak
+        // atanıp atanmadığını kontrol et (rolden bağımsız olarak).
+        const [supRows] = await db.execute(`
+            SELECT 1 FROM department_supervisors WHERE COALESCE(supervisor_id, user_id) = ?
+            UNION ALL
+            SELECT 1 FROM users WHERE id = ? AND role = 'supervisor'
+        `, [req.user.id, req.user.id]);
+        const actingAsSupervisor = supRows.length > 0;
+
+        if (actingAsSupervisor) {
             const [permCheck] = await db.execute(`
                 SELECT 1 FROM supervisor_active_attendance_view v
                 WHERE v.id = ? AND v.supervisor_id = ?
@@ -607,14 +622,40 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
             });
         }
 
-        const [internshipRows] = await db.execute('SELECT internship_type FROM internships WHERE student_id = ?', [studentId]);
-        const isInternal = internshipRows.some(r => r.internship_type === 'internal');
+        // GÜVENLİK/MANTIK DÜZELTMESİ: isInternal artık öğrencinin TÜM ZAMANLAR
+        // boyunca herhangi bir internal kaydı olup olmadığına değil, sadece
+        // BUGÜNÜN TARİHİNE denk gelen aktif rotasyon döneminin türüne bakar.
+        // Eskiden bir öğrencinin (rotasyon dönemleri arasında hem internal hem
+        // external kaydı olduğu için) her zaman "internal" sayılması, external
+        // dönemindeyken bile Salı-Cuma / 09:00-17:00 kısıtına takılmasına ve
+        // örneğin Cumartesi günü dış kurum yoklaması verilememesine yol açıyordu.
+        const [activeInternshipRows] = await db.execute(
+            'SELECT internship_type, allowed_weekdays FROM internships WHERE student_id = ? AND ? BETWEEN start_date AND end_date',
+            [studentId, dateStr]
+        );
+
+        if (activeInternshipRows.length === 0) {
+            return res.status(400).json({ message: 'Bugün için tanımlı aktif bir staj rotasyonunuz bulunmuyor.' });
+        }
+
+        const activeInternal = activeInternshipRows.find(r => r.internship_type === 'internal');
+        const isInternal = !!activeInternal;
 
         let sessionType = 'full_day';
 
         if (isInternal) {
-            if (![2, 3, 4, 5].includes(dayOfWeek)) {
-                return res.status(400).json({ message: 'Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.' });
+            // Hangi haftanın günlerinin geçerli olduğu artık sabit [2,3,4,5]
+            // değil, bu rotasyon kaydının allowed_weekdays alanından okunur.
+            // Kayıt boşsa (eski veri) varsayılan olarak Salı-Cuma (2,3,4,5) kabul edilir.
+            const allowedDays = (activeInternal.allowed_weekdays || '2,3,4,5')
+                .split(',')
+                .map(d => parseInt(d.trim(), 10))
+                .filter(d => !isNaN(d));
+
+            if (!allowedDays.includes(dayOfWeek)) {
+                const dayNames = { 0: 'Pazar', 1: 'Pazartesi', 2: 'Salı', 3: 'Çarşamba', 4: 'Perşembe', 5: 'Cuma', 6: 'Cumartesi' };
+                const allowedNames = allowedDays.map(d => dayNames[d]).join(', ');
+                return res.status(400).json({ message: `Okul içi staj günleriniz: ${allowedNames}.` });
             }
 
             if (currentHour < 9 || currentHour >= 17) {
@@ -623,6 +664,10 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
 
             sessionType = currentHour < 13 ? 'morning' : 'afternoon';
         }
+        // NOT: external (dış kurum) stajlarda gün/saat kısıtı YOKTUR — haftanın
+        // her günü (Cumartesi/Pazar dahil), gün boyu tek oturumluk (full_day)
+        // yoklama verilebilir. allowed_weekdays external kayıtlar için hiç
+        // okunmaz/uygulanmaz.
 
         const [existing] = await db.execute(
             'SELECT id FROM attendances WHERE student_id = ? AND date = ? AND session_type = ?', 
@@ -648,24 +693,80 @@ app.post('/api/attendance/check-in', authenticateToken, authorizeRoles('student'
     }
 });
 
-// [7] MAZERETLİ YOKLAMA TALEBİ
-app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('student', 'admin'), async (req, res) => {
-    const studentId = req.user.id;
+// [7] MAZERETLİ / TELAFİ YOKLAMA TALEBİ
+// Öğrenci kendi adına talep oluşturduğunda kayıt 'pending' olur (süpervizör
+// onayı beklenir). Süpervizör (veya admin/coordinator) bir öğrenci adına
+// telafi girdiğinde, süpervizör zaten onaylayan taraf olduğu için kayıt
+// doğrudan 'approved' olarak eklenir.
+// GÜVENLİK: Bir süpervizör (department_supervisors'a atanmış veya
+// role='supervisor' olan kullanıcı), yalnızca supervisor_my_students_view
+// üzerinden kendi sorumlu olduğu öğrenci VE oturuma telafi girebilir. Bu
+// kontrol supervisor_active_attendance_view DEĞİL supervisor_my_students_view
+// ile yapılır, çünkü telafi geçmiş bir rotasyon dönemine ait olabilir ve
+// süpervizörler dönem bitse dahi kendi eski öğrencilerine işlem yapabilmelidir.
+app.post('/api/attendance/retroactive', authenticateToken, authorizeRoles('student', 'supervisor', 'coordinator', 'admin'), async (req, res) => {
     const { date, excuse, sessionType } = req.body || {};
+    let { studentId } = req.body || {};
 
     if (!date || !excuse) {
         return res.status(400).json({ message: 'Tarih ve mazeret açıklaması zorunludur.' });
     }
 
+    const isSelfRequest = req.user.role === 'student';
+
+    if (isSelfRequest) {
+        studentId = req.user.id;
+    } else {
+        if (!studentId) {
+            return res.status(400).json({ message: 'Öğrenci belirtilmedi.' });
+        }
+
+        // Kullanıcının fiilen bir departmana/harici kuruma süpervizör olarak
+        // atanıp atanmadığını kontrol et (rolden bağımsız olarak).
+        const [supRows] = await db.execute(`
+            SELECT 1 FROM department_supervisors WHERE COALESCE(supervisor_id, user_id) = ?
+            UNION ALL
+            SELECT 1 FROM users WHERE id = ? AND role = 'supervisor'
+        `, [req.user.id, req.user.id]);
+        const actingAsSupervisor = supRows.length > 0;
+
+        if (actingAsSupervisor) {
+            const [permCheck] = await db.execute(`
+                SELECT 1 FROM supervisor_my_students_view v
+                WHERE v.id = ? AND v.supervisor_id = ?
+                  AND (
+                        v.session_type = 'Tam Gün'
+                        OR v.session_type = 'Dış Staj (Tam Gün)'
+                        OR (v.session_type = 'Sabah' AND ? = 'morning')
+                        OR (v.session_type = 'Öğle' AND ? = 'afternoon')
+                  )
+            `, [studentId, req.user.id, sessionType || 'full_day', sessionType || 'full_day']);
+
+            if (permCheck.length === 0) {
+                await createAuditLog(req.user.id, 'UNAUTHORIZED_RETROACTIVE_ATTEMPT', studentId, null, { date, sessionType }, req.ip);
+                return res.status(403).json({ message: 'GÜVENLİK İHLALİ: Bu öğrenciye telafi yoklaması girme yetkiniz bulunmamaktadır.' });
+            }
+        }
+    }
+
+    const initialStatus = isSelfRequest ? 'pending' : 'approved';
+
     try {
         await db.execute(
-            "INSERT INTO attendances (student_id, date, time, excuse, status, is_retroactive, session_type) VALUES (?, ?, 'Mazeretli', ?, 'pending', 1, ?)",
-            [studentId, date, excuse, sessionType || 'full_day']
+            "INSERT INTO attendances (student_id, date, time, excuse, status, is_retroactive, session_type) VALUES (?, ?, 'Mazeretli', ?, ?, 1, ?)",
+            [studentId, date, excuse, initialStatus, sessionType || 'full_day']
         );
 
-        await createAuditLog(studentId, 'RETROACTIVE_ATTENDANCE_REQUEST', studentId, null, { date, excuse, sessionType }, req.ip);
+        await createAuditLog(
+            req.user.id,
+            isSelfRequest ? 'RETROACTIVE_ATTENDANCE_REQUEST' : 'RETROACTIVE_ATTENDANCE_ENTERED_BY_SUPERVISOR',
+            studentId,
+            null,
+            { date, excuse, sessionType, status: initialStatus },
+            req.ip
+        );
 
-        res.json({ message: 'Mazeretli yoklama talebiniz iletildi.' });
+        res.json({ message: isSelfRequest ? 'Mazeretli yoklama talebiniz iletildi.' : 'Telafi yoklaması onaylı olarak eklendi.' });
     } catch (error) {
         console.error('Mazeret Hatası:', error);
         res.status(500).json({ message: 'Mazeretli yoklama talebi kaydedilemedi.' });

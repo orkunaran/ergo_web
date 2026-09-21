@@ -329,6 +329,59 @@
         </div>
     </div>
 
+    <!-- TELAFİ / MAZERETLİ YOKLAMA GİRİŞ MODALI (Süpervizör) -->
+    <div id="retroactiveModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeRetroactiveModal()"></div>
+
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-calendar-plus text-amber-500 mr-2"></i>Telafi Yoklaması Gir
+                    </h3>
+                    <button onclick="closeRetroactiveModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-gray-500">
+                    <span id="retroStudentName" class="font-bold text-gray-800"></span> için girdiğiniz telafi kaydı
+                    doğrudan <b class="text-emerald-700">onaylı</b> olarak eklenir.
+                </p>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Tarih</label>
+                        <input type="date" id="retroDate" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                    </div>
+
+                    <div id="retroSessionWrapper">
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Oturum</label>
+                        <select id="retroSessionType" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                            <option value="morning">Sabah</option>
+                            <option value="afternoon">Öğleden Sonra</option>
+                            <option value="full_day">Tam Gün</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Açıklama / Mazeret</label>
+                        <textarea id="retroExcuse" rows="3" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40" placeholder="Örn: Staj alanındaydı, sistemsel sorun nedeniyle giremedi..."></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeRetroactiveModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                        Vazgeç
+                    </button>
+                    <button onclick="submitRetroactiveBySupervisor()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer">
+                        Onaylı Olarak Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- HESAP & PROFİL AYARLARI MODALI -->
     <div id="profileModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 py-6">
@@ -692,9 +745,14 @@
                     `;
                 } else {
                     actionBtnHtml = `
-                        <button onclick="openEvaluationModal(${stu.id})" class="w-full min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
-                            <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Öğrenciyi Değerlendir'}
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="openEvaluationModal(${stu.id})" class="flex-1 min-h-[42px] bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
+                                <i class="fa-solid fa-pen-to-square mr-1.5"></i> ${hasGrade ? 'Notu Düzenle' : 'Değerlendir'}
+                            </button>
+                            <button onclick="openRetroactiveModal(${stu.id}, '${escapeHtml(stu.name).replace(/'/g, "\\'")}', '${stu.session_type || 'Tam Gün'}')" title="Telafi Yoklaması Gir" class="min-h-[42px] px-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm cursor-pointer flex items-center justify-center">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                            </button>
+                        </div>
                     `;
                 }
 
@@ -881,6 +939,73 @@
                     loadSupervisorData();
                 } else {
                     showToast("İşlem sırasında hata oluştu.", "error");
+                }
+            } catch (err) {
+                showToast("Sunucu hatası.", "error");
+            }
+        }
+
+        // --- SÜPERVİZÖR: TELAFİ / MAZERETLİ YOKLAMA GİRİŞİ ---
+        function openRetroactiveModal(studentId, studentName, sessionTypeLabel) {
+            document.getElementById('retroStudentName').innerText = studentName;
+            document.getElementById('retroDate').value = '';
+            document.getElementById('retroExcuse').value = '';
+
+            // Öğrencinin oturum türüne göre (Sabah/Öğle/Tam Gün/Dış Staj) seçimi
+            // otomatik ayarla; dış staj veya tam gün ise oturum seçimini gizle.
+            const sessionSelect = document.getElementById('retroSessionType');
+            const sessionWrapper = document.getElementById('retroSessionWrapper');
+            if (sessionTypeLabel === 'Sabah') {
+                sessionSelect.value = 'morning';
+                sessionWrapper.classList.remove('hidden');
+            } else if (sessionTypeLabel === 'Öğle') {
+                sessionSelect.value = 'afternoon';
+                sessionWrapper.classList.remove('hidden');
+            } else {
+                sessionSelect.value = 'full_day';
+                sessionWrapper.classList.add('hidden');
+            }
+
+            document.getElementById('retroactiveModal').dataset.studentId = studentId;
+            document.getElementById('retroactiveModal').classList.remove('hidden');
+        }
+
+        function closeRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.add('hidden');
+        }
+
+        async function submitRetroactiveBySupervisor() {
+            const modal = document.getElementById('retroactiveModal');
+            const studentId = modal.dataset.studentId;
+            const date = document.getElementById('retroDate').value;
+            const excuse = document.getElementById('retroExcuse').value.trim();
+            const sessionType = document.getElementById('retroSessionType').value;
+
+            if (!date || !excuse) {
+                showToast("Tarih ve açıklama zorunludur.", "error");
+                return;
+            }
+
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/attendance/retroactive`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ studentId: parseInt(studentId, 10), date, excuse, sessionType })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.message || "Telafi yoklaması eklendi.", "success");
+                    closeRetroactiveModal();
+                    loadSupervisorData();
+                    loadAttendanceApprovals();
+                } else {
+                    showToast(data.message || "İşlem başarısız.", "error");
                 }
             } catch (err) {
                 showToast("Sunucu hatası.", "error");

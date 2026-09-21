@@ -681,7 +681,7 @@
 
             document.getElementById('attendanceCountBadge').innerText = `${filteredAttendances.length} Kayıt`;
 
-            renderCheckInButton(allAttendances, isInternal);
+            renderCheckInButton(allAttendances, isInternal, currentInternship.allowed_weekdays);
             renderAttendanceList(filteredAttendances);
 
             const gradeCard = document.getElementById('gradeStatusCard');
@@ -723,7 +723,7 @@
             }
         }
 
-        function renderCheckInButton(attendance, isInternal) {
+        function renderCheckInButton(attendance, isInternal, allowedWeekdaysStr) {
             // ÖNEMLİ: Gün/saat tarayıcının yerel saat dilimini kullanır (doğrudur),
             // ancak toISOString() HER ZAMAN UTC tarihini verir. Gece yarısına yakın
             // saatlerde (TR 00:00-02:59) bu, backend'in kaydettiği TR tarihinden farklı
@@ -739,7 +739,17 @@
             const checkInSubText = document.getElementById('checkInSubText');
 
             if (isInternal) {
-                const isValidDay = [2, 3, 4, 5].includes(dayOfWeek);
+                // Hangi haftanın günlerinin geçerli olduğu artık sabit Salı-Cuma
+                // değil, seçili staj kaydının allowed_weekdays alanından okunur.
+                // Değer yoksa (eski kayıt) varsayılan Salı-Cuma (2,3,4,5) kullanılır.
+                const dayNames = { 0: 'Pazar', 1: 'Pazartesi', 2: 'Salı', 3: 'Çarşamba', 4: 'Perşembe', 5: 'Cuma', 6: 'Cumartesi' };
+                const allowedDays = (allowedWeekdaysStr || '2,3,4,5')
+                    .split(',')
+                    .map(d => parseInt(d.trim(), 10))
+                    .filter(d => !isNaN(d));
+                const allowedDayNames = allowedDays.map(d => dayNames[d]).join(', ');
+
+                const isValidDay = allowedDays.includes(dayOfWeek);
                 const isWorkingHours = currentHour >= 9 && currentHour < 17;
                 const currentSession = currentHour < 13 ? 'morning' : 'afternoon';
                 const sessionName = currentSession === 'morning' ? 'Sabah' : 'Öğleden Sonra';
@@ -749,8 +759,8 @@
                 if (!isValidDay) {
                     checkInBtn.disabled = true;
                     checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
-                    checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL (SALI-CUMA)";
-                    checkInSubText.innerText = "Okul içi staj günleri Salı, Çarşamba, Perşembe ve Cuma günleridir.";
+                    checkInBtnText.innerText = "BUGÜN STAJ GÜNÜ DEĞİL";
+                    checkInSubText.innerText = `Okul içi staj günleriniz: ${allowedDayNames}.`;
                 } else if (!isWorkingHours) {
                     checkInBtn.disabled = true;
                     checkInBtn.className = "w-full sm:w-auto min-h-[50px] px-8 py-3.5 bg-gray-400 text-white font-bold text-xs sm:text-sm rounded-2xl shadow cursor-not-allowed flex items-center justify-center space-x-2.5";
