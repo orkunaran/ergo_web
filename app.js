@@ -1046,6 +1046,76 @@ app.post('/api/admin/students/save', authenticateToken, authorizeRoles('admin', 
     }
 });
 
+// [12.0] ADMIN/KOORDİNATÖR: TEK BİR STAJ (INTERNSHIP) KAYDINI DÜZENLEME
+// Bir öğrencinin belirli bir rotasyonunda kurum/süpervizör veya departman
+// değişikliği yapıldığında (örn. dış kurum değişti, departman ataması
+// yanlış girildi) kullanılır. Toplu Excel yüklemesi yerine tek satır
+// düzeltmesi için tasarlanmıştır.
+app.put('/api/admin/internships/:id', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
+    const internshipId = req.params.id;
+    const {
+        internshipType,
+        supervisorId,
+        morningDeptId,
+        afternoonDeptId,
+        startDate,
+        endDate,
+        requiredDays
+    } = req.body || {};
+
+    try {
+        const [oldRows] = await db.execute('SELECT * FROM internships WHERE id = ?', [internshipId]);
+        if (oldRows.length === 0) {
+            return res.status(404).json({ message: 'Staj kaydı bulunamadı.' });
+        }
+        const old = oldRows[0];
+
+        const newInternshipType = internshipType || old.internship_type;
+        const newSupervisorId = newInternshipType === 'external' ? (supervisorId || null) : null;
+        const newMorningDept = newInternshipType === 'internal' ? (morningDeptId || old.morning_dept_id) : null;
+        const newAfternoonDept = newInternshipType === 'internal' ? (afternoonDeptId || old.afternoon_dept_id) : null;
+        const newStartDate = startDate || old.start_date;
+        const newEndDate = endDate || old.end_date;
+        const newRequiredDays = requiredDays || old.required_days;
+
+        await db.execute(`
+            UPDATE internships
+            SET internship_type = ?,
+                supervisor_id = ?,
+                morning_dept_id = ?,
+                afternoon_dept_id = ?,
+                start_date = ?,
+                end_date = ?,
+                required_days = ?
+            WHERE id = ?
+        `, [newInternshipType, newSupervisorId, newMorningDept, newAfternoonDept, newStartDate, newEndDate, newRequiredDays, internshipId]);
+
+        await createAuditLog(
+            req.user.id,
+            'INTERNSHIP_RECORD_EDITED',
+            old.student_id,
+            {
+                internship_type: old.internship_type,
+                supervisor_id: old.supervisor_id,
+                morning_dept_id: old.morning_dept_id,
+                afternoon_dept_id: old.afternoon_dept_id
+            },
+            {
+                internship_type: newInternshipType,
+                supervisor_id: newSupervisorId,
+                morning_dept_id: newMorningDept,
+                afternoon_dept_id: newAfternoonDept
+            },
+            req.ip
+        );
+
+        res.json({ message: 'Staj kaydı başarıyla güncellendi.' });
+    } catch (error) {
+        console.error('Staj Düzenleme Hatası:', error);
+        res.status(500).json({ message: 'Staj kaydı güncellenemedi.' });
+    }
+});
+
 // [12.1] ADMIN: DIŞ STAJ ÖĞRENCİ VE SÜPERVİZÖR TOPLU KAYDI
 app.post('/api/admin/students/save-external', authenticateToken, authorizeRoles('admin', 'webmaster', 'coordinator'), async (req, res) => {
     const { students } = req.body || {};

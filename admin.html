@@ -455,6 +455,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Staj Dönemi / Kodu</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Model / Ünite Dağılımı</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Not Durumu</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
@@ -505,6 +506,81 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAJ KAYDI DÜZENLEME MODALI (kurum/süpervizör/departman değişikliği) -->
+    <div id="editInternshipModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs transition-opacity" onclick="closeEditInternshipModal()"></div>
+
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 z-10 relative shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-extrabold text-gray-900 text-base flex items-center">
+                        <i class="fa-solid fa-pen text-hu-purple mr-2"></i>Staj Kaydını Düzenle
+                    </h3>
+                    <button onclick="closeEditInternshipModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-gray-500">
+                    <span id="editStudentNameLabel" class="font-bold text-gray-800"></span>
+                </p>
+
+                <input type="hidden" id="editInternshipId">
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Staj Modeli</label>
+                        <select id="editInternshipType" onchange="toggleEditInternshipTypeFields()" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                            <option value="internal">Okul İçi (Çift Yoklama)</option>
+                            <option value="external">Dış Kurum Stajı</option>
+                        </select>
+                    </div>
+
+                    <div id="editExternalFields">
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Saha Süpervizörü / Kurum</label>
+                        <select id="editSupervisorId" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40"></select>
+                    </div>
+
+                    <div id="editInternalFields" class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Sabah Ünitesi</label>
+                            <select id="editMorningDeptId" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40"></select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Öğle Ünitesi</label>
+                            <select id="editAfternoonDeptId" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40"></select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Başlangıç Tarihi</label>
+                            <input type="date" id="editStartDate" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Bitiş Tarihi</label>
+                            <input type="date" id="editEndDate" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">Gerekli Gün Sayısı</label>
+                        <input type="number" id="editRequiredDays" value="20" min="1" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hu-purple/40">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeEditInternshipModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+                        Vazgeç
+                    </button>
+                    <button onclick="submitEditInternship()" class="flex-1 py-2.5 bg-hu-purple hover:bg-hu-dark active:scale-95 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer">
+                        Değişiklikleri Kaydet
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -721,7 +797,7 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             if (rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Bu filtrelere uygun öğrenci kaydı bulunamadı.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Bu filtrelere uygun öğrenci kaydı bulunamadı.</td></tr>';
                 return;
             }
 
@@ -738,6 +814,10 @@
                     ? `<span class="bg-green-100 text-green-800 font-bold px-2 py-1 rounded text-xs">${r.total_score} Puan</span>` 
                     : `<span class="bg-amber-100 text-amber-800 font-medium px-2 py-1 rounded text-xs">Not Girilmedi</span>`;
 
+                const editBtn = r.internship_id
+                    ? `<button onclick="openEditInternshipModal(${r.internship_id})" class="text-xs bg-purple-50 hover:bg-purple-100 text-hu-purple border border-purple-200 px-2.5 py-1.5 rounded-lg font-bold transition cursor-pointer"><i class="fa-solid fa-pen mr-1"></i>Düzenle</button>`
+                    : '';
+
                 tbody.innerHTML += `
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -749,9 +829,98 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">${modelDetail}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">${scoreBadge}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">${editBtn}</td>
                     </tr>
                 `;
             });
+        }
+
+        // --- STAJ KAYDI DÜZENLEME (kurum/süpervizör/departman değişikliği) ---
+        function openEditInternshipModal(internshipId) {
+            const stu = allStudents.find(s => s.internship_id === internshipId);
+            if (!stu) return;
+
+            document.getElementById('editInternshipId').value = internshipId;
+            document.getElementById('editStudentNameLabel').innerText = `${stu.name} (${stu.student_no}) - ${stu.course_code}`;
+            document.getElementById('editInternshipType').value = stu.internship_type || 'internal';
+
+            populateEditDropdowns();
+
+            document.getElementById('editSupervisorId').value = stu.supervisor_id || '';
+            document.getElementById('editMorningDeptId').value = stu.morning_dept_id || '';
+            document.getElementById('editAfternoonDeptId').value = stu.afternoon_dept_id || '';
+            document.getElementById('editStartDate').value = stu.start_date ? stu.start_date.split('T')[0] : '';
+            document.getElementById('editEndDate').value = stu.end_date ? stu.end_date.split('T')[0] : '';
+            document.getElementById('editRequiredDays').value = stu.required_days || 20;
+
+            toggleEditInternshipTypeFields();
+            document.getElementById('editInternshipModal').classList.remove('hidden');
+        }
+
+        function populateEditDropdowns() {
+            const supSelect = document.getElementById('editSupervisorId');
+            supSelect.innerHTML = '<option value="">-- Süpervizör Seçin --</option>';
+            cachedSupervisors.forEach(s => {
+                supSelect.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)}${s.department ? ' (' + escapeHtml(s.department) + ')' : ''}</option>`;
+            });
+
+            const mSelect = document.getElementById('editMorningDeptId');
+            const aSelect = document.getElementById('editAfternoonDeptId');
+            mSelect.innerHTML = '<option value="">-- Departman Seçin --</option>';
+            aSelect.innerHTML = '<option value="">-- Departman Seçin --</option>';
+            cachedDepartments.forEach(d => {
+                mSelect.innerHTML += `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
+                aSelect.innerHTML += `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
+            });
+        }
+
+        function toggleEditInternshipTypeFields() {
+            const type = document.getElementById('editInternshipType').value;
+            document.getElementById('editInternalFields').classList.toggle('hidden', type !== 'internal');
+            document.getElementById('editExternalFields').classList.toggle('hidden', type !== 'external');
+        }
+
+        function closeEditInternshipModal() {
+            document.getElementById('editInternshipModal').classList.add('hidden');
+        }
+
+        async function submitEditInternship() {
+            const internshipId = document.getElementById('editInternshipId').value;
+            const internshipType = document.getElementById('editInternshipType').value;
+
+            const payload = {
+                internshipType,
+                supervisorId: internshipType === 'external' ? (document.getElementById('editSupervisorId').value || null) : null,
+                morningDeptId: internshipType === 'internal' ? (document.getElementById('editMorningDeptId').value || null) : null,
+                afternoonDeptId: internshipType === 'internal' ? (document.getElementById('editAfternoonDeptId').value || null) : null,
+                startDate: document.getElementById('editStartDate').value || null,
+                endDate: document.getElementById('editEndDate').value || null,
+                requiredDays: parseInt(document.getElementById('editRequiredDays').value, 10) || 20
+            };
+
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/admin/internships/${internshipId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.message || 'Staj kaydı güncellendi.', 'success');
+                    closeEditInternshipModal();
+                    loadData();
+                } else {
+                    showToast(data.message || 'Güncelleme başarısız.', 'error');
+                }
+            } catch (err) {
+                showToast('Sunucu hatası.', 'error');
+            }
         }
 
         async function loadDepartmentAssignments() {
